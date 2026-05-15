@@ -24,6 +24,7 @@ Compliance notes:
 from __future__ import annotations
 
 import logging
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -33,19 +34,19 @@ logger = logging.getLogger(__name__)
 
 
 class VetoReason(Enum):
-    RISK_LIMIT_BREACH    = "risk_limit_breach"
-    POLICY_VIOLATION     = "policy_violation"
-    ANOMALY_DETECTED     = "anomaly_detected"
-    MANUAL_OPERATOR      = "manual_operator"
+    RISK_LIMIT_BREACH = "risk_limit_breach"
+    POLICY_VIOLATION = "policy_violation"
+    ANOMALY_DETECTED = "anomaly_detected"
+    MANUAL_OPERATOR = "manual_operator"
     PEER_AGENT_CHALLENGE = "peer_agent_challenge"
-    COMPLIANCE_FLAG      = "compliance_flag"
+    COMPLIANCE_FLAG = "compliance_flag"
 
 
 @dataclass
 class VetoRecord:
     veto_id: str
     reason: VetoReason
-    triggered_by: str       # agent_id or operator_id
+    triggered_by: str  # agent_id or operator_id
     description: str
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     cleared_by: str | None = None
@@ -104,7 +105,6 @@ class SovereignVeto:
         description: str,
     ) -> VetoRecord:
         """Trigger a veto. Idempotent for the same reason from the same source."""
-        import uuid
         record = VetoRecord(
             veto_id=str(uuid.uuid4()),
             reason=reason,
@@ -115,7 +115,10 @@ class SovereignVeto:
 
         logger.critical(
             "SOVEREIGN VETO triggered | agent: %s | reason: %s | by: %s | %s",
-            self.agent_id, reason.value, triggered_by, description,
+            self.agent_id,
+            reason.value,
+            triggered_by,
+            description,
         )
 
         if self._on_veto:
@@ -151,7 +154,10 @@ class SovereignVeto:
                 cleared.append(v)
                 logger.info(
                     "VETO CLEARED | agent: %s | veto_id: %s | by: %s | reason: %s",
-                    self.agent_id, v.veto_id, operator_id, reason,
+                    self.agent_id,
+                    v.veto_id,
+                    operator_id,
+                    reason,
                 )
                 if self._on_clear:
                     self._on_clear(v)
