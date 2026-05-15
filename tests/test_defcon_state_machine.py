@@ -4,7 +4,6 @@ Tests for the DEFCON state machine reference implementation.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import tempfile
 from pathlib import Path
