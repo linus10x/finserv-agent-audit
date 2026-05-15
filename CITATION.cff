@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: >-
+  If you use these patterns in your systems, research, or publications,
+  please cite this repository using the metadata below.
+type: software
+title: >-
+  finserv-agent-audit: Governance Patterns for Autonomous AI
+  Agents in Regulated Financial Services
+authors:
+  - family-names: Bhaduri
+    given-names: Kunjar
+    orcid: ""
+    affiliation: North Texas Capital Investments
+    website: "https://linkedin.com/in/kunjarbhaduri"
+repository-code: "https://github.com/linus10x/finserv-agent-audit"
+url: "https://github.com/linus10x/finserv-agent-audit"
+abstract: >-
+  Reference governance patterns, schemas, and runnable implementations
+  for audit-ready autonomous AI agents in regulated financial services.
+  Covers autonomy-level classification (A0 through A4) — a proprietary
+  governance framework documented in this repository — along with
+  DEFCON-style risk-state degradation, sovereign veto architecture,
+  shadow-mode rollout, tamper-evident hash-chain audit logging, and
+  EU AI Act control mapping. Patterns were extracted from a multi-year
+  autonomous trading system build, drawing on hundreds of engineering
+  sessions, architectural decision records, and documented failure-mode
+  analyses. The source system operates in paper-trading Phase 0 —
+  no live capital has been deployed.
+keywords:
+  - AI governance
+  - autonomous agents
+  - financial services
+  - EU AI Act
+  - regulated AI
+  - human-in-the-loop
+  - audit trail
+  - fintech
+  - multi-agent systems
+  - compliance
+license: MIT
+version: "1.0.0"
+date-released: "2026-05-23"
