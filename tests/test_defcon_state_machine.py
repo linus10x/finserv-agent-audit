@@ -4,6 +4,8 @@ Tests for the DEFCON state machine reference implementation.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import tempfile
 from pathlib import Path
 
@@ -89,7 +91,9 @@ class TestHalt:
 
 
 class TestAuditChain:
-    def test_audit_file_created_on_transition(self, tmp_machine: DEFCONMachine, tmp_path: Path) -> None:
+    def test_audit_file_created_on_transition(
+        self, tmp_machine: DEFCONMachine, tmp_path: Path
+    ) -> None:
         tmp_machine.evaluate(RiskMetrics(0.11, 0.01, 0))  # -> ALERT: writes audit entry
         audit_file = tmp_path / "audit.jsonl"
         assert audit_file.exists()
@@ -97,9 +101,8 @@ class TestAuditChain:
         assert len(lines) == 1
 
     def test_hash_chain_integrity(self, tmp_machine: DEFCONMachine, tmp_path: Path) -> None:
-        import json, hashlib
-        tmp_machine.evaluate(RiskMetrics(0.08, 0.01, 0))   # CAUTION
-        tmp_machine.evaluate(RiskMetrics(0.11, 0.01, 0))   # ALERT
+        tmp_machine.evaluate(RiskMetrics(0.08, 0.01, 0))  # CAUTION
+        tmp_machine.evaluate(RiskMetrics(0.11, 0.01, 0))  # ALERT
         audit_file = tmp_path / "audit.jsonl"
         events = [json.loads(ln) for ln in audit_file.read_text().splitlines() if ln.strip()]
         assert len(events) == 2
