@@ -57,13 +57,15 @@ logger = logging.getLogger(__name__)
 # Risk Levels
 # ---------------------------------------------------------------------------
 
+
 class DEFCON(Enum):
     """Risk levels from lowest (NORMAL) to highest (HALT)."""
-    NORMAL  = 1
+
+    NORMAL = 1
     CAUTION = 2
-    ALERT   = 3
-    DANGER  = 4
-    HALT    = 5
+    ALERT = 3
+    DANGER = 4
+    HALT = 5
 
     def __ge__(self, other: "DEFCON") -> bool:  # type: ignore[override]
         return self.value >= other.value
@@ -87,15 +89,15 @@ class DEFCON(Enum):
 # requirements before deploying.
 # ---------------------------------------------------------------------------
 
-DRAWDOWN_HALT    = 0.20  # Example: >=20% portfolio drawdown -> HALT
-DRAWDOWN_DANGER  = 0.15  # Example: >=15% portfolio drawdown -> DANGER
-DRAWDOWN_ALERT   = 0.10  # Example: >=10% portfolio drawdown -> ALERT
+DRAWDOWN_HALT = 0.20  # Example: >=20% portfolio drawdown -> HALT
+DRAWDOWN_DANGER = 0.15  # Example: >=15% portfolio drawdown -> DANGER
+DRAWDOWN_ALERT = 0.10  # Example: >=10% portfolio drawdown -> ALERT
 DRAWDOWN_CAUTION = 0.07  # Example: >=7%  portfolio drawdown -> CAUTION
 
-DAILY_LOSS_HALT   = 0.06  # Example: >=6% daily loss -> HALT
+DAILY_LOSS_HALT = 0.06  # Example: >=6% daily loss -> HALT
 DAILY_LOSS_DANGER = 0.04  # Example: >=4% daily loss -> DANGER
 
-CONSECUTIVE_LOSS_ALERT   = 6  # Example: >=6 consecutive losses -> ALERT
+CONSECUTIVE_LOSS_ALERT = 6  # Example: >=6 consecutive losses -> ALERT
 CONSECUTIVE_LOSS_CAUTION = 4  # Example: >=4 consecutive losses -> CAUTION
 
 HYSTERESIS_CONFIRMATIONS = 3  # Consecutive evaluations required to de-escalate
@@ -105,18 +107,21 @@ HYSTERESIS_CONFIRMATIONS = 3  # Consecutive evaluations required to de-escalate
 # Data Classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RiskMetrics:
     """Snapshot of risk indicators evaluated at each cycle."""
+
     portfolio_drawdown: float  # 0.0 to 1.0 (e.g., 0.12 = 12% drawdown)
-    daily_loss: float          # 0.0 to 1.0 (e.g., 0.03 = 3% daily loss)
-    consecutive_losses: int    # Count of consecutive losing trades/cycles
+    daily_loss: float  # 0.0 to 1.0 (e.g., 0.03 = 3% daily loss)
+    consecutive_losses: int  # Count of consecutive losing trades/cycles
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass
 class AuditEvent:
     """Immutable audit record for every state transition."""
+
     event_id: str
     timestamp: str
     from_level: str
@@ -144,6 +149,7 @@ class AuditEvent:
 # ---------------------------------------------------------------------------
 # State Machine
 # ---------------------------------------------------------------------------
+
 
 class DEFCONMachine:
     """
@@ -261,7 +267,10 @@ class DEFCONMachine:
             return DEFCON.DANGER
         if m.portfolio_drawdown >= DRAWDOWN_ALERT or m.consecutive_losses >= CONSECUTIVE_LOSS_ALERT:
             return DEFCON.ALERT
-        if m.portfolio_drawdown >= DRAWDOWN_CAUTION or m.consecutive_losses >= CONSECUTIVE_LOSS_CAUTION:
+        if (
+            m.portfolio_drawdown >= DRAWDOWN_CAUTION
+            or m.consecutive_losses >= CONSECUTIVE_LOSS_CAUTION
+        ):
             return DEFCON.CAUTION
         return DEFCON.NORMAL
 
@@ -293,7 +302,10 @@ class DEFCONMachine:
 
         logger.info(
             "DEFCON transition: %s -> %s | trigger: %s | hash: %s...",
-            from_level.name, target.name, trigger, event.event_hash[:12],
+            from_level.name,
+            target.name,
+            trigger,
+            event.event_hash[:12],
         )
 
     def _save_state(self) -> None:
@@ -339,16 +351,16 @@ if __name__ == "__main__":
     )
 
     scenarios = [
-        ("Normal conditions",       RiskMetrics(0.02, 0.01, 1)),
-        ("Light drawdown",          RiskMetrics(0.08, 0.02, 3)),
-        ("Moderate drawdown",       RiskMetrics(0.11, 0.03, 5)),
-        ("Stress — DANGER",         RiskMetrics(0.16, 0.05, 7)),
-        ("Recovery eval 1/3",       RiskMetrics(0.09, 0.02, 3)),
-        ("Recovery eval 2/3",       RiskMetrics(0.09, 0.02, 3)),
-        ("Recovery eval 3/3",       RiskMetrics(0.09, 0.02, 3)),
-        ("Continued recovery 1/3",  RiskMetrics(0.05, 0.01, 2)),
-        ("Continued recovery 2/3",  RiskMetrics(0.05, 0.01, 2)),
-        ("Continued recovery 3/3",  RiskMetrics(0.05, 0.01, 2)),
+        ("Normal conditions", RiskMetrics(0.02, 0.01, 1)),
+        ("Light drawdown", RiskMetrics(0.08, 0.02, 3)),
+        ("Moderate drawdown", RiskMetrics(0.11, 0.03, 5)),
+        ("Stress — DANGER", RiskMetrics(0.16, 0.05, 7)),
+        ("Recovery eval 1/3", RiskMetrics(0.09, 0.02, 3)),
+        ("Recovery eval 2/3", RiskMetrics(0.09, 0.02, 3)),
+        ("Recovery eval 3/3", RiskMetrics(0.09, 0.02, 3)),
+        ("Continued recovery 1/3", RiskMetrics(0.05, 0.01, 2)),
+        ("Continued recovery 2/3", RiskMetrics(0.05, 0.01, 2)),
+        ("Continued recovery 3/3", RiskMetrics(0.05, 0.01, 2)),
     ]
 
     print(f"\n{'Scenario':<28} {'DEFCON Level':<12}")
