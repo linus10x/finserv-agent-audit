@@ -45,3 +45,10 @@
 ## Regulatory Context
 
 <!-- Optional: which regulation or audit finding motivated this change? -->
+
+
+## Agent attribution (if AI-authored)
+- Agent: <!-- claude-code / copilot / gemini / codex / human -->
+- Session transcript / link:
+- Human reviewer who validated the changes:
+- [ ] Followed `AGENTS.md` hard rules
