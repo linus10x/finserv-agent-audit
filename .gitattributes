@@ -1,0 +1,13 @@
+* text=auto eol=lf
+*.py    text diff=python
+*.md    text
+*.yml   text
+*.yaml  text
+*.json  text
+*.sh    text eol=lf
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+# Generated / vendored
+docs/_build/** linguist-generated=true
+examples/audit_chain/**.jsonl linguist-generated=true
