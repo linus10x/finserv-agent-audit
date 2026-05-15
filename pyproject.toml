@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "finserv-agent-audit"
+version = "1.0.0"
+description = "Governance patterns for autonomous AI agents in regulated financial services"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Kunjar Bhaduri", email = "130852583+linus10x@users.noreply.github.com" }
+]
+keywords = [
+    "ai-governance",
+    "autonomous-agents",
+    "fintech",
+    "regulated-ai",
+    "audit-trail",
+    "eu-ai-act",
+    "financial-services",
+    "compliance",
+    "kill-switch",
+    "human-in-the-loop",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
+requires-python = ">=3.12"
+dependencies = []  # Zero runtime dependencies
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "mypy>=1.14",
+    "ruff>=0.8",
+    "pre-commit>=3.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/linus10x/finserv-agent-audit"
+Repository = "https://github.com/linus10x/finserv-agent-audit"
+Issues = "https://github.com/linus10x/finserv-agent-audit/issues"
+Changelog = "https://github.com/linus10x/finserv-agent-audit/blob/main/CHANGELOG.md"
+Discussions = "https://github.com/linus10x/finserv-agent-audit/discussions"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "ANN", "B", "SIM"]
+ignore = ["ANN101", "ANN102", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]
+"examples/*" = ["ANN"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["examples", "schemas", "patterns"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

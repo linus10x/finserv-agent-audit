@@ -8,6 +8,8 @@ Extracted from a multi-year build of a 6-agent autonomous trading system — hun
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions)
+[![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](pyproject.toml)
 
 ---
 
@@ -18,6 +20,43 @@ Every team building autonomous AI agents in a regulated environment eventually h
 Existing AI safety research focuses on alignment. Existing compliance frameworks focus on humans. Neither addresses the operational reality of an agent that executes hundreds of decisions per day inside a risk-managed financial system.
 
 This repository fills that gap. These are battle-tested patterns — not academic proposals — for teams building agents that must survive a regulatory audit, a risk committee, and a 3am incident.
+
+---
+
+## Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/linus10x/finserv-agent-audit.git
+cd finserv-agent-audit
+pip install -e ".[dev]"
+
+# Run the DEFCON state machine demo
+python examples/defcon_state_machine.py
+
+# Run tests
+pytest tests/ -v
+```
+
+**Under 60 seconds from clone to running demo.** The state machine simulates 10 evaluation cycles, prints the DEFCON level at each step, and writes a JSON audit trail to `output/demo_audit.jsonl`:
+
+```
+Scenario                     DEFCON Level
+------------------------------------------
+Normal conditions            NORMAL
+Light drawdown               CAUTION
+Moderate drawdown            ALERT
+Stress — DANGER              DANGER
+Recovery eval 1/3            DANGER      ← hysteresis holding
+Recovery eval 2/3            DANGER      ← hysteresis holding
+Recovery eval 3/3            ALERT       ← confirmed de-escalation
+Continued recovery 1/3       ALERT       ← hysteresis holding
+Continued recovery 2/3       ALERT       ← hysteresis holding
+Continued recovery 3/3       CAUTION     ← confirmed de-escalation
+
+Audit trail written to: output/demo_audit.jsonl
+State persisted to:     output/demo_state.json
+```
 
 ---
 
@@ -88,33 +127,14 @@ flowchart LR
 
 ## Patterns Included
 
-| Pattern | File | Covers |
-|---|---|---|
-| DEFCON State Machine | `examples/defcon_state_machine.py` | Risk-state degradation with hysteresis |
-| Sovereign Veto | `patterns/sovereign_veto.py` | Human-in-the-loop kill switch |
-| Audit Chain | `schemas/audit_event.py` | Tamper-evident hash-chain logging |
-| Autonomy Ladder | `docs/autonomy_ladder.md` | A0→A4 governance classification |
-| EU AI Act Mapping | `docs/eu_ai_act_mapping.md` | Article-by-article control mapping |
-| Shadow Mode Rollout | `patterns/shadow_mode.py` | Parallel dry-run before live execution |
-
----
-
-## Quick Start
-
-```bash
-# Clone and install
-git clone https://github.com/linus10x/finserv-agent-audit.git
-cd finserv-agent-audit
-pip install -r requirements.txt
-
-# Run the DEFCON state machine demo
-python examples/defcon_state_machine.py
-
-# Run tests
-pytest tests/ -v
-```
-
-**60 seconds from clone to running demo.** The state machine demo simulates 10 evaluation cycles, prints the DEFCON level at each step, and writes a JSON audit trail to `output/demo_audit.jsonl`.
+| Pattern | File | Covers | Regulation |
+|---|---|---|---|
+| DEFCON State Machine | `examples/defcon_state_machine.py` | Risk-state degradation with hysteresis | EU AI Act Art. 9, 15 |
+| Sovereign Veto | `patterns/sovereign_veto.py` | Human-only kill switch | EU AI Act Art. 14, MiFID II Art. 17 |
+| Audit Chain | `schemas/audit_event.py` | Tamper-evident hash-chain logging | EU AI Act Art. 12, SEC Rule 17a-4 |
+| Autonomy Ladder | `docs/autonomy_ladder.md` | A0→A4 governance classification | EU AI Act Art. 14 |
+| EU AI Act Mapping | `docs/eu_ai_act_mapping.md` | Article-by-article control mapping | EU AI Act Art. 9–15 |
+| Shadow Mode Rollout | `patterns/shadow_mode.py` *(v1.1)* | Parallel dry-run before live execution | SR 11-7 |
 
 ---
 
@@ -122,8 +142,14 @@ pytest tests/ -v
 
 - **Engineers** building autonomous agents that execute in regulated environments (trading, lending, insurance, compliance)
 - **Risk architects** designing kill-switch and override mechanisms for AI systems
-- **Compliance teams** mapping AI agent behavior to EU AI Act, SEC Rule 15c3-5, or SOC 2 requirements
+- **Compliance teams** mapping AI agent behavior to EU AI Act, SEC Rule 15c3-5, MiFID II, or SOC 2 requirements
 - **CTOs and Chief AI Officers** establishing governance frameworks before regulators ask for them
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=linus10x/finserv-agent-audit&type=Date)](https://star-history.com/#linus10x/finserv-agent-audit&Date)
 
 ---
 
@@ -138,6 +164,12 @@ pytest tests/ -v
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). This repository exists because the failure modes that produced these patterns are real — and the teams dealing with them rarely have reference implementations to work from.
+
+Open a [Discussion](https://github.com/linus10x/finserv-agent-audit/discussions) for questions. Open an [Issue](https://github.com/linus10x/finserv-agent-audit/issues) for bugs and pattern requests.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 ## License
 
