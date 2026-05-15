@@ -27,7 +27,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class AuditEventType(Enum):
@@ -60,7 +60,7 @@ class AuditEventType(Enum):
 
 class AutonomyLevel(Enum):
     """
-    Autonomy classification per the A0→A4 ladder.
+    Autonomy classification per the A0->A4 ladder.
     Maps to human oversight requirements at each level.
     """
     A0 = "A0"  # Human decides — agent proposes only
@@ -78,7 +78,7 @@ class AuditEvent:
     Fields:
         event_id:       UUID4 uniquely identifying this event
         event_type:     Classification from AuditEventType
-        autonomy_level: A0→A4 level at which this decision was made
+        autonomy_level: A0->A4 level at which this decision was made
         agent_id:       Identifier of the agent that generated this event
         timestamp:      UTC ISO-8601 timestamp
         payload:        Arbitrary event-specific data (keep minimal)
@@ -97,7 +97,7 @@ class AuditEvent:
     timestamp: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
-    actor_id: Optional[str] = None
+    actor_id: str | None = None
     schema_version: str = "1.0.0"
     event_hash: str = field(init=False)
 
@@ -157,7 +157,7 @@ class AuditChain:
 
     GENESIS_HASH = "0" * 64
 
-    def __init__(self, log_file: Optional[Any] = None) -> None:
+    def __init__(self, log_file: Any = None) -> None:
         from pathlib import Path
         self.log_file = log_file or Path("output/audit_chain.jsonl")
         self._prev_hash: str = self.GENESIS_HASH
@@ -170,7 +170,7 @@ class AuditChain:
         autonomy_level: AutonomyLevel,
         agent_id: str,
         payload: dict[str, Any],
-        actor_id: Optional[str] = None,
+        actor_id: str | None = None,
     ) -> AuditEvent:
         event = AuditEvent(
             event_type=event_type,

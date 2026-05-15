@@ -49,7 +49,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -158,11 +157,11 @@ class DEFCONMachine:
 
     def __init__(
         self,
-        state_file: Optional[Path] = None,
-        audit_file: Optional[Path] = None,
+        state_file: Path | None = None,
+        audit_file: Path | None = None,
     ) -> None:
         self._current_level: DEFCON = DEFCON.NORMAL
-        self._pending_target: Optional[DEFCON] = None
+        self._pending_target: DEFCON | None = None
         self._confirmation_count: int = 0
         self._transition_count: int = 0
         self._prev_hash: str = "0" * 64  # Genesis hash
@@ -228,7 +227,7 @@ class DEFCONMachine:
         target: DEFCON,
         operator_id: str,
         reason: str,
-        metrics: Optional[RiskMetrics] = None,
+        metrics: RiskMetrics | None = None,
     ) -> DEFCON:
         """
         Human-in-the-loop override. Required for HALT de-escalation.
@@ -268,9 +267,6 @@ class DEFCONMachine:
 
     def _confirm_transition(self, target: DEFCON, metrics: RiskMetrics, trigger: str) -> None:
         """Confirm a state transition, write audit record, persist state."""
-        # State file is only updated on confirmed transitions — intentionally
-        # conservative. On restart, the system reloads the last confirmed level,
-        # not the most recently evaluated level.
         from_level = self._current_level
         self._current_level = target
         self._pending_target = None

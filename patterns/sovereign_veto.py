@@ -27,18 +27,18 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Callable, Optional
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
 
 class VetoReason(Enum):
-    RISK_LIMIT_BREACH   = "risk_limit_breach"
-    POLICY_VIOLATION    = "policy_violation"
-    ANOMALY_DETECTED    = "anomaly_detected"
-    MANUAL_OPERATOR     = "manual_operator"
+    RISK_LIMIT_BREACH    = "risk_limit_breach"
+    POLICY_VIOLATION     = "policy_violation"
+    ANOMALY_DETECTED     = "anomaly_detected"
+    MANUAL_OPERATOR      = "manual_operator"
     PEER_AGENT_CHALLENGE = "peer_agent_challenge"
-    COMPLIANCE_FLAG     = "compliance_flag"
+    COMPLIANCE_FLAG      = "compliance_flag"
 
 
 @dataclass
@@ -48,9 +48,9 @@ class VetoRecord:
     triggered_by: str       # agent_id or operator_id
     description: str
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    cleared_by: Optional[str] = None
-    cleared_at: Optional[str] = None
-    clear_reason: Optional[str] = None
+    cleared_by: str | None = None
+    cleared_at: str | None = None
+    clear_reason: str | None = None
 
     @property
     def is_active(self) -> bool:
@@ -80,8 +80,8 @@ class SovereignVeto:
     def __init__(
         self,
         agent_id: str,
-        on_veto: Optional[Callable[[VetoRecord], None]] = None,
-        on_clear: Optional[Callable[[VetoRecord], None]] = None,
+        on_veto: Callable[[VetoRecord], None] | None = None,
+        on_clear: Callable[[VetoRecord], None] | None = None,
     ) -> None:
         self.agent_id = agent_id
         self._vetos: list[VetoRecord] = []
@@ -127,7 +127,7 @@ class SovereignVeto:
         self,
         operator_id: str,
         reason: str,
-        veto_id: Optional[str] = None,
+        veto_id: str | None = None,
     ) -> list[VetoRecord]:
         """
         Clear active veto(s). Only humans can clear vetos.
