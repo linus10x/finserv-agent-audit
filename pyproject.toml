@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=70", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "finserv-agent-audit"
@@ -66,6 +66,8 @@ ignore = ["ANN101", "ANN102", "ANN401"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
 "examples/*" = ["ANN"]
+"schemas/*" = ["ANN"]
+"patterns/*" = ["ANN"]
 
 [tool.mypy]
 python_version = "3.12"

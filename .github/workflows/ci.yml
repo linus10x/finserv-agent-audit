@@ -10,7 +10,6 @@ jobs:
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    environment: production
     strategy:
       fail-fast: false
       matrix:
