@@ -12,7 +12,7 @@ This repo encodes governance patterns for autonomous AI agents in regulated fina
 - One logical change per PR. No drive-by reformatting.
 - Include the agent session transcript (or a link to it) in the PR body.
 - Run `pre-commit run --all-files` and `pytest -q` before pushing.
-- Map the change to EU AI Act articles when relevant (see `docs/eu_ai_act.md`).
+- Map the change to EU AI Act articles when relevant (see `docs/eu_ai_act_mapping.md`).
 
 ## Tone
 - Commit messages: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`).
