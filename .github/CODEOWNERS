@@ -1,0 +1,14 @@
+# CODEOWNERS — reviewed automatically on every PR
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @linus10x
+
+# Core governance patterns — require explicit review
+/patterns/     @linus10x
+/schemas/      @linus10x
+/docs/         @linus10x
+
+# CI and tooling
+/.github/      @linus10x
+/pyproject.toml @linus10x

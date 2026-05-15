@@ -1,6 +1,3 @@
-# Funding configuration
-# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
-
-github: []
-custom:
-  - https://linkedin.com/in/kunjarbhaduri
+# Funding links — shown as "Sponsor" button on repo page
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+github: [linus10x]

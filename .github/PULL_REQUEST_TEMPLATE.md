@@ -1,47 +1,36 @@
-## Summary
+## What does this PR do?
 
-<!-- One paragraph: what this PR adds or fixes and why -->
+<!-- One sentence summary -->
 
-## Changes
+## Type of change
 
-- 
-- 
-
-## Pattern / File Affected
-
-<!-- Which pattern or module does this touch? -->
-- [ ] `examples/defcon_state_machine.py`
-- [ ] `patterns/sovereign_veto.py`
-- [ ] `schemas/audit_event.py`
-- [ ] `docs/`
-- [ ] CI / infrastructure
-- [ ] New pattern (describe below)
+| Type | This PR? |
+|---|---|
+| New governance pattern | ☐ |
+| Bug fix (existing pattern) | ☐ |
+| Documentation update | ☐ |
+| CI / tooling | ☐ |
+| Refactor (no behaviour change) | ☐ |
 
 ## Checklist
 
-### Code Quality
-- [ ] `ruff check .` passes with no errors
-- [ ] `mypy examples/ schemas/ patterns/` passes
-- [ ] `pytest tests/ -v` passes — all existing tests green
-- [ ] New tests added for new behavior (or explain why not needed)
-- [ ] Coverage does not decrease below current baseline
+- [ ] `ruff check .` passes locally with zero violations
+- [ ] `ruff format --check .` passes
+- [ ] `mypy` passes with zero errors
+- [ ] `pytest --cov` passes and coverage stays ≥ 80%
+- [ ] New pattern includes: docstring, type hints, at least one test, and regulation mapping
+- [ ] CHANGELOG.md updated under `[Unreleased]`
+- [ ] If a new pattern: `README.md` patterns table updated
 
-### Governance Standard
-- [ ] No strategy logic, alpha signals, or execution venue references included
-- [ ] All numeric thresholds (if any) are clearly marked as illustrative examples
-- [ ] Audit trail is preserved — no changes break `AuditChain.verify()`
-- [ ] Human-in-the-loop requirements are maintained — no agent can self-clear a veto
-- [ ] `CHANGELOG.md` updated under `[Unreleased]` with a concise entry
+## Regulation mapping (for new patterns)
 
-### Documentation
-- [ ] Docstrings updated for any changed public API
-- [ ] `README.md` updated if a new pattern is added to the patterns table
-- [ ] Compliance notes updated if regulatory mapping changes
+<!-- Which regulation or standard does this pattern address? -->
+<!-- e.g. EU AI Act Art. 12, SEC Rule 17a-4, MiFID II Art. 17 -->
 
-## Testing Notes
+## Testing notes
 
-<!-- How did you verify this? What edge cases did you test? -->
+<!-- How was this tested? Any edge cases exercised? -->
 
-## Regulatory Context
+## Related issues
 
-<!-- Optional: which regulation or audit finding motivated this change? -->
+Closes #

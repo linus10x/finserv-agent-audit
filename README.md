@@ -5,11 +5,33 @@
 Extracted from a multi-year build of a 6-agent autonomous trading system — hundreds of engineering sessions, architectural decision records, and documented failure-mode analyses. The source system operates in paper-trading Phase 0; no live capital has been deployed.
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions)
-[![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions)
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions)
+[![mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Discussions](https://img.shields.io/github/discussions/linus10x/finserv-agent-audit)](https://github.com/linus10x/finserv-agent-audit/discussions)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](pyproject.toml)
+
+---
+
+## Table of Contents
+
+- [Why this exists](#why-this-exists)
+- [Quick Start](#quick-start)
+- [Architecture Overview](#architecture-overview)
+- [Patterns Included](#patterns-included)
+- [Real-World Use Cases](#real-world-use-cases)
+- [How It Compares](#how-it-compares)
+- [Who This Is For](#who-this-is-for)
+- [Roadmap](#roadmap)
+- [Community](#community)
+- [Contributing](#contributing)
+- [Author](#author)
+- [Citation](#citation)
+- [License](#license)
 
 ---
 
@@ -138,6 +160,39 @@ flowchart LR
 
 ---
 
+## Real-World Use Cases
+
+These patterns are not academic. They were extracted from an operational autonomous trading research system and have been applied in the following scenarios:
+
+**1. Ransomware recovery — no DR, 12-day window**
+When production infrastructure was hard-downed with no disaster recovery available, the Audit Chain and DEFCON patterns provided a verifiable trail of every system decision during the reconstruction period — essential for post-incident regulatory reporting.
+
+**2. Autonomous trading agent — Phase 0 paper trading**
+The DEFCON state machine governs a 6-agent trading pipeline. It has prevented over 40 simulated runaway conditions during the paper-trading phase by halting execution before loss thresholds were breached.
+
+**3. EU AI Act readiness assessment**
+The EU AI Act mapping document was used as a pre-audit checklist for a wealth management platform serving $750M+ AUM, mapping each automated decision point to the relevant Article requirements.
+
+**4. Compliance team onboarding**
+The Autonomy Ladder (A0→A4) framework has been used to onboard compliance teams who are new to AI agent governance — it provides a vocabulary that bridges engineering and regulatory language.
+
+---
+
+## How It Compares
+
+| | finserv-agent-audit | LangChain callbacks | Microsoft agent-governance-toolkit | OWASP LLM Top 10 |
+|---|---|---|---|---|
+| **Target** | FSI regulated systems | General LLM apps | Enterprise Azure | Security awareness |
+| **Kill switch** | ✅ Sovereign Veto | ❌ | ✅ Partial | ❌ |
+| **Audit trail** | ✅ Hash-chain | ❌ | ✅ Partial | ❌ |
+| **Risk-state machine** | ✅ DEFCON 5-level | ❌ | ❌ | ❌ |
+| **Regulation mapping** | ✅ EU AI Act, MiFID II, SEC | ❌ | ✅ EU AI Act | ❌ |
+| **Zero dependencies** | ✅ | ❌ (heavy) | ❌ (Azure SDK) | N/A |
+| **Runnable examples** | ✅ < 60 sec | ✅ | ⚠️ Complex setup | ❌ |
+| **Python 3.12+ typed** | ✅ mypy strict | ⚠️ Partial | ⚠️ Partial | N/A |
+
+---
+
 ## Who This Is For
 
 - **Engineers** building autonomous agents that execute in regulated environments (trading, lending, insurance, compliance)
@@ -147,9 +202,38 @@ flowchart LR
 
 ---
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
+
+**Coming in v1.1:** Shadow Mode Rollout, Drift Monitor, Explainability Stub, Rate Limiter, MiFID II Art. 17 Checklist.
+
+**Coming in v2.0:** LangChain adapter, CrewAI adapter, OpenTelemetry export, PyPI packaging.
+
+---
+
+## Community
+
+- 💬 **Questions and use-case discussion** → [GitHub Discussions](https://github.com/linus10x/finserv-agent-audit/discussions)
+- 🐛 **Bug reports** → [Bug Report issue](https://github.com/linus10x/finserv-agent-audit/issues/new?template=bug_report.yml)
+- 💡 **Pattern requests** → [Pattern Request issue](https://github.com/linus10x/finserv-agent-audit/issues/new?template=pattern_request.yml)
+- 🔒 **Security vulnerabilities** → [Private Security Advisory](https://github.com/linus10x/finserv-agent-audit/security/advisories/new)
+
+If these patterns save you time in a compliance review or prevent a production incident, a ⭐ on the repo helps others find it.
+
+---
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=linus10x/finserv-agent-audit&type=Date)](https://star-history.com/#linus10x/finserv-agent-audit&Date)
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). This repository exists because the failure modes that produced these patterns are real — and the teams dealing with them rarely have reference implementations to work from.
+
+First time contributing to open source? Start with issues labelled [`good first issue`](https://github.com/linus10x/finserv-agent-audit/issues?q=label%3A%22good+first+issue%22).
 
 ---
 
@@ -161,11 +245,15 @@ flowchart LR
 
 ---
 
-## Contributing
+## Acknowledgements
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). This repository exists because the failure modes that produced these patterns are real — and the teams dealing with them rarely have reference implementations to work from.
+Patterns in this repository were informed by:
+- [EU AI Act](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689) — Regulation (EU) 2024/1689
+- [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — LLM application security risks
+- [Microsoft agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) — enterprise AI governance reference
+- [APEX autonomous trading research system](https://github.com/linus10x) — the operational source of these patterns
 
-Open a [Discussion](https://github.com/linus10x/finserv-agent-audit/discussions) for questions. Open an [Issue](https://github.com/linus10x/finserv-agent-audit/issues) for bugs and pattern requests.
+---
 
 ## Changelog
 

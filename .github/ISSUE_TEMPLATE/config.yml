@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question or share a use case
+    url: https://github.com/linus10x/finserv-agent-audit/discussions
+    about: Use GitHub Discussions for questions, use-case sharing, and general conversation.
+  - name: Security vulnerability
+    url: https://github.com/linus10x/finserv-agent-audit/security/advisories/new
+    about: Please report security issues privately via GitHub Security Advisories.

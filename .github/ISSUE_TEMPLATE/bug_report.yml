@@ -1,0 +1,66 @@
+name: Bug Report
+description: Report a bug in an existing governance pattern
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. The more detail you provide, the faster we can reproduce and fix it.
+
+  - type: dropdown
+    id: pattern
+    attributes:
+      label: Which pattern is affected?
+      options:
+        - DEFCON State Machine
+        - Sovereign Veto
+        - Audit Chain
+        - Autonomy Ladder
+        - EU AI Act Mapping
+        - Shadow Mode Rollout
+        - CI / tooling
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: What did you expect to happen? What actually happened?
+      placeholder: "Expected: the DEFCON machine transitions to HALT after threshold breach. Actual: machine stays at DANGER."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal code snippet or command sequence that reproduces the issue.
+      render: python
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12.3"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 22.04 / macOS 14.4 / Windows 11"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate
+          required: true
+        - label: I can reproduce this on the latest `main` branch
+          required: true

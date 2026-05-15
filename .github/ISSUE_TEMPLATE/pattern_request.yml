@@ -1,0 +1,57 @@
+name: Pattern Request
+description: Request a new governance pattern or extension to an existing one
+labels: ["enhancement", "pattern-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pattern requests that include a real-world regulatory or operational motivation get prioritised. Generic requests without context are unlikely to be actioned.
+
+  - type: input
+    id: pattern-name
+    attributes:
+      label: Proposed pattern name
+      placeholder: "e.g. Circuit Breaker for Model Drift"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regulation
+    attributes:
+      label: Primary regulation or standard this addresses
+      multiple: true
+      options:
+        - EU AI Act
+        - MiFID II
+        - SEC Rule 15c3-5 (Market Access)
+        - SEC Rule 17a-4 (Recordkeeping)
+        - SR 11-7 (Model Risk)
+        - SOC 2
+        - ISO 27001
+        - DORA
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What operational problem does this solve?
+      description: Describe the failure mode or compliance gap this pattern addresses.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-design
+    attributes:
+      label: Proposed design (optional)
+      description: Sketch the interface, state transitions, or key logic if you have an idea.
+      render: python
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and ROADMAP.md — this is not already planned
+          required: true
