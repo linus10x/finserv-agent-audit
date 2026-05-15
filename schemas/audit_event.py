@@ -27,33 +27,35 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 
 class AuditEventType(Enum):
     """Classification of audit events by category."""
+
     # Agent lifecycle
-    AGENT_STARTED    = "agent.started"
-    AGENT_STOPPED    = "agent.stopped"
-    AGENT_ERROR      = "agent.error"
+    AGENT_STARTED = "agent.started"
+    AGENT_STOPPED = "agent.stopped"
+    AGENT_ERROR = "agent.error"
 
     # Decision events
-    DECISION_MADE    = "decision.made"
-    DECISION_VETOED  = "decision.vetoed"
+    DECISION_MADE = "decision.made"
+    DECISION_VETOED = "decision.vetoed"
     DECISION_OVERRIDDEN = "decision.overridden"
 
     # Risk events
-    RISK_ESCALATION  = "risk.escalation"
+    RISK_ESCALATION = "risk.escalation"
     RISK_DEESCALATION = "risk.deescalation"
-    HALT_TRIGGERED   = "risk.halt"
+    HALT_TRIGGERED = "risk.halt"
 
     # Human-in-the-loop
-    HUMAN_APPROVED   = "human.approved"
-    HUMAN_REJECTED   = "human.rejected"
-    HUMAN_OVERRIDE   = "human.override"
+    HUMAN_APPROVED = "human.approved"
+    HUMAN_REJECTED = "human.rejected"
+    HUMAN_OVERRIDE = "human.override"
 
     # Governance
-    VETO_APPLIED     = "governance.veto"
+    VETO_APPLIED = "governance.veto"
     POLICY_VIOLATION = "governance.policy_violation"
     COMPLIANCE_CHECK = "governance.compliance_check"
 
@@ -63,6 +65,7 @@ class AutonomyLevel(Enum):
     Autonomy classification per the A0->A4 ladder.
     Maps to human oversight requirements at each level.
     """
+
     A0 = "A0"  # Human decides — agent proposes only
     A1 = "A1"  # Human in loop — agent proposes, human confirms
     A2 = "A2"  # Human on loop — agent executes, human can override
@@ -87,6 +90,7 @@ class AuditEvent:
         event_hash:     SHA-256 hash of this event + prev_hash (computed)
         schema_version: Schema version for forward compatibility
     """
+
     event_type: AuditEventType
     autonomy_level: AutonomyLevel
     agent_id: str
@@ -94,9 +98,7 @@ class AuditEvent:
     prev_hash: str
 
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     actor_id: str | None = None
     schema_version: str = "1.0.0"
     event_hash: str = field(init=False)
@@ -106,31 +108,29 @@ class AuditEvent:
 
     def _compute_hash(self) -> str:
         payload = {
-            "event_id":       self.event_id,
-            "event_type":     self.event_type.value,
+            "event_id": self.event_id,
+            "event_type": self.event_type.value,
             "autonomy_level": self.autonomy_level.value,
-            "agent_id":       self.agent_id,
-            "timestamp":      self.timestamp,
-            "payload":        self.payload,
-            "actor_id":       self.actor_id,
-            "prev_hash":      self.prev_hash,
+            "agent_id": self.agent_id,
+            "timestamp": self.timestamp,
+            "payload": self.payload,
+            "actor_id": self.actor_id,
+            "prev_hash": self.prev_hash,
             "schema_version": self.schema_version,
         }
-        return hashlib.sha256(
-            json.dumps(payload, sort_keys=True).encode()
-        ).hexdigest()
+        return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "event_id":       self.event_id,
-            "event_type":     self.event_type.value,
+            "event_id": self.event_id,
+            "event_type": self.event_type.value,
             "autonomy_level": self.autonomy_level.value,
-            "agent_id":       self.agent_id,
-            "timestamp":      self.timestamp,
-            "payload":        self.payload,
-            "actor_id":       self.actor_id,
-            "prev_hash":      self.prev_hash,
-            "event_hash":     self.event_hash,
+            "agent_id": self.agent_id,
+            "timestamp": self.timestamp,
+            "payload": self.payload,
+            "actor_id": self.actor_id,
+            "prev_hash": self.prev_hash,
+            "event_hash": self.event_hash,
             "schema_version": self.schema_version,
         }
 
@@ -157,9 +157,8 @@ class AuditChain:
 
     GENESIS_HASH = "0" * 64
 
-    def __init__(self, log_file: Any = None) -> None:
-        from pathlib import Path
-        self.log_file = log_file or Path("output/audit_chain.jsonl")
+    def __init__(self, log_file: Path | None = None) -> None:
+        self.log_file: Path = log_file or Path("output/audit_chain.jsonl")
         self._prev_hash: str = self.GENESIS_HASH
         self._events: list[AuditEvent] = []
         self._load_existing()
@@ -198,13 +197,11 @@ class AuditChain:
         return True
 
     def _write(self, event: AuditEvent) -> None:
-        from pathlib import Path
         Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(event.to_jsonl() + "\n")
 
     def _load_existing(self) -> None:
-        from pathlib import Path
         p = Path(self.log_file)
         if not p.exists():
             return
