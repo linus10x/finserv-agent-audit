@@ -68,6 +68,7 @@ ignore = ["ANN101", "ANN102", "ANN401"]
 "examples/*" = ["ANN"]
 "schemas/*" = ["ANN"]
 "patterns/*" = ["ANN"]
+"scripts/*" = ["ANN", "SIM", "N816"]
 
 [tool.mypy]
 python_version = "3.12"
