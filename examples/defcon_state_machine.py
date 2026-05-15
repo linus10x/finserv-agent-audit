@@ -46,7 +46,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 
@@ -67,16 +67,16 @@ class DEFCON(Enum):
     DANGER = 4
     HALT = 5
 
-    def __ge__(self, other: "DEFCON") -> bool:  # type: ignore[override]
+    def __ge__(self, other: DEFCON) -> bool:  # type: ignore[override]
         return self.value >= other.value
 
-    def __gt__(self, other: "DEFCON") -> bool:  # type: ignore[override]
+    def __gt__(self, other: DEFCON) -> bool:  # type: ignore[override]
         return self.value > other.value
 
-    def __le__(self, other: "DEFCON") -> bool:  # type: ignore[override]
+    def __le__(self, other: DEFCON) -> bool:  # type: ignore[override]
         return self.value <= other.value
 
-    def __lt__(self, other: "DEFCON") -> bool:  # type: ignore[override]
+    def __lt__(self, other: DEFCON) -> bool:  # type: ignore[override]
         return self.value < other.value
 
 
@@ -115,7 +115,7 @@ class RiskMetrics:
     portfolio_drawdown: float  # 0.0 to 1.0 (e.g., 0.12 = 12% drawdown)
     daily_loss: float  # 0.0 to 1.0 (e.g., 0.03 = 3% daily loss)
     consecutive_losses: int  # Count of consecutive losing trades/cycles
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -315,7 +315,7 @@ class DEFCONMachine:
                     "level": self._current_level.name,
                     "transition_count": self._transition_count,
                     "prev_hash": self._prev_hash,
-                    "saved_at": datetime.now(timezone.utc).isoformat(),
+                    "saved_at": datetime.now(UTC).isoformat(),
                 },
                 indent=2,
             ),

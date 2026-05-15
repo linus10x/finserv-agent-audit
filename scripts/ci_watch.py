@@ -24,7 +24,7 @@ import os
 import sys
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 try:
@@ -39,7 +39,7 @@ POLL_INTERVAL_S = 15
 POLL_TIMEOUT_S = 600  # 10 minutes max wait for a run to complete
 
 
-class FailureCategory(str, Enum):
+class FailureCategory(StrEnum):
     RUFF_LINT = "ruff-lint"
     RUFF_FORMAT = "ruff-format"
     MYPY = "mypy"
@@ -140,7 +140,6 @@ def get_failed_jobs(run_id: int, token: str | None) -> list[dict[str, Any]]:
 
 
 def classify_failure(job: dict[str, Any]) -> CIFailure:
-    job_name: str = job.get("name", "").lower()
     failed_step = next(
         (s for s in job.get("steps", []) if s.get("conclusion") == "failure"),
         {"name": "unknown"},
@@ -196,11 +195,11 @@ def run_loop(sha: str, token: str | None, max_iter: int = 3) -> int:
     """
     state = LoopState()
 
-    print(f"\n{'='*60}")
-    print(f"CI SELF-HEAL LOOP — finserv-agent-audit")
+    print(f"\n{'=' * 60}")
+    print("CI SELF-HEAL LOOP — finserv-agent-audit")
     print(f"SHA: {sha}")
     print(f"Max iterations: {max_iter}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     while True:
         state.iteration += 1
@@ -218,7 +217,7 @@ def run_loop(sha: str, token: str | None, max_iter: int = 3) -> int:
 
         # Step 2: green path
         if conclusion == "success":
-            print(f"\n✅ CI GREEN — all gates passed.")
+            print("\n✅ CI GREEN — all gates passed.")
             print(f"   Run: {run_url}")
             return 0
 
@@ -246,11 +245,12 @@ def run_loop(sha: str, token: str | None, max_iter: int = 3) -> int:
 
         # Step 6: structured fix report
         state.prev_issue_count = issue_count
-        print(f"Revision iteration {state.iteration}/{max_iter} "
-              f"-- {issue_count} failure(s)\n")
+        print(f"Revision iteration {state.iteration}/{max_iter} -- {issue_count} failure(s)\n")
         _print_failures(state.failures)
-        print("\nApply the fix hints above, push a new commit, "
-              "then re-run this script with the new SHA.")
+        print(
+            "\nApply the fix hints above, push a new commit, "
+            "then re-run this script with the new SHA."
+        )
         # In a fully autonomous loop, a bot would apply the fix here.
         # In the current human-in-loop design, we exit 1 so the operator
         # can apply the fix and re-invoke with the new SHA.
@@ -262,7 +262,7 @@ def _print_failures(failures: list[CIFailure]) -> None:
         print(f"  [{i}] category  : {f.category.value}")
         print(f"       job       : {f.job_name}")
         print(f"       step      : {f.step_name}")
-        print(f"       fix hint  :")
+        print("       fix hint  :")
         for line in f.fix_hint.splitlines():
             print(f"                   {line}")
         print()

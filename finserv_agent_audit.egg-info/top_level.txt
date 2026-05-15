@@ -1,0 +1,3 @@
+examples
+patterns
+schemas

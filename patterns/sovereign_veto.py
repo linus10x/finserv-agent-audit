@@ -25,10 +25,10 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class VetoRecord:
     reason: VetoReason
     triggered_by: str  # agent_id or operator_id
     description: str
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     cleared_by: str | None = None
     cleared_at: str | None = None
     clear_reason: str | None = None
@@ -144,7 +144,7 @@ class SovereignVeto:
         Returns:
             List of cleared VetoRecords.
         """
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         cleared = []
         for v in self._vetos:
             if v.is_active and (veto_id is None or v.veto_id == veto_id):

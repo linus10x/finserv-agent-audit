@@ -11,8 +11,8 @@ import pytest
 
 from examples.defcon_state_machine import (
     DEFCON,
-    DEFCONMachine,
     HYSTERESIS_CONFIRMATIONS,
+    DEFCONMachine,
     RiskMetrics,
 )
 
@@ -55,7 +55,7 @@ class TestDeEscalation:
         below_alert = RiskMetrics(0.08, 0.01, 0)  # -> targets CAUTION
         for i in range(HYSTERESIS_CONFIRMATIONS - 1):
             tmp_machine.evaluate(below_alert)
-            assert tmp_machine.level == DEFCON.ALERT, f"Should still be ALERT after {i+1} eval(s)"
+            assert tmp_machine.level == DEFCON.ALERT, f"Should still be ALERT after {i + 1} eval(s)"
 
         # N-th confirmation triggers de-escalation
         tmp_machine.evaluate(below_alert)

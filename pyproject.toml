@@ -2,6 +2,9 @@
 requires = ["setuptools>=70", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["schemas*", "patterns*", "examples*"]
+
 [project]
 name = "finserv-agent-audit"
 version = "1.0.0"
@@ -61,7 +64,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "ANN", "B", "SIM"]
-ignore = ["ANN101", "ANN102", "ANN401"]
+ignore = ["ANN401"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
