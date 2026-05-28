@@ -22,6 +22,13 @@ Compliance notes:
     - EU AI Act Article 12: "Logging capabilities" for high-risk AI systems
     - SEC Rule 17a-4: Electronic records retention (adapt retention policy)
     - SOC 2 CC7.2: System monitoring and anomaly detection
+
+v1.1 note. The ``AuditChain`` class was moved to
+``finserv_agent_audit.governance.audit_chain`` so it can consume the
+Tranche 2 Protocol seams (``LedgerStore``, ``TimestampSource``,
+``WitnessRegister``, ``MIProxy``). It is re-exported here for backward
+compatibility — existing imports from ``schemas.audit_event`` continue
+to resolve unchanged.
 """
 
 from __future__ import annotations
@@ -32,7 +39,6 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from pathlib import Path
 from typing import Any
 
 
@@ -157,87 +163,14 @@ class AuditEvent:
         return json.dumps(self.to_dict(), sort_keys=True)
 
 
-class AuditChain:
-    """
-    Append-only audit chain. Verifies integrity of the full event sequence.
+# ---------------------------------------------------------------------- #
+# Backward-compat re-export                                              #
+# ---------------------------------------------------------------------- #
+# The AuditChain class was moved to governance/audit_chain.py in v1.1 so
+# it could consume the Protocol seams (LedgerStore, TimestampSource,
+# WitnessRegister, MIProxy). It is re-exported here so the v1.0 imports
+# `from finserv_agent_audit.schemas.audit_event import AuditChain` and
+# `from schemas.audit_event import AuditChain` continue to resolve.
+from finserv_agent_audit.governance.audit_chain import AuditChain  # noqa: E402
 
-    Usage::
-
-        chain = AuditChain(log_file=Path("audit.jsonl"))
-        event = chain.append(
-            event_type=AuditEventType.DECISION_MADE,
-            autonomy_level=AutonomyLevel.A2,
-            agent_id="zeus",
-            payload={"action": "enter_position", "ticker": "SPY"},
-        )
-        assert chain.verify()  # True if untampered
-    """
-
-    GENESIS_HASH = "0" * 64
-
-    def __init__(self, log_file: Path | None = None) -> None:
-        self.log_file: Path = log_file or Path("output/audit_chain.jsonl")
-        self._prev_hash: str = self.GENESIS_HASH
-        self._events: list[AuditEvent] = []
-        self._load_existing()
-
-    def append(
-        self,
-        event_type: AuditEventType,
-        autonomy_level: AutonomyLevel,
-        agent_id: str,
-        payload: dict[str, Any],
-        actor_id: str | None = None,
-    ) -> AuditEvent:
-        event = AuditEvent(
-            event_type=event_type,
-            autonomy_level=autonomy_level,
-            agent_id=agent_id,
-            payload=payload,
-            prev_hash=self._prev_hash,
-            actor_id=actor_id,
-        )
-        self._prev_hash = event.event_hash
-        self._events.append(event)
-        self._write(event)
-        return event
-
-    def verify(self) -> bool:
-        """Replay the chain and verify every hash. Returns False if tampered."""
-        prev = self.GENESIS_HASH
-        for event in self._events:
-            expected = event._compute_hash()
-            if event.event_hash != expected:
-                return False
-            if event.prev_hash != prev:
-                return False
-            prev = event.event_hash
-        return True
-
-    def _write(self, event: AuditEvent) -> None:
-        Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
-        with open(self.log_file, "a", encoding="utf-8") as fh:
-            fh.write(event.to_jsonl() + "\n")
-
-    def _load_existing(self) -> None:
-        p = Path(self.log_file)
-        if not p.exists():
-            return
-        for line in p.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            data = json.loads(line)
-            event = AuditEvent(
-                event_type=AuditEventType(data["event_type"]),
-                autonomy_level=AutonomyLevel(data["autonomy_level"]),
-                agent_id=data["agent_id"],
-                payload=data["payload"],
-                prev_hash=data["prev_hash"],
-                event_id=data["event_id"],
-                timestamp=data["timestamp"],
-                actor_id=data.get("actor_id"),
-                schema_version=data.get("schema_version", "1.0.0"),
-            )
-            self._events.append(event)
-        if self._events:
-            self._prev_hash = self._events[-1].event_hash
+__all__ = ["AuditChain", "AuditEvent", "AuditEventType", "AutonomyLevel"]
