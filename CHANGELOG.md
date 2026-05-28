@@ -28,16 +28,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   is immediate; de-escalation requires `HYSTERESIS_CONFIRMATIONS` (default: 3) consecutive
   evaluations at a lower risk level. HALT level requires `manual_override()` — no
   automatic de-escalation. State persists to disk; reloads last confirmed level on restart.
-  All transitions logged to tamper-evident audit trail.
+  All transitions logged to a tamper-detecting hash-chain audit trail (within-trust-boundary; external witness anchoring required for full tamper-evidence — see ADR-0014 in v1.1).
 
 - **`patterns/sovereign_veto.py`** — Sovereign Veto pattern. Human-only kill switch:
   no agent can clear its own veto. Veto can be triggered by human operator, risk state
   machine, policy engine, or peer agent. All clearances logged with operator identity
   and documented reason. Integrates with `DEFCONMachine` at ALERT level and above.
 
-- **`schemas/audit_event.py`** — Tamper-evident audit chain. `AuditEvent` dataclass with
-  SHA-256 hash-chain: `event_hash = SHA-256(event_payload + prev_hash)`. `AuditChain`
-  class with `verify()` method detects any inserted, modified, or deleted event.
+- **`schemas/audit_event.py`** — Tamper-detecting hash-chain audit log (within-trust-boundary).
+  `AuditEvent` dataclass with SHA-256 hash-chain: `event_hash = SHA-256(event_payload + prev_hash)`.
+  `AuditChain.verify()` detects any inserted, modified, or deleted event. External tamper-evidence
+  via the witness pattern lands in v1.1 (see ADR-0014).
   `AuditEventType` covers 15 event categories. `AutonomyLevel` enum maps to A0–A4.
 
 #### Documentation

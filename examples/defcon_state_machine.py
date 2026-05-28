@@ -153,7 +153,8 @@ class AuditEvent:
 
 class DEFCONMachine:
     """
-    DEFCON risk-state machine with hysteresis and tamper-evident audit trail.
+    DEFCON risk-state machine with hysteresis and a tamper-detecting hash-chain
+    audit trail (within-trust-boundary; ADR-0014 covers external witness anchoring).
 
     Escalation is immediate (single evaluation triggers upgrade).
     De-escalation requires HYSTERESIS_CONFIRMATIONS consecutive evaluations
