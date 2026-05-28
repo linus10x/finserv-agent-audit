@@ -255,6 +255,30 @@ Patterns in this repository were informed by:
 
 ---
 
+## Related: the Autonomy Ladder™ family
+
+`finserv-agent-audit` is the financial-services half of an MIT-licensed pattern family for governing AI in regulated industries. The commercial-real-estate half is here:
+
+**[`linus10x/cre-agent-audit`](https://github.com/linus10x/cre-agent-audit)** — Nine governance patterns for AI-enabled commercial real estate workflows. Anchored to three CRE-AI regulatory matters: *In re Trans Union Rental Screening Solutions* (FTC/CFPB, Oct 2023, $15M), *Louis v. SafeRent Solutions* (D. Mass., Nov 2024, ~$2.275M class settlement), and *U.S. v. RealPage* (DOJ + 8 state AGs, filed Aug 23, 2024, ongoing Sherman § 1 litigation). Mapped to Fair Housing Act, ECOA, FCRA, Colorado AI Act, and HUD 24 C.F.R. § 100.500 (disparate-impact rule, post-*ICP v. Texas* 576 U.S. 519 (2015)).
+
+| Pattern | finserv-agent-audit | cre-agent-audit |
+|---|---|---|
+| DEFCON state machine | ✅ | ✅ |
+| Sovereign Veto | ✅ | ✅ |
+| Hash-chained Audit Ledger | ✅ | ✅ |
+| Autonomy Ladder A0→A4 | ✅ | ✅ |
+| Regulation Mapping | ✅ MiFID II · SR 11-7 · SEC | ✅ FHA · CO AI Act · EU AI Act |
+| Shadow-Mode Rollout | ✅ | ✅ |
+| Lease-Abstraction Provenance | — | ✅ CRE-specific |
+| Fair-Housing Pre-Flight Gate | — | ✅ CRE-specific |
+| Tenant PII Data Residency | — | ✅ CRE-specific |
+
+Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, `mypy --strict` clean, ≥85% branch coverage.
+
+The umbrella discipline — **Regulated-Operations AI Governance** — is documented at [autonomy-ladder.io](https://autonomy-ladder.io). One framework, two named verticals, one author.
+
+---
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history.
