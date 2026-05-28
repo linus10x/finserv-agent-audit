@@ -268,7 +268,7 @@ Patterns in this repository were informed by:
 | Hash-chained Audit Ledger | ✅ | ✅ |
 | Autonomy Ladder A0→A4 | ✅ | ✅ |
 | Regulation Mapping | ✅ MiFID II · SR 11-7 · SEC | ✅ FHA · CO AI Act · EU AI Act |
-| Shadow-Mode Rollout | ✅ | ✅ |
+| Shadow-Mode Rollout | Planned (v1.1) | ✅ |
 | Lease-Abstraction Provenance | — | ✅ CRE-specific |
 | Fair-Housing Pre-Flight Gate | — | ✅ CRE-specific |
 | Tenant PII Data Residency | — | ✅ CRE-specific |
