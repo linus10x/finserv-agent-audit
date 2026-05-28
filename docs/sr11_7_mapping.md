@@ -1,9 +1,22 @@
 # SR 11-7 — Control Mapping for Autonomous AI Agents
 
+> **STATUS — SUPERSEDED FOR NEW EXAMINATIONS.** Federal Reserve SR 11-7 was
+> superseded for new examination cycles by the joint OCC / Federal Reserve Board /
+> FDIC issuance of April 17, 2026 (OCC counterpart: **OCC Bulletin 2026-13,
+> _Model Risk Management: Revised Guidance_**), which **explicitly excludes
+> generative and agentic AI from scope** and defers those workloads to a
+> forthcoming joint RFI. For the framework's positioning during the pre-RFI
+> interval, see **[`docs/interagency_mrm_2026_overlay.md`](interagency_mrm_2026_overlay.md)**.
+> This document is retained as conceptual ancestry and for institutions still
+> operating under the 2011 citation lineage in respect of in-flight validations
+> or non-agentic-AI statistical models that pre-date the 2026 issuance.
+
 Federal Reserve **SR 11-7, _Supervisory Guidance on Model Risk Management_** (April 4,
-2011), issued jointly with OCC Bulletin 2011-12 and later adopted by the FDIC via
-FIL-22-2017, is the foundational US prudential standard for model governance at
-banking organizations. An autonomous AI agent that makes or materially influences
+2011; **superseded for new examinations by the April 17, 2026 joint issuance —
+see OCC Bulletin 2026-13 and `docs/interagency_mrm_2026_overlay.md`**), issued
+jointly with OCC Bulletin 2011-12 (also rescinded April 17, 2026) and later
+adopted by the FDIC via FIL-22-2017, was the foundational US prudential standard
+for model governance at banking organizations through April 16, 2026. An autonomous AI agent that makes or materially influences
 a regulated decision — credit, trading, AML triage, suitability, valuation — is a
 **model** under the SR 11-7 definition ("a quantitative method, system, or
 approach that applies statistical, economic, financial, or mathematical theories,

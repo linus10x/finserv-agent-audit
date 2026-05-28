@@ -6,6 +6,8 @@
 **Repo:** finserv-agent-audit v1.1
 
 > **Reference pattern, not legal advice.** Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root [`DISCLAIMER.md`](../../DISCLAIMER.md).
+>
+> **Citation update (April 17, 2026):** SR 11-7 was superseded for new examination cycles and OCC Bulletin 2011-12 was rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026 (OCC counterpart: **OCC Bulletin 2026-13, _Model Risk Management: Revised Guidance_**), which **explicitly excludes generative and agentic AI from scope**, deferring those workloads to a forthcoming joint RFI. The three-lines-of-defense overlay this ADR documents survives as conceptual scaffolding; the binding citation is in flux. See [`docs/interagency_mrm_2026_overlay.md`](../interagency_mrm_2026_overlay.md) for the framework's pre-RFI positioning.
 
 ## Context
 
@@ -60,7 +62,7 @@ The table is the contract. A pattern that cannot be placed on the table is not r
 ## Regulatory Mapping
 
 - **SR 11-7** — *Supervisory Guidance on Model Risk Management*, Board of Governors of the Federal Reserve System, April 4, 2011, Sections III (Model Development, Implementation, and Use), IV (Model Validation), V (Model Implementation, Use, and Change), VI (Governance, Policies, and Controls)
-- **OCC Bulletin 2011-12** — *Sound Practices for Model Risk Management*, adopting SR 11-7 standards for OCC-regulated institutions `[UNVERIFIED — primary OCC text not fetched in this session; bulletin number per published references]`
+- **OCC Bulletin 2011-12** — *Sound Practices for Model Risk Management* (rescinded by OCC Bulletin 2026-13, April 17, 2026, which excluded generative + agentic AI from scope; see [`docs/interagency_mrm_2026_overlay.md`](../interagency_mrm_2026_overlay.md))
 - **OCC Comptroller's Handbook — Model Risk Management** (August 2021 booklet) — examination procedures for SR 11-7 compliance `[UNVERIFIED — booklet revision date not fetched]`
 - **OCC Heightened Standards — 12 CFR Part 30 Appendix D** — three-lines-of-defense framework for large insured national banks, federal savings associations, and federal branches
 - **FRB SR 15-18** — Interagency advisory on independence of risk-management functions (clarifies second-line independence expectations) `[UNVERIFIED — SR letter number per secondary reference]`

@@ -13,6 +13,13 @@ Reporting) scope and inherits the ITGC overlay.
 > guidance. The firm's external auditor, internal audit, and qualified
 > counsel control the methodology applied to a specific registrant. See
 > repo-root [`DISCLAIMER.md`](../DISCLAIMER.md).
+>
+> **Cross-reference:** The Sarbanes-Oxley § 404 ITGC obligation is independent
+> of the prudential model-risk-management regime; ICFR controls over
+> AI-mediated financial-reporting flows survive the April 17, 2026 rescission
+> of OCC Bulletin 2011-12 by OCC Bulletin 2026-13 (which excluded generative +
+> agentic AI from MRM scope). For the framework's broader post-2026-13
+> positioning, see [`docs/interagency_mrm_2026_overlay.md`](interagency_mrm_2026_overlay.md).
 
 ---
 

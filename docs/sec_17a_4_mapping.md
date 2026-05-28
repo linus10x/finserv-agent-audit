@@ -14,6 +14,13 @@ in scope.
 > characterizations are summaries; engage qualified securities counsel and
 > the firm's records-management function. See repo-root
 > [`DISCLAIMER.md`](../DISCLAIMER.md).
+>
+> **Cross-reference:** The Rule 17a-4(f) record-retention obligation is
+> independent of the model-risk-management regime; it survives the
+> April 17, 2026 rescission of OCC Bulletin 2011-12 by OCC Bulletin 2026-13
+> (which excluded generative + agentic AI from MRM scope). For the
+> framework's broader post-2026-13 positioning, see
+> [`docs/interagency_mrm_2026_overlay.md`](interagency_mrm_2026_overlay.md).
 
 ---
 

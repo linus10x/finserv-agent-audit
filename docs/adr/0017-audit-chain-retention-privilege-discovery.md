@@ -6,6 +6,8 @@
 **Repo:** finserv-agent-audit v1.1
 
 > **Reference pattern, not legal advice.** Regulatory characterizations are summaries; readers must consult qualified counsel. See repo-root [`DISCLAIMER.md`](../../DISCLAIMER.md).
+>
+> **Citation update (April 17, 2026):** Where this ADR references SR 11-7 / OCC Bulletin 2011-12 as the prudential MRM citation, note that those instruments were superseded for new examinations / rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026 (OCC Bulletin 2026-13), which **excluded generative + agentic AI from scope** pending a forthcoming joint RFI. The retention / privilege / discovery posture described here is independent of the MRM citation lineage; the audit-chain evidence pipeline survives the rescission. See [`docs/interagency_mrm_2026_overlay.md`](../interagency_mrm_2026_overlay.md).
 
 ## Context
 

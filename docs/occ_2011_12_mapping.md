@@ -1,12 +1,28 @@
 # OCC Bulletin 2011-12 — Control Mapping for Autonomous AI Agents
 
+> **STATUS — RESCINDED.** OCC Bulletin 2011-12 was rescinded on April 17, 2026 by
+> **OCC Bulletin 2026-13, _Model Risk Management: Revised Guidance_** (joint OCC /
+> Federal Reserve Board / FDIC issuance). The new bulletin explicitly excludes
+> generative and agentic AI from scope, deferring those workloads to a forthcoming
+> joint RFI. For the framework's positioning during the pre-RFI interval, see
+> **[`docs/interagency_mrm_2026_overlay.md`](interagency_mrm_2026_overlay.md)** and
+> the forkable internal-whitepaper template in
+> **[`docs/MRM_BRIDGE_TEMPLATE.md`](MRM_BRIDGE_TEMPLATE.md)**. This document is
+> retained as conceptual ancestry and as the historical-evidence reference for
+> in-flight validations, prior-period audit chains, and examiner exhibits filed
+> under the 2011 guidance. The four expectations of the 2011 attachment
+> (sound development; effective validation; governance and controls; effective
+> challenge) survive the rescission as analytical scaffolding but no longer as
+> binding citation for OCC-supervised institutions.
+
 **OCC Bulletin 2011-12, _Sound Practices for Model Risk Management: Supervisory
-Guidance on Model Risk Management_** (issued April 4, 2011) is the OCC
-counterpart to Federal Reserve SR 11-7. The two were drafted jointly and the
-attached supervisory guidance is the **same document**, adopted under each
-agency's separate supervisory authority. For OCC-supervised institutions —
-national banks, federal savings associations, and federal branches of foreign
-banks — Bulletin 2011-12 is the binding citation; SR 11-7 is the cross-reference.
+Guidance on Model Risk Management_** (issued April 4, 2011; **rescinded by OCC
+Bulletin 2026-13, April 17, 2026**) was the OCC counterpart to Federal Reserve
+SR 11-7. The two were drafted jointly and the attached supervisory guidance is the
+**same document**, adopted under each agency's separate supervisory authority. For
+OCC-supervised institutions — national banks, federal savings associations, and
+federal branches of foreign banks — Bulletin 2011-12 was the binding citation
+through April 16, 2026; SR 11-7 was the cross-reference.
 
 This document is intentionally short: it cross-references the SR 11-7 mapping in
 `docs/sr11_7_mapping.md` and calls out the **three places OCC 2011-12 (and

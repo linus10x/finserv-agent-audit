@@ -7,6 +7,8 @@
 **Pairs with:** ADR-0014 (persistence / timestamps / witness anchor seams)
 
 > **Reference pattern, not legal advice.** Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's model-risk-management function. No attorney-client relationship is formed by use of this ADR. See repo-root [`DISCLAIMER.md`](../../DISCLAIMER.md).
+>
+> **Citation update (April 17, 2026):** Where this ADR references SR 11-7 / OCC Bulletin 2011-12 as the prudential MRM citation, note that those instruments were superseded for new examinations / rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026 (OCC Bulletin 2026-13), which **excluded generative + agentic AI from scope** pending a forthcoming joint RFI. The model-implementation-integrity discipline described here is independent of the MRM citation lineage; the verifier-integrity control surface is the one most likely to be cited approvingly in whatever RFI outcome lands. See [`docs/interagency_mrm_2026_overlay.md`](../interagency_mrm_2026_overlay.md).
 
 ---
 
@@ -130,7 +132,7 @@ The hook is opt-in to preserve v1.0 backward compatibility. The recommended post
 ## Regulatory Mapping
 
 - **SOX 404 ITGC — Change Management category** — the verifier is privileged software; changes to it must go through approved change. The MI Proxy fails closed when the deployed verifier diverges from the attested one. See ADR-0012. [UNVERIFIED — primary source not fetched]
-- **SR 11-7 — Federal Reserve Guidance on Model Risk Management (2011)** — model-implementation risk; the verifier is a privileged component whose implementation soundness is in scope. The MI Proxy is the integrity control behind the model-implementation expectation. [UNVERIFIED — primary source not fetched]
+- **SR 11-7 — Federal Reserve Guidance on Model Risk Management (2011)** — model-implementation risk; the verifier is a privileged component whose implementation soundness is in scope. The MI Proxy is the integrity control behind the model-implementation expectation. (SR 11-7 superseded for new examinations by the April 17, 2026 joint issuance — OCC counterpart OCC Bulletin 2026-13, which excluded generative + agentic AI from scope; see [`docs/interagency_mrm_2026_overlay.md`](../interagency_mrm_2026_overlay.md).) [UNVERIFIED — primary source not fetched]
 - **SOC 2 Type 2 CC7.2** — *System Monitoring*. The verifier is a privileged component in the audit-trail pipeline; its integrity is a CC7.2 expectation.
 - **FFIEC IT Handbook, Outsourcing Booklet** — when the opt-in backend delegates to an external attestation service (SLSA, cosign + Fulcio), third-party-attestation expectations apply to that service. The package documents the integration; the deployer owns the third-party risk assessment.
 - **ISO/IEC 42001:2023** — *AI Management System*. § 8.4 (Operational Controls) expects integrity controls on the AI system's operational software. The verifier qualifies; the MI Proxy is the integrity control.

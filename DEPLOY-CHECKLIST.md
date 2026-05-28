@@ -5,6 +5,8 @@
 This document is the FSI CTO's checklist for taking `finserv-agent-audit` from a development demo to a production deployment in a regulated environment. It is calibrated for an AWS or Azure substrate; on-premises and other clouds use the same shape with substrate-specific substitutions.
 
 > Companion to [`ARCHITECTURE.md`](ARCHITECTURE.md), [`ASSURANCE-GUIDE.md`](ASSURANCE-GUIDE.md), [`FAILURE-MODES.md`](FAILURE-MODES.md).
+>
+> **Citation update (April 17, 2026):** Where this checklist references the prudential model-risk-management regime via SR 11-7 or OCC Bulletin 2011-12, note that those instruments were superseded for new examinations / rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026 (OCC Bulletin 2026-13), which **excluded generative + agentic AI from scope** pending a forthcoming joint RFI. The deployment surface described here is independent of the MRM citation lineage; the second-line MRM hand-off referenced on Day +1 should be paired with the forkable internal-whitepaper template in [`docs/MRM_BRIDGE_TEMPLATE.md`](docs/MRM_BRIDGE_TEMPLATE.md). For the framework's pre-RFI positioning, see [`docs/interagency_mrm_2026_overlay.md`](docs/interagency_mrm_2026_overlay.md).
 
 The checklist is ordered from T-7 days (one week before go-live) to T+7 days (one week after). Each day's items can be parallelized within the day; the across-day ordering matters.
 

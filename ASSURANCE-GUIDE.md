@@ -7,6 +7,8 @@ This document is the assurance-side guide a Big-4 audit team, an SOC 2 examiner,
 It is organized around three audit lenses commonly applied to FSI deployments: **SOX 404 ITGC** (internal controls over financial reporting), **SOC 2 Trust Services Criteria** (security and availability), and **OCC examination procedures** (model risk management, third-party risk, BSA/AML).
 
 > Companion to [`FAILURE-MODES.md`](FAILURE-MODES.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`DEPLOY-CHECKLIST.md`](DEPLOY-CHECKLIST.md), and the per-regime mapping docs in `docs/`.
+>
+> **Citation update (April 17, 2026):** Where this guide references SR 11-7 / OCC Bulletin 2011-12 as the prudential MRM citation, note that those instruments were superseded for new examinations / rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026 (OCC Bulletin 2026-13), which **excluded generative + agentic AI from scope** pending a forthcoming joint RFI. The SR-11-7-flavored walkthroughs below survive as analytical scaffolding; the binding-citation header on the exam exhibit shifts. See [`docs/interagency_mrm_2026_overlay.md`](docs/interagency_mrm_2026_overlay.md) for the framework's pre-RFI positioning and [`docs/MRM_BRIDGE_TEMPLATE.md`](docs/MRM_BRIDGE_TEMPLATE.md) for the forkable internal-whitepaper template a second-line MRM team can submit.
 
 ---
 
@@ -192,8 +194,8 @@ The questions below are calibrated for a Big-4 IT auditor or an OCC examination 
 9. **For the `SARWorkflowAudit`: how many `SAR_FILED` entries are in the chain, and were all 30-day (or 60-day extension) deadlines met?**
    *Expected:* Count; deadline-compliance metric; extension rationale where applicable.
 
-10. **Which `ProtectedClassProxyDetector` is in use? If the framework's stub is referenced, what compensating control is in place?**
-    *Expected:* Acknowledgement of ADR-0019 stub; named third-party tool or qualified analytics resource performing proxy-discrimination review.
+10. **Which `ProtectedClassProxyDetector` arms are in use? What compensating controls cover the arms not yet shipped?**
+    *Expected:* Acknowledgement that v1.2 ships the mutual-information arm per ADR-0019 § "v1.2 ship reconciliation"; named compensating control (third-party SHAP audit, qualified fair-lending analytics resource, conditional-demographic-disparity review) for the SHAP / CDD arms that land in v1.3.
 
 ---
 
