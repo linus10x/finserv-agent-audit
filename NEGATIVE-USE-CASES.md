@@ -30,7 +30,7 @@ The hash chain proves the chain was not tampered with after entries were appende
 
 ### 5. "ProtectedClassProxyDetector detects all proxy discrimination." — **FALSE**
 
-`ProtectedClassProxyDetector` is a STUB per ADR-0019. It raises `NotImplementedError` by design with a pointer to the ADR. A partial implementation would create false assurance (the deployer would believe proxy detection was running when it was not catching what it appeared to catch). The stub's presence reserves the v1.2 API; the deferral discipline is the contract. Adopters who need proxy detection today must use a third-party tool and / or qualified fair-lending analytics counsel.
+`ProtectedClassProxyDetector` ships the mutual-information arm in v1.2 (closing the v1.1 deferral per ADR-0019). It does NOT ship the SHAP attribution or conditional-demographic-disparity arms — those land in v1.3 with their own evidence discipline. The MI arm flags features whose joint information with the protected attribute AND with the decision both clear a configured threshold; it has known weaknesses against high-dimensional sparse features, non-linear conjunctive proxies, and binning-sensitive continuous inputs. Adopters who need broader proxy-detection coverage today must combine this detector with a third-party tool and / or qualified fair-lending analytics counsel.
 
 ### 6. "MIT license shields the adopter from regulatory liability." — **FALSE**
 

@@ -179,7 +179,7 @@ flowchart LR
 | SAR Workflow Audit | `sar_workflow_audit.py` | AI-influenced SAR decision audit trail | BSA / AML 31 U.S.C. § 5318(g)/(h) |
 | Equity Audit | `equity_audit.py` | ECOA / Reg-B fair-lending pre-flight | ECOA 12 C.F.R. § 1002.9 |
 | Best-Interest Check | `best_interest_check.py` | Broker-dealer / RIA recommendation gate | SEC Reg-BI |
-| Protected-Class Proxy Detector | `protected_class_proxy_detector.py` | STUB (deferred-implementation) | [ADR-0019](docs/adr/0019-protected-class-proxy-detector-deferred.md) — v1.2 ship-gate |
+| Protected-Class Proxy Detector | `protected_class_proxy_detector.py` | Mutual-information arm shipped in v1.2 (closes the v1.1 deferral) | [ADR-0019](docs/adr/0019-protected-class-proxy-detector-deferred.md) |
 
 **Reference agents** (`src/finserv_agent_audit/agents/`)
 
@@ -194,13 +194,14 @@ flowchart LR
 
 ---
 
-## Regulatory mapping documents (14 in `docs/`)
+## Regulatory mapping documents (17 in `docs/`)
 
-US Federal Reserve / OCC: [SR 11-7](docs/sr11_7_mapping.md) · [OCC 2011-12](docs/occ_2011_12_mapping.md)
+**Interagency MRM (post-April 17, 2026):** [Interagency MRM 2026 Overlay](docs/interagency_mrm_2026_overlay.md) · [MRM Bridge Whitepaper Template](docs/MRM_BRIDGE_TEMPLATE.md) — operational reference for agentic-AI workloads during the period between OCC Bulletin 2026-13 (joint OCC/FRB/FDIC, rescinds OCC 2011-12 and excludes generative + agentic AI from scope) and the forthcoming joint RFI.
+US Federal Reserve / OCC (legacy citation lineage): [SR 11-7](docs/sr11_7_mapping.md) · [OCC 2011-12](docs/occ_2011_12_mapping.md) — **rescinded by OCC Bulletin 2026-13 (April 17, 2026); retained as conceptual ancestry.**
 Consumer protection: [GLBA Safeguards](docs/glba_safeguards_mapping.md) · [FCRA / Reg V](docs/fcra_reg_v_mapping.md) · [ECOA / Reg B](docs/ecoa_reg_b_mapping.md)
 BSA / SOX / broker-dealer: [BSA / AML](docs/bsa_aml_mapping.md) · [SOX 404 ITGC](docs/sox_404_itgc_mapping.md) · [SEC 17a-4](docs/sec_17a_4_mapping.md)
 SEC + CFPB algorithmic posture: [SEC Reg-BI](docs/sec_reg_bi_mapping.md) · [CFPB Circular 2022-03](docs/cfpb_circular_2022_03_mapping.md)
-AI-management standards: [NIST AI RMF](docs/nist_ai_rmf_mapping.md) · [ISO/IEC 42001](docs/iso_42001_mapping.md) · [COSO ICAIR](docs/coso_icair_mapping.md) · [EU AI Act](docs/eu_ai_act_mapping.md)
+AI-management standards: [NIST AI RMF](docs/nist_ai_rmf_mapping.md) · [NIST AI 600-1 GenAI Profile](docs/nist_ai_600_1_genai_profile_mapping.md) · [Treasury FS AI RMF](docs/treasury_fs_ai_rmf_mapping.md) · [ISO/IEC 42001](docs/iso_42001_mapping.md) · [COSO ICAIR](docs/coso_icair_mapping.md) · [EU AI Act](docs/eu_ai_act_mapping.md)
 Liability anchors: [FSI Settled Matters](docs/fsi_settled_matters.md) (Apple Card / NYDFS · CFPB Circular 2022-03 · CFPB v. Wells Fargo · SEC v. Schwab Intelligent Portfolios · cross-vertical TransUnion)
 
 ## Procurement companion (`vendor-clauses/`)
@@ -259,9 +260,11 @@ The Autonomy Ladder (A0→A4) framework has been used to onboard compliance team
 
 See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
 
-**Shipped in v1.1:** Shadow Mode Rollout · four Protocol seams (LedgerStore + WORM, TimestampSource + RFC3161, WitnessRegister + Sigstore Rekor, MIProxy) · VendorScoreGate with 5 FSI vendor classes · AuditConsumer base + 3 reference agents · 6 FSI-specific governance modules (ModelInventory · AdverseActionGate · SARWorkflowAudit · EquityAudit · BestInterestCheck · ProtectedClassProxyDetector stub) · 19 governance ADRs · 14 regulatory mapping documents · vendor-clauses procurement companion · 4 reference integrations · mypy --strict CI · 90% coverage gate.
+**Shipped in v1.1:** Shadow Mode Rollout · four Protocol seams (LedgerStore + WORM, TimestampSource + RFC3161, WitnessRegister + Sigstore Rekor, MIProxy) · VendorScoreGate with 5 FSI vendor classes · AuditConsumer base + 3 reference agents · 6 FSI-specific governance modules (ModelInventory · AdverseActionGate · SARWorkflowAudit · EquityAudit · BestInterestCheck · v1.1 ProtectedClassProxyDetector API reservation) · 19 governance ADRs · 14 regulatory mapping documents · vendor-clauses procurement companion · 4 reference integrations · mypy --strict CI · 90% coverage gate.
 
-**Coming in v1.2:** Drift Monitor · Explainability Stub · Rate Limiter / Throttle · MiFID II Art. 17 Checklist as executable assertions · ProtectedClassProxyDetector implementation (mutual-information threshold per [ADR-0019](docs/adr/0019-protected-class-proxy-detector-deferred.md)).
+**Closed in v1.2:** ProtectedClassProxyDetector mutual-information arm (closes the ADR-0019 v1.1 deferral; SHAP / CDD arms remain on the v1.3 roadmap) · `tests/test_failure_modes_matrix.py` (parity test between `FAILURE-MODES.md` and the codebase) · `tests/test_doc_staleness.py` (parity test between `__all__` exports and public docs).
+
+**Coming in v1.2 (remainder):** Drift Monitor · Explainability surface · Rate Limiter / Throttle · MiFID II Art. 17 Checklist as executable assertions.
 
 **Coming in v2.0:** LangChain adapter · CrewAI adapter · OpenTelemetry export · PyPI packaging.
 

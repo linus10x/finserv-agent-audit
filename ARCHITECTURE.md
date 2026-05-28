@@ -34,7 +34,7 @@ flowchart TB
         SAR[SARWorkflowAudit<br/>BSA/AML 5318g/h]
         EQ[EquityAudit<br/>ECOA / Reg-B]
         BI[BestInterestCheck<br/>SEC Reg-BI]
-        PCP[ProtectedClassProxyDetector<br/>STUB - ADR-0019]
+        PCP[ProtectedClassProxyDetector<br/>MI arm shipped v1.2 · ADR-0019]
     end
 
     subgraph BOUNDARY["Trust boundary (in-process verifier)"]
@@ -99,7 +99,7 @@ The dashed boundary box is the trust boundary the framework defends by default. 
 
 2. **Agent surface** — `Agent` and `AuditConsumer` in `finserv_agent_audit.agents.base`. The `AuditConsumer` base accepts the four Protocol seams + an optional `VendorScoreGate` through one injection contract. Reference agents (`AuditAgent`, `MonitorAgent`, `OrchestratorAgent`) demonstrate wiring; production deployers subclass `Agent` and reuse the consumer surface.
 
-3. **FSI gates** — six modules (`ModelInventory`, `AdverseActionGate`, `SARWorkflowAudit`, `EquityAudit`, `BestInterestCheck`, `ProtectedClassProxyDetector`) that emit structured `AuditEvent`s into the chain. They are composable: an agent that issues credit calls `AdverseActionGate` and `EquityAudit`; an agent that recommends securities calls `BestInterestCheck`; an agent supporting the BSA function calls `SARWorkflowAudit`. `ProtectedClassProxyDetector` is the v1.2 ship-gate stub per ADR-0019.
+3. **FSI gates** — six modules (`ModelInventory`, `AdverseActionGate`, `SARWorkflowAudit`, `EquityAudit`, `BestInterestCheck`, `ProtectedClassProxyDetector`) that emit structured `AuditEvent`s into the chain. They are composable: an agent that issues credit calls `AdverseActionGate` and `EquityAudit`; an agent that recommends securities calls `BestInterestCheck`; an agent supporting the BSA function calls `SARWorkflowAudit`. `ProtectedClassProxyDetector` shipped the mutual-information arm in v1.2 (closing the v1.1 deferral per ADR-0019); SHAP and conditional-demographic-disparity arms remain on the v1.3 roadmap.
 
 4. **Trust boundary** — `AuditChain` and `VendorScoreGate` operate inside the in-process trust boundary. `AuditChain.verify()` confirms hash-chain integrity; `verify_strict()` adds sequence-monotonicity and optional MIProxy attestation. `VendorScoreGate.record_score()` writes per-call entries and raises `VendorScoreDriftDetected` on the `(vendor_id, input_hash, model_version)` collision.
 

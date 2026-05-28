@@ -4,8 +4,8 @@
 
 Every public name in `finserv_agent_audit.governance.__all__`, `finserv_agent_audit.agents.__all__`, and `finserv_agent_audit.schemas.__all__` is classified below as one of:
 
-- **shipped** — real implementation, tested, exercised by 273-test CI suite
-- **stub-with-tracking** — `NotImplementedError` raise with ADR pointer; reserved API surface
+- **shipped** — real implementation, tested, exercised by the CI suite (273 tests in v1.1; 287+ in v1.2 with the closeout tranche)
+- **stub-with-tracking** — `NotImplementedError` raise with ADR pointer; reserved API surface (v1.2 closed the last instance of this status — see `ProtectedClassProxyDetector` row below)
 - **deferred-with-tracking** — planned, not yet in `__all__`; placeholder for ADR ledger
 
 Schema names in the ledger that resolve via a `__getattr__` shim (the v1.0 → v1.1 `AuditChain` import-path preservation) are noted in the row.
@@ -62,7 +62,7 @@ Schema names in the ledger that resolve via a `__getattr__` shim (the v1.0 → v
 | `ImplementationStatus` | shipped | `governance.model_inventory` | SR 11-7 model-status state machine |
 | `Model` | shipped | `governance.model_inventory` | Model record dataclass |
 | `ModelInventory` | shipped | `governance.model_inventory` | SR 11-7 second-line recordkeeping surface |
-| `ProtectedClassProxyDetector` | **stub-with-tracking** | `governance.protected_class_proxy_detector` | Raises `NotImplementedError` per ADR-0019 by design; v1.2 ship-gate |
+| `ProtectedClassProxyDetector` | shipped | `governance.protected_class_proxy_detector` | Mutual-information arm of ADR-0019; replaces the v1.1 stub. Discrete MI estimator (stdlib `math.log` + `collections.Counter`); continuous features must be discretized by the caller. SHAP / conditional-demographic-disparity arms remain on the v1.3 roadmap. |
 | `SARWorkflowAudit` | shipped | `governance.sar_workflow_audit` | BSA/AML § 5318(g)/(h) workflow recordkeeping (ADR-0011) |
 | `AutonomyTier` | shipped | `governance.autonomy_ladder` | Enum: A0 / A1 / A2 / A3 / A4 |
 | `PromotionGateNotMet` | shipped | `governance.autonomy_ladder` | Raised on A2→A3 promotion failure |
@@ -102,8 +102,8 @@ Schema names in the ledger that resolve via a `__getattr__` shim (the v1.0 → v
 
 | Status | Count |
 |---|---|
-| shipped | 64 |
-| stub-with-tracking | 1 (`ProtectedClassProxyDetector` per ADR-0019) |
+| shipped | 65 |
+| stub-with-tracking | 0 (v1.2 closed the `ProtectedClassProxyDetector` deferral per ADR-0019 § "v1.2 ship reconciliation") |
 | deferred-with-tracking | 0 |
 | reference-stub-body (class ships; method body is a reference) | 2 (`MonitorAgent`, `OrchestratorAgent`) |
 | **Total** | **67** |

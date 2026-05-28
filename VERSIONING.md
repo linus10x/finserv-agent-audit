@@ -54,7 +54,7 @@ The full Keep-a-Changelog entry lives in [`CHANGELOG.md`](CHANGELOG.md) § `[1.1
 - `SARWorkflowAudit` (BSA/AML § 5318(g)/(h))
 - `EquityAudit` (ECOA / Reg-B fair-lending pre-flight)
 - `BestInterestCheck` (SEC Reg-BI care obligation)
-- `ProtectedClassProxyDetector` (stub-with-tracking per ADR-0019)
+- `ProtectedClassProxyDetector` (v1.1 shipped as stub-with-tracking per ADR-0019; v1.2 closed the deferral with the MI arm — see SHIP-RECEIPT.md and ADR-0019 § "v1.2 ship reconciliation")
 
 **Added — Operational patterns:**
 - `ShadowRouter` and supporting types (`DecisionClass`, `DecisionOutcome`, `PromotionVerdict`, `VetoDirection`) — SR 11-7 pre-promotion parallel runs (ADR-0006)

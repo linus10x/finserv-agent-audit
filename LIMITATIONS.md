@@ -30,7 +30,7 @@ This document is the explicit non-coverage list. If a property is not stated as 
 
 ### Detection vs prevention
 
-8. **ProtectedClassProxyDetector is a STUB pending v1.2.** ADR-0019 makes the deliberate choice to ship an explicit `NotImplementedError` rather than a partial implementation. A bad proxy detector is more dangerous than an absent one (false negatives create false assurance). The stub raises with a pointer to ADR-0019; the API is reserved for v1.2.
+8. **ProtectedClassProxyDetector ships the mutual-information arm only (v1.2).** ADR-0019 named three method arms: mutual information, SHAP attribution audits, and conditional-demographic-disparity measures. v1.2 ships the MI arm with the synthetic-benchmark FPR/FNR documented in ADR-0019 § "v1.2 ship reconciliation"; the other two arms remain on the v1.3 roadmap. Known weaknesses of the MI arm: high-dimensional sparse features (estimator variance), non-linear conjunctive proxies (the detector treats each feature independently), and binning sensitivity for discretized continuous inputs.
 
 9. **The audit chain detects tampering; it does not prevent it.** A hash-chain invariant violation means a previously-valid chain has been mutated. Recovery is operator-driven. The chain is the evidence, not the enforcement mechanism.
 

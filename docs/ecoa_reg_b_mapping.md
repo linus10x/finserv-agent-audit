@@ -5,8 +5,8 @@ obligations under the Equal Credit Opportunity Act and Regulation B
 (12 C.F.R. Part 1002), with particular focus on the adverse-action notification
 arm at 12 C.F.R. § 1002.9 and the protected-class non-discrimination
 obligations at the heart of ECOA. The patterns that anchor this mapping are
-the **EquityAudit** (Tranche 2C) and the deferred
-**ProtectedClassProxyDetector** (ADR-0019 tracking).
+the **EquityAudit** (Tranche 2C) and the
+**ProtectedClassProxyDetector** (v1.2 MI arm per ADR-0019 § "v1.2 ship reconciliation").
 
 > **Disclaimer:** Reference pattern, not legal advice. Regulatory characterizations
 > are summaries; engage qualified counsel for your specific compliance
@@ -89,7 +89,7 @@ with a protected basis above a configured threshold.
 | ECOA / Reg B Requirement | Citation | Pattern in This Repo | File |
 |---|---|---|---|
 | Non-discrimination — substantive obligation | 15 U.S.C. § 1691(a); 12 C.F.R. § 1002.4(a) | `EquityAudit` — disparate-impact analysis on every model promotion gate; outcomes binned by inferred class proxy and compared against benchmark | `src/finserv_agent_audit/governance/equity_audit.py` (Tranche 2C) |
-| Proxy-feature concern on protected bases | 15 U.S.C. § 1691(a); supervisory guidance | `ProtectedClassProxyDetector` — correlation-screen on every candidate feature against an inferred-class panel | `src/finserv_agent_audit/governance/protected_class_proxy_detector.py` (ADR-0019, deferred) |
+| Proxy-feature concern on protected bases | 15 U.S.C. § 1691(a); supervisory guidance | `ProtectedClassProxyDetector` — mutual-information arm shipped v1.2 (per-feature MI against the inferred-class panel AND against the decisions; both must clear threshold to flag) | `src/finserv_agent_audit/governance/protected_class_proxy_detector.py` (ADR-0019 § "v1.2 ship reconciliation") |
 | Evaluation rules (no use of prohibited basis as predictor) | 12 C.F.R. § 1002.6(b) | Feature-allowlist on the model-promotion gate; explicit-class features blocked at the feature registry | (Tranche 2C, composed with `vendor_score_gate`) |
 | Notification within 30 days of completed application | 12 C.F.R. § 1002.9(a)(1) | Audit-chain timestamp on the decision packet; SLA monitored against the chain | `src/finserv_agent_audit/schemas/audit_event.py` |
 | Statement of action taken | 12 C.F.R. § 1002.9(a)(2) | `AdverseActionPacket.action_kind` (see FCRA mapping); enumerated kinds |  `src/finserv_agent_audit/governance/adverse_action_gate.py` (ADR-0009) |
@@ -131,21 +131,27 @@ and the model-promotion gate fails closed on any threshold breach.
 
 ---
 
-## ProtectedClassProxyDetector — Deferred (ADR-0019 Tracking)
+## ProtectedClassProxyDetector — v1.2 Mutual-Information Arm (ADR-0019)
 
-The proxy-detector pattern is tracked under ADR-0019 for a Tranche 3 release.
-The detector runs on every candidate feature in the model registry and
-produces a correlation panel against the inferred-class dimensions above. A
-feature whose correlation with any protected basis exceeds the configured
-threshold (default 0.30 Spearman, calibrated per program) is flagged for
-Fair-Lending review before the feature is admitted to the production
-inference pipeline.
+The proxy-detector pattern shipped its mutual-information arm in v1.2,
+closing the v1.1 API-reservation deferral per ADR-0019. The detector
+runs on a recent decision window: for each candidate feature it computes
+the mutual information against the protected attribute AND against the
+decisions, and flags features that clear the configured threshold on
+both axes. The default threshold is 0.1 nats; calibrate per program.
 
-The pattern is deferred — not omitted — because the production-grade version
-requires (a) an institutional BISG or equivalent class-inference capability,
-(b) a Fair-Lending workflow for the review queue, and (c) a feature-registry
-hook into the model-promotion gate. The interface contract is fixed; the
-implementation lands when those upstream capabilities are in place.
+Operational integration still requires (a) an institutional BISG or
+equivalent class-inference capability to supply the `protected_class`
+input, (b) a Fair-Lending workflow for the review queue that consumes
+the flagged features, and (c) a feature-registry hook into the model-
+promotion gate. The detector also reports the 4/5ths-rule-style direct
+disparate-impact ratio independently from the per-feature MI sweep —
+useful when the decision is disparate without any single feature
+carrying the signal.
+
+The SHAP attribution audit and conditional-demographic-disparity arms
+named in ADR-0019 remain on the v1.3 roadmap; see ADR-0019 § "v1.2 ship
+reconciliation" for the detailed scope and reversibility framing.
 
 ---
 

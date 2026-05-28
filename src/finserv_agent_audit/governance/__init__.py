@@ -25,7 +25,9 @@ v1.1 (shipped 2026-XX-XX) — Tranche 2 ports + FSI overlay:
         SARWorkflowAudit (BSA/AML § 5318(g)/(h))
         EquityAudit (ECOA / Reg-B fair-lending pre-flight)
         BestInterestCheck (SEC Reg-BI)
-        ProtectedClassProxyDetector (STUB per ADR-0019; v1.2 ship-gate)
+        ProtectedClassProxyDetector (MI-arm shipped in v1.2; SHAP / CDD
+        arms remain on the v1.3 roadmap per ADR-0019 § "v1.2 ship
+        reconciliation")
 
     Operational patterns:
         ShadowMode (SR 11-7 pre-promotion parallel runs, ADR-0006)
@@ -84,6 +86,8 @@ from finserv_agent_audit.governance.model_inventory import (
 )
 from finserv_agent_audit.governance.protected_class_proxy_detector import (
     ProtectedClassProxyDetector,
+    ProxyDetectionResult,
+    ProxyFeatureFlag,
 )
 from finserv_agent_audit.governance.rfc3161_codec import (
     build_timestamp_request,
@@ -174,6 +178,8 @@ __all__ = [
     "Model",
     "ModelInventory",
     "ProtectedClassProxyDetector",
+    "ProxyDetectionResult",
+    "ProxyFeatureFlag",
     "SARWorkflowAudit",
     # Operational
     "AutonomyTier",
