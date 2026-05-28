@@ -15,17 +15,26 @@ authors:
 repository-code: "https://github.com/linus10x/finserv-agent-audit"
 url: "https://github.com/linus10x/finserv-agent-audit"
 abstract: >-
-  Reference governance patterns, schemas, and runnable implementations
-  for audit-ready autonomous AI agents in regulated financial services.
-  Covers autonomy-level classification (A0 through A4) — a proprietary
-  governance framework documented in this repository — along with
-  DEFCON-style risk-state degradation, sovereign veto architecture,
-  shadow-mode rollout, tamper-evident hash-chain audit logging, and
-  EU AI Act control mapping. Patterns were extracted from a multi-year
-  autonomous trading system build, drawing on hundreds of engineering
-  sessions, architectural decision records, and documented failure-mode
-  analyses. The source system operates in paper-trading Phase 0 —
-  no live capital has been deployed.
+  Reference governance patterns, schemas, agents, and runnable
+  implementations for audit-ready autonomous AI agents in regulated
+  financial services. Covers autonomy-level classification (A0 through
+  A4) — a proprietary governance framework documented in this repository
+  — along with DEFCON-style risk-state degradation, sovereign veto
+  architecture, shadow-mode rollout, tamper-detecting hash-chain audit
+  logging (within-trust-boundary), four Protocol seams for audit-chain
+  integrity (LedgerStore, TimestampSource, WitnessRegister, MIProxy),
+  VendorScoreGate for third-party AI scoring drift detection, and six
+  FSI-specific governance gates (ModelInventory for SR 11-7,
+  AdverseActionGate for FCRA + CFPB Circular 2022-03, SARWorkflowAudit
+  for BSA/AML, EquityAudit for ECOA/Reg B, BestInterestCheck for SEC
+  Reg-BI, ProtectedClassProxyDetector stub per ADR-0019). Maps to
+  fourteen regulatory frameworks: SR 11-7, OCC 2011-12, GLBA, FCRA,
+  ECOA, BSA/AML, SOX 404 ITGC, SEC 17a-4, SEC Reg-BI, CFPB Circular
+  2022-03, NIST AI RMF, ISO/IEC 42001, COSO ICAIR, EU AI Act 2024/1689.
+  Patterns were extracted from a multi-year private quantitative
+  options research program with Marcos López de Prado as named advisor
+  on adjacent work; the source program operates in paper-trading
+  Phase 0 — no live capital has been deployed.
 keywords:
   - AI governance
   - autonomous agents
@@ -38,5 +47,5 @@ keywords:
   - multi-agent systems
   - compliance
 license: MIT
-version: "1.0.0"
-date-released: "2026-05-23"
+version: "1.1.0"
+date-released: "2026-05-28"

@@ -9,4 +9,4 @@ The legacy import paths `patterns.*`, `schemas.*`, `examples.defcon_state_machin
 work in v1.1 via deprecation re-export shims; they are removed in v1.2.
 """
 
-__version__ = "1.1.0.dev0"
+__version__ = "1.1.0"

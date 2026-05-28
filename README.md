@@ -148,15 +148,68 @@ flowchart LR
 
 ---
 
-## Patterns Included
+## Patterns Included (v1.1)
 
-| Pattern | File | Covers | Regulation |
+**Core governance** (`src/finserv_agent_audit/governance/`)
+
+| Pattern | Module | Covers | Regulation |
 |---|---|---|---|
-| DEFCON State Machine | `examples/defcon_state_machine.py` | Risk-state degradation with hysteresis | EU AI Act Art. 9, 15 |
-| Sovereign Veto | `patterns/sovereign_veto.py` | Human-only kill switch | EU AI Act Art. 14, MiFID II Art. 17 |
-| Audit Chain | `schemas/audit_event.py` | Tamper-evident hash-chain logging | EU AI Act Art. 12, SEC Rule 17a-4 |
-| Autonomy Ladder | `docs/autonomy_ladder.md` | A0→A4 governance classification | EU AI Act Art. 14 |
-| EU AI Act Mapping | `docs/eu_ai_act_mapping.md` | Article-by-article control mapping | EU AI Act Art. 9–15 |
+| DEFCON State Machine | `defcon.py` | Risk-state degradation with hysteresis | EU AI Act Art. 9, 15 |
+| Sovereign Veto | `sovereign_veto.py` | Human-only kill switch | EU AI Act Art. 14 · MiFID II Art. 17 |
+| Audit Chain | `audit_chain.py` | Tamper-detecting hash-chain logging (within-trust-boundary) | EU AI Act Art. 12 · SEC 17a-4 |
+| Autonomy Ladder A0→A4 | `autonomy_ladder.py` | A2→A3 promotion-gate runtime helper | EU AI Act Art. 14 · SR 11-7 |
+| Shadow Mode Rollout | `shadow_mode.py` | SR 11-7 pre-promotion parallel runs | SR 11-7 |
+
+**Four Protocol seams** (audit-chain integrity layer, [ADR-0014](docs/adr/0014-persistence-witness-timestamp-pattern.md) + [ADR-0015](docs/adr/0015-mi-proxy-module-integrity.md))
+
+| Seam | Module | Default backend (stdlib-only) | Opt-in stronger backends |
+|---|---|---|---|
+| Ledger persistence | `ledger_store.py` + `_sqlite` + `_jsonl` + `_worm` | `InMemoryLedgerStore` | SQLite · JSONL · WORM (SEC 17a-4) · deployer DynamoDB / S3 Object Lock |
+| Trusted time | `timestamp_source.py` + `rfc3161_codec.py` | `LocalClock` | `RFC3161Source` (stdlib DER ASN.1 codec) |
+| External witness | `witness_anchor.py` | none | `RekorWitness` (Sigstore) · `OpenTimestampsWitness` · `anchor_to_witness()` helper |
+| Verifier integrity | `mi_proxy.py` | `LocalMIProxy` (HMAC-SHA256) | deployer SLSA / in-toto / cosign |
+
+**FSI-specific governance** (net-new for the financial-services vertical)
+
+| Pattern | Module | Covers | Regulation |
+|---|---|---|---|
+| Vendor Score Gate | `vendor_score_gate.py` | Drift detection on `(vendor_id, input_hash, model_version)` | [ADR-0016](docs/adr/0016-vendor-score-gate.md) |
+| Model Inventory | `model_inventory.py` | SR 11-7 three-lines-of-defense model registry | [ADR-0007](docs/adr/0007-sr-11-7-overlay.md) |
+| Adverse-Action Gate | `adverse_action_gate.py` | Fails closed on missing reason-code mapping | FCRA § 615 · [CFPB Circular 2022-03](docs/cfpb_circular_2022_03_mapping.md) |
+| SAR Workflow Audit | `sar_workflow_audit.py` | AI-influenced SAR decision audit trail | BSA / AML 31 U.S.C. § 5318(g)/(h) |
+| Equity Audit | `equity_audit.py` | ECOA / Reg-B fair-lending pre-flight | ECOA 12 C.F.R. § 1002.9 |
+| Best-Interest Check | `best_interest_check.py` | Broker-dealer / RIA recommendation gate | SEC Reg-BI |
+| Protected-Class Proxy Detector | `protected_class_proxy_detector.py` | STUB (deferred-implementation) | [ADR-0019](docs/adr/0019-protected-class-proxy-detector-deferred.md) — v1.2 ship-gate |
+
+**Reference agents** (`src/finserv_agent_audit/agents/`)
+
+| Surface | Module | Purpose |
+|---|---|---|
+| `AuditConsumer` base | `base.py` | Accepts 4 Protocol seams + VendorScoreGate via one injection contract |
+| `AuditAgent` · `MonitorAgent` · `OrchestratorAgent` | `audit.py` · `monitor.py` · `orchestrator.py` | Reference wiring |
+
+**Reference integrations** (`examples/integration/`, all stdlib-only by default; opt-in deps import-guarded)
+
+`splunk_audit_sink.py` (HEC) · `datadog_audit_sink.py` (Logs API v2) · `sigstore_rekor_witness_demo.py` (public-good Rekor) · `aws_dynamo_ledger_store.py` (conditional-write split-brain prevention)
+
+---
+
+## Regulatory mapping documents (14 in `docs/`)
+
+US Federal Reserve / OCC: [SR 11-7](docs/sr11_7_mapping.md) · [OCC 2011-12](docs/occ_2011_12_mapping.md)
+Consumer protection: [GLBA Safeguards](docs/glba_safeguards_mapping.md) · [FCRA / Reg V](docs/fcra_reg_v_mapping.md) · [ECOA / Reg B](docs/ecoa_reg_b_mapping.md)
+BSA / SOX / broker-dealer: [BSA / AML](docs/bsa_aml_mapping.md) · [SOX 404 ITGC](docs/sox_404_itgc_mapping.md) · [SEC 17a-4](docs/sec_17a_4_mapping.md)
+SEC + CFPB algorithmic posture: [SEC Reg-BI](docs/sec_reg_bi_mapping.md) · [CFPB Circular 2022-03](docs/cfpb_circular_2022_03_mapping.md)
+AI-management standards: [NIST AI RMF](docs/nist_ai_rmf_mapping.md) · [ISO/IEC 42001](docs/iso_42001_mapping.md) · [COSO ICAIR](docs/coso_icair_mapping.md) · [EU AI Act](docs/eu_ai_act_mapping.md)
+Liability anchors: [FSI Settled Matters](docs/fsi_settled_matters.md) (Apple Card / NYDFS · CFPB Circular 2022-03 · CFPB v. Wells Fargo · SEC v. Schwab Intelligent Portfolios · cross-vertical TransUnion)
+
+## Procurement companion (`vendor-clauses/`)
+
+Sales-tool-grade vendor-contract addenda for 5 FSI vendor classes: [KYC](vendor-clauses/kyc_vendor_clauses.md) · [Fraud-Score](vendor-clauses/fraud_score_vendor_clauses.md) · [Credit-Decision](vendor-clauses/credit_decision_vendor_clauses.md) · [Robo-Advisor](vendor-clauses/robo_advisor_vendor_clauses.md) · [AML Transaction Monitoring](vendor-clauses/aml_transaction_monitoring_vendor_clauses.md)
+
+## Governance surfaces
+
+[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (19 governance ADRs)
 
 ---
 
@@ -189,7 +242,7 @@ The Autonomy Ladder (A0→A4) framework has been used to onboard compliance team
 | **Regulation mapping** | ✅ EU AI Act, MiFID II, SEC | ❌ | ✅ EU AI Act | ❌ |
 | **Zero dependencies** | ✅ | ❌ (heavy) | ❌ (Azure SDK) | N/A |
 | **Runnable examples** | ✅ < 60 sec | ✅ | ⚠️ Complex setup | ❌ |
-| **Python 3.12+ typed** | ✅ mypy checked | ⚠️ Partial | ⚠️ Partial | N/A |
+| **Python 3.12+ typed** | ✅ mypy strict | ⚠️ Partial | ⚠️ Partial | N/A |
 
 ---
 
@@ -206,9 +259,11 @@ The Autonomy Ladder (A0→A4) framework has been used to onboard compliance team
 
 See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
 
-**Coming in v1.1:** Shadow Mode Rollout, Drift Monitor, Explainability Stub, Rate Limiter, MiFID II Art. 17 Checklist.
+**Shipped in v1.1:** Shadow Mode Rollout · four Protocol seams (LedgerStore + WORM, TimestampSource + RFC3161, WitnessRegister + Sigstore Rekor, MIProxy) · VendorScoreGate with 5 FSI vendor classes · AuditConsumer base + 3 reference agents · 6 FSI-specific governance modules (ModelInventory · AdverseActionGate · SARWorkflowAudit · EquityAudit · BestInterestCheck · ProtectedClassProxyDetector stub) · 19 governance ADRs · 14 regulatory mapping documents · vendor-clauses procurement companion · 4 reference integrations · mypy --strict CI · 90% coverage gate.
 
-**Coming in v2.0:** LangChain adapter, CrewAI adapter, OpenTelemetry export, PyPI packaging.
+**Coming in v1.2:** Drift Monitor · Explainability Stub · Rate Limiter / Throttle · MiFID II Art. 17 Checklist as executable assertions · ProtectedClassProxyDetector implementation (mutual-information threshold per [ADR-0019](docs/adr/0019-protected-class-proxy-detector-deferred.md)).
+
+**Coming in v2.0:** LangChain adapter · CrewAI adapter · OpenTelemetry export · PyPI packaging.
 
 ---
 
@@ -267,13 +322,18 @@ Patterns in this repository were informed by:
 | Sovereign Veto | ✅ | ✅ |
 | Hash-chained Audit Ledger | ✅ | ✅ |
 | Autonomy Ladder A0→A4 | ✅ | ✅ |
-| Regulation Mapping | ✅ MiFID II · SR 11-7 · SEC | ✅ FHA · CO AI Act · EU AI Act |
-| Shadow-Mode Rollout | Planned (v1.1) | ✅ |
+| Shadow-Mode Rollout | ✅ v1.1 | ✅ |
+| Four Protocol seams (Ledger / Timestamp / Witness / MI Proxy) | ✅ v1.1 | ✅ |
+| VendorScoreGate | ✅ v1.1 (5 FSI vendor classes) | ✅ (CRE vendor classes) |
+| AuditConsumer + reference agents | ✅ v1.1 | ✅ |
+| FAILURE-MODES matrix-as-contract | ✅ v1.1 | ✅ |
+| Regulation mapping (14 docs) | ✅ SR 11-7 · OCC · GLBA · FCRA · ECOA · BSA · SOX · 17a-4 · Reg-BI · CFPB Circular · NIST AI RMF · ISO 42001 · COSO ICAIR · EU AI Act | ✅ FHA · ECOA · FCRA · CO AI Act · EU AI Act |
 | Lease-Abstraction Provenance | — | ✅ CRE-specific |
 | Fair-Housing Pre-Flight Gate | — | ✅ CRE-specific |
 | Tenant PII Data Residency | — | ✅ CRE-specific |
+| Model Inventory · Adverse-Action Gate · SAR Workflow · Equity Audit · Best-Interest Check | ✅ v1.1 FSI-specific | — |
 
-Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, mypy-checked in CI, and an enforced ≥80% coverage gate.
+Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, mypy `--strict` clean in CI, and an enforced ≥90% coverage gate.
 
 The umbrella discipline — **Regulated-Operations AI Governance** — is documented at [autonomy-ladder.io](https://autonomy-ladder.io). One framework, two named verticals, one author.
 
