@@ -8,8 +8,8 @@ Extracted from a multi-year build of a 6-agent autonomous trading system — hun
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions)
-[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions)
-[![mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/)
+[![codecov](https://codecov.io/gh/linus10x/finserv-agent-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/linus10x/finserv-agent-audit)
+[![mypy](https://img.shields.io/badge/mypy-checked-blue)](https://mypy.readthedocs.io/)
 [![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Discussions](https://img.shields.io/github/discussions/linus10x/finserv-agent-audit)](https://github.com/linus10x/finserv-agent-audit/discussions)
@@ -132,7 +132,7 @@ flowchart TD
     style J fill:#1a9850,color:#fff
 ```
 
-### Audit Chain (Tamper-Evident)
+### Audit Chain (Tamper-Detecting Hash Chain)
 
 ```mermaid
 flowchart LR
@@ -157,7 +157,6 @@ flowchart LR
 | Audit Chain | `schemas/audit_event.py` | Tamper-evident hash-chain logging | EU AI Act Art. 12, SEC Rule 17a-4 |
 | Autonomy Ladder | `docs/autonomy_ladder.md` | A0→A4 governance classification | EU AI Act Art. 14 |
 | EU AI Act Mapping | `docs/eu_ai_act_mapping.md` | Article-by-article control mapping | EU AI Act Art. 9–15 |
-| Shadow Mode Rollout | `patterns/shadow_mode.py` *(v1.1)* | Parallel dry-run before live execution | SR 11-7 |
 
 ---
 
@@ -190,7 +189,7 @@ The Autonomy Ladder (A0→A4) framework has been used to onboard compliance team
 | **Regulation mapping** | ✅ EU AI Act, MiFID II, SEC | ❌ | ✅ EU AI Act | ❌ |
 | **Zero dependencies** | ✅ | ❌ (heavy) | ❌ (Azure SDK) | N/A |
 | **Runnable examples** | ✅ < 60 sec | ✅ | ⚠️ Complex setup | ❌ |
-| **Python 3.12+ typed** | ✅ mypy strict | ⚠️ Partial | ⚠️ Partial | N/A |
+| **Python 3.12+ typed** | ✅ mypy checked | ⚠️ Partial | ⚠️ Partial | N/A |
 
 ---
 
@@ -240,7 +239,7 @@ First time contributing to open source? Start with issues labelled [`good first 
 
 ## Author
 
-**Kunjar Bhaduri** — 25+ year FSI technology executive. Rescued a $750M multi-year wealth-management platform deal at Broadridge. Rebuilt production infrastructure on Azure during a 12-day ransomware attack with no DR available. Builder of APEX, a 6-agent autonomous trading research system targeting 67.7% CAGR in Phase 0 paper trading.
+**Kunjar Bhaduri** — 25+ year FSI technology executive. Rescued a $750M multi-year wealth-management platform deal at Broadridge. Rebuilt production infrastructure on Azure during a 12-day ransomware attack with no DR available. Operator of a private quantitative options research program with Marcos López de Prado as named advisor on adjacent work; these governance patterns were extracted from that program's operational discipline (multi-year build; hundreds of engineering sessions; the source system operates in paper-trading Phase 0 — no live capital deployed).
 
 [LinkedIn](https://linkedin.com/in/kunjarbhaduri) · [NTCI Portfolio](https://github.com/linus10x)
 
@@ -252,7 +251,7 @@ Patterns in this repository were informed by:
 - [EU AI Act](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689) — Regulation (EU) 2024/1689
 - [OWASP LLM Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — LLM application security risks
 - [Microsoft agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) — enterprise AI governance reference
-- [APEX autonomous trading research system](https://github.com/linus10x) — the operational source of these patterns
+- A private quantitative options research program — the operational source of these patterns; engineering discipline informed by Marcos López de Prado (named advisor on adjacent work). [NTCI portfolio at linus10x](https://github.com/linus10x).
 
 ---
 
@@ -260,7 +259,7 @@ Patterns in this repository were informed by:
 
 `finserv-agent-audit` is the financial-services half of an MIT-licensed pattern family for governing AI in regulated industries. The commercial-real-estate half is here:
 
-**[`linus10x/cre-agent-audit`](https://github.com/linus10x/cre-agent-audit)** — Nine governance patterns for AI-enabled commercial real estate workflows. Anchored to three CRE-AI regulatory matters: *In re Trans Union Rental Screening Solutions* (FTC/CFPB, Oct 2023, $15M), *Louis v. SafeRent Solutions* (D. Mass., Nov 2024, ~$2.275M class settlement), and *U.S. v. RealPage* (DOJ + 8 state AGs, filed Aug 23, 2024, ongoing Sherman § 1 litigation). Mapped to Fair Housing Act, ECOA, FCRA, Colorado AI Act, and HUD 24 C.F.R. § 100.500 (disparate-impact rule, post-*ICP v. Texas* 576 U.S. 519 (2015)).
+**[`linus10x/cre-agent-audit`](https://github.com/linus10x/cre-agent-audit)** — Nine governance patterns for AI-enabled commercial real estate workflows. Anchored to three CRE-AI regulatory matters: *In re Trans Union Rental Screening Solutions* (FTC/CFPB, Oct 2023, $15M), *Louis v. SafeRent Solutions* (D. Mass., Nov 2024, ~$2.275M class settlement), and *U.S. v. RealPage* (DOJ + 8 state AGs, filed Aug 23, 2024, ongoing Sherman § 1 litigation). Mapped to Fair Housing Act, ECOA, FCRA, Colorado AI Act (SB 24-205, signed May 17, 2024; substantive high-risk AI requirements effective February 1, 2026 per leg.colorado.gov), and HUD 24 C.F.R. § 100.500 (disparate-impact rule, post-*ICP v. Texas* 576 U.S. 519 (2015)).
 
 | Pattern | finserv-agent-audit | cre-agent-audit |
 |---|---|---|
