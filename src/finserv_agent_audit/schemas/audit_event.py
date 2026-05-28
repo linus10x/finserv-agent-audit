@@ -64,6 +64,19 @@ class AuditEventType(Enum):
     POLICY_VIOLATION = "governance.policy_violation"
     COMPLIANCE_CHECK = "governance.compliance_check"
 
+    # Vendor-mediated AI (v1.1 — VendorScoreGate, ADR-0016)
+    VENDOR_SCORE_RECORDED = "vendor.score_recorded"
+    VENDOR_SCORE_DRIFT_DETECTED = "vendor.score_drift_detected"
+
+    # External anchoring (v1.1 — WitnessRegister, ADR-0014)
+    WITNESS_ANCHOR = "audit_chain.witness_anchor"
+
+    # FSI-specific (v1.1)
+    MODEL_VALIDATED = "fsi.model_validated"  # SR 11-7 — ADR-0007
+    ADVERSE_ACTION_TAKEN = "fsi.adverse_action_taken"  # FCRA + CFPB Circular — ADR-0009
+    SAR_FILED = "fsi.sar_filed"  # BSA/AML — ADR-0011
+    BEST_INTEREST_CHECKED = "fsi.best_interest_checked"  # SEC Reg-BI — ADR-0013
+
 
 class AutonomyLevel(Enum):
     """
