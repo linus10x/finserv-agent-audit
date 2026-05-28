@@ -1,0 +1,136 @@
+name: finserv-agent-audit
+description: >
+  Verify a finserv-agent-audit JSONL audit chain in CI.
+  Hash-chain integrity, coverage threshold, optional witness-anchor
+  enforcement, optional MI Proxy verifier attestation.
+author: Kunjar Bhaduri (linus10x)
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  audit-jsonl-path:
+    description: Path to the JSONL audit-chain file to verify.
+    required: true
+  min-coverage:
+    description: >
+      Minimum branch-coverage percentage required (informational, surfaced
+      in the step summary). The default mirrors the package CI gate.
+    required: false
+    default: "90"
+  expect-witness-anchor:
+    description: >
+      If "true", fail the action when no WITNESS_ANCHOR entries are found
+      in the last N events of the chain. Use this on repos that mandate
+      external witness anchoring (Rekor / OpenTimestamps) per ADR-0014.
+    required: false
+    default: "false"
+  witness-anchor-window:
+    description: Window size (in events) for the witness-anchor check.
+    required: false
+    default: "100"
+  mi-proxy-key:
+    description: >
+      Optional HMAC signing key for the MI Proxy verifier attestation
+      (ADR-0015). When set, the verify step runs verify_strict with
+      the proxy wired. Treat this as a SECRET — pass via secrets.X.
+    required: false
+    default: ""
+  python-version:
+    description: Python version to use for verification.
+    required: false
+    default: "3.12"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: Install finserv-agent-audit
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        # Prefer the published wheel when this action is used from outside
+        # the repository; fall back to an editable install when running
+        # against a local checkout (typical for self-tests on this repo).
+        if [ -f "${{ github.action_path }}/pyproject.toml" ]; then
+          pip install -e "${{ github.action_path }}"
+        else
+          pip install finserv-agent-audit
+        fi
+
+    - name: Verify audit chain integrity
+      id: verify
+      shell: bash
+      env:
+        MI_PROXY_KEY: ${{ inputs.mi-proxy-key }}
+      run: |
+        set -euo pipefail
+        if [ -n "${MI_PROXY_KEY}" ]; then
+          python -m finserv_agent_audit.cli verify \
+            --jsonl "${{ inputs.audit-jsonl-path }}" \
+            --mi-proxy-key "${MI_PROXY_KEY}" \
+            | tee verify.out
+        else
+          python -m finserv_agent_audit.cli verify \
+            --jsonl "${{ inputs.audit-jsonl-path }}" \
+            | tee verify.out
+        fi
+
+    - name: Inspect chain
+      id: info
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m finserv_agent_audit.cli info \
+          --jsonl "${{ inputs.audit-jsonl-path }}" \
+          | tee info.out
+
+    - name: Check witness-anchor coverage
+      id: witness
+      if: ${{ inputs.expect-witness-anchor == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        python -m finserv_agent_audit.cli witness-status \
+          --jsonl "${{ inputs.audit-jsonl-path }}" \
+          --last-n "${{ inputs.witness-anchor-window }}" \
+          --expect-witness-anchor \
+          | tee witness.out
+
+    - name: Emit step summary
+      if: always()
+      shell: bash
+      run: |
+        {
+          echo "# finserv-agent-audit · chain verification"
+          echo ""
+          echo "| Setting | Value |"
+          echo "| --- | --- |"
+          echo "| audit-jsonl-path | \`${{ inputs.audit-jsonl-path }}\` |"
+          echo "| min-coverage | ${{ inputs.min-coverage }}% |"
+          echo "| expect-witness-anchor | ${{ inputs.expect-witness-anchor }} |"
+          echo "| witness-anchor-window | ${{ inputs.witness-anchor-window }} |"
+          echo "| MI Proxy attested | ${{ inputs.mi-proxy-key != '' }} |"
+          echo ""
+          echo "## Verify"
+          echo '```'
+          cat verify.out 2>/dev/null || echo "(no output)"
+          echo '```'
+          echo ""
+          echo "## Info"
+          echo '```'
+          cat info.out 2>/dev/null || echo "(no output)"
+          echo '```'
+          if [ "${{ inputs.expect-witness-anchor }}" = "true" ]; then
+            echo ""
+            echo "## Witness anchor"
+            echo '```'
+            cat witness.out 2>/dev/null || echo "(no output)"
+            echo '```'
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"

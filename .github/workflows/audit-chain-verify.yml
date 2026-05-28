@@ -1,0 +1,87 @@
+name: Audit chain verify (reusable)
+
+# A reusable workflow that any FSI org can pin via ruleset enforcement.
+# Org admins enable "Require workflows" in the org ruleset and point at:
+#
+#   uses: linus10x/finserv-agent-audit/.github/workflows/audit-chain-verify.yml@v1
+#
+# Every PR in the org then runs the audit-chain verify against the path
+# the caller specifies. Pair with branch protection that requires this
+# workflow's status check to pass before merge.
+
+on:
+  workflow_call:
+    inputs:
+      audit-jsonl-path:
+        description: Path to the JSONL audit-chain file to verify.
+        required: true
+        type: string
+      min-coverage:
+        description: Minimum branch-coverage percentage (informational).
+        required: false
+        type: number
+        default: 90
+      expect-witness-anchor:
+        description: If true, fail when no WITNESS_ANCHOR entries in the window.
+        required: false
+        type: boolean
+        default: false
+      witness-anchor-window:
+        description: Window size in events for the witness-anchor check.
+        required: false
+        type: number
+        default: 100
+      python-version:
+        description: Python version to use for verification.
+        required: false
+        type: string
+        default: "3.12"
+      artifact-name:
+        description: Name for the uploaded verification-report artifact.
+        required: false
+        type: string
+        default: audit-chain-verification-report
+    secrets:
+      mi-proxy-key:
+        description: HMAC signing key for the MI Proxy verifier (ADR-0015).
+        required: false
+
+jobs:
+  verify:
+    name: Verify audit chain
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@v4
+
+      - name: Run finserv-agent-audit verification
+        id: audit
+        uses: linus10x/finserv-agent-audit@v1
+        with:
+          audit-jsonl-path: ${{ inputs.audit-jsonl-path }}
+          min-coverage: ${{ inputs.min-coverage }}
+          expect-witness-anchor: ${{ inputs.expect-witness-anchor }}
+          witness-anchor-window: ${{ inputs.witness-anchor-window }}
+          mi-proxy-key: ${{ secrets.mi-proxy-key }}
+          python-version: ${{ inputs.python-version }}
+
+      - name: Collect verification report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p audit-verification-report
+          cp verify.out audit-verification-report/verify.out 2>/dev/null || true
+          cp info.out audit-verification-report/info.out 2>/dev/null || true
+          cp witness.out audit-verification-report/witness.out 2>/dev/null || true
+          cp "${{ inputs.audit-jsonl-path }}" \
+             audit-verification-report/audit-chain.jsonl 2>/dev/null || true
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: audit-verification-report/
+          retention-days: 30
