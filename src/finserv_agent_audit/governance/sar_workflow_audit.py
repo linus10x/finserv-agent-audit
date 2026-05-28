@@ -174,7 +174,7 @@ class SARWorkflowAudit:
     def _collect_violations(self, entry: SARWorkflowEntry) -> tuple[str, ...]:
         violations: list[str] = []
 
-        if entry.detection_anchor_timestamp is None:  # type: ignore[redundant-expr]
+        if entry.detection_anchor_timestamp is None:
             violations.append("BSA-DETECTION-ANCHOR-MISSING")
 
         if not entry.model_validation_id:

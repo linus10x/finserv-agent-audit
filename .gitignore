@@ -38,3 +38,6 @@ Thumbs.db
 
 # Output (runtime-generated files)
 output/
+
+# Voice-discipline opt-in lint inputs (provided per-environment; not committed)
+.banned-names.txt

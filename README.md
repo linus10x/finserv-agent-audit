@@ -9,7 +9,7 @@ Extracted from a multi-year build of a 6-agent autonomous trading system — hun
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions)
 [![codecov](https://codecov.io/gh/linus10x/finserv-agent-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/linus10x/finserv-agent-audit)
-[![mypy](https://img.shields.io/badge/mypy-checked-blue)](https://mypy.readthedocs.io/)
+[![mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/)
 [![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Discussions](https://img.shields.io/github/discussions/linus10x/finserv-agent-audit)](https://github.com/linus10x/finserv-agent-audit/discussions)

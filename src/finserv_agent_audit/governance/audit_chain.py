@@ -5,8 +5,10 @@ the SHA-256 hash of the previous entry. Modifying any past entry breaks
 the SHA-256 link at the modified point and every entry that follows —
 detectable by an honest holder of the current chain head.
 
-**Important framing.** This ledger is *internally consistent* by
-construction. It is **not adversarially tamper-evident on its own**: an
+**Important framing.** This ledger is an *internally consistent*
+hash-chain by construction (SHA-256 prev-hash links provide detection
+but not prevention within the trust boundary). It is **not
+adversarially tamper-evident on its own** as a hash-chain mechanism: an
 attacker with full write access to the storage layer can regenerate the
 entire chain end-to-end, and the regenerated chain will pass ``verify()``.
 For adversarial integrity, the chain head must be periodically anchored
@@ -271,8 +273,9 @@ class AuditChain:
 
         Publish this value periodically to an external witness register
         (OpenTimestamps, Sigstore Rekor, regulator log) to convert the
-        internally-consistent chain into an adversarially tamper-evident
-        record. Returns the genesis sentinel for an empty chain.
+        internally-consistent hash-chain into an adversarially
+        tamper-evident (hash-chain mechanism) record. Returns the
+        genesis sentinel for an empty chain.
         """
         return self._store.head_event_hash()
 

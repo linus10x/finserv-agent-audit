@@ -39,7 +39,7 @@ Anchor checkpoints are external. Every 1,000 entries or 24 hours (whichever come
 
 ## Tamper-DETECTING vs Tamper-EVIDENCE — Critical Distinction
 
-This pattern produces **tamper-detecting** evidence within a trust boundary. It does **not**, on its own, produce **tamper-evident** evidence in the adversarial-witness sense the regulator may require. The distinction matters and is load-bearing:
+This pattern produces **tamper-detecting** evidence within a trust boundary via a SHA-256 hash-chain mechanism. It does **not**, on its own, produce **tamper-evident** evidence in the adversarial-witness sense the regulator may require — the hash-chain gives detection but not prevention. The distinction matters and is load-bearing:
 
 - **Tamper-detecting (what this pattern provides).** Within a single deployment, any modification to a past entry breaks the SHA-256 chain at the modified point and every entry downstream. `verify_chain()` returns the first broken sequence. This is sufficient to detect a careless modification, a partial-corruption incident, or an internal-actor edit that did not also regenerate the chain.
 

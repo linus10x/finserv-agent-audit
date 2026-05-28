@@ -116,8 +116,9 @@ bank's allowance-for-credit-loss calculation.
    impact on the forecast. This rationale becomes part of the
    management-review package supporting the allowance posting.
 5. **Monitoring Activities.** Internal audit runs the Audit Chain
-   verifier quarterly. The verifier produces a tamper-evident attestation
-   that no entry between forecast batches has been altered. The external
+   verifier quarterly. The verifier produces a tamper-evident (hash-chain mechanism, SHA-256 prev-hash linkage) attestation
+   that no entry
+   between forecast batches has been altered. The external
    SOX auditor uses this attestation as part of their controls-reliance
    testing.
 

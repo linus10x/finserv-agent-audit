@@ -24,5 +24,26 @@ repos:
     rev: v1.14.0
     hooks:
       - id: mypy
-        args: [--ignore-missing-imports]
+        args: [--strict, --ignore-missing-imports]
         additional_dependencies: []
+
+  - repo: local
+    hooks:
+      - id: banned-term-lint
+        name: Banned-term lint (framework voice)
+        entry: python3 scripts/banned_term_lint.py
+        language: system
+        pass_filenames: false
+        types_or: [markdown, python]
+      - id: banned-names-lint
+        name: Banned-names lint (opt-in)
+        entry: python3 scripts/banned_names_lint.py
+        language: system
+        pass_filenames: false
+        types_or: [markdown, python]
+      - id: tamper-language-lint
+        name: Tamper-language lint (must hedge same line)
+        entry: python3 scripts/tamper_language_lint.py
+        language: system
+        pass_filenames: false
+        types_or: [markdown, python]

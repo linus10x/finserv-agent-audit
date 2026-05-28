@@ -49,6 +49,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -67,16 +68,16 @@ class DEFCON(Enum):
     DANGER = 4
     HALT = 5
 
-    def __ge__(self, other: DEFCON) -> bool:  # type: ignore[override]
+    def __ge__(self, other: DEFCON) -> bool:
         return self.value >= other.value
 
-    def __gt__(self, other: DEFCON) -> bool:  # type: ignore[override]
+    def __gt__(self, other: DEFCON) -> bool:
         return self.value > other.value
 
-    def __le__(self, other: DEFCON) -> bool:  # type: ignore[override]
+    def __le__(self, other: DEFCON) -> bool:
         return self.value <= other.value
 
-    def __lt__(self, other: DEFCON) -> bool:  # type: ignore[override]
+    def __lt__(self, other: DEFCON) -> bool:
         return self.value < other.value
 
 
@@ -127,7 +128,7 @@ class AuditEvent:
     from_level: str
     to_level: str
     trigger: str
-    metrics_snapshot: dict
+    metrics_snapshot: dict[str, Any]
     prev_hash: str
     event_hash: str = ""
 

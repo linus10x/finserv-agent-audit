@@ -1,10 +1,13 @@
 """External-witness anchoring pattern — ADR-0014.
 
-The hash-chained `AuditChain` is internally consistent and tamper-detecting
-within the trust boundary that produced it, but it is not adversarially
-tamper-EVIDENT on its own. Periodically anchoring the chain head to an
-external witness register (Sigstore Rekor, OpenTimestamps, or a regulator-
-side log) converts the chain to adversarially tamper-evident: the witness
+The hash-chain `AuditChain` is internally consistent and tamper-detecting
+within the trust boundary that produced it (the hash-chain mechanism
+gives detection but not prevention), but it is not adversarially
+tamper-EVIDENT on its own as a hash-chain. Periodically anchoring the
+chain head to an external witness register (Sigstore Rekor,
+OpenTimestamps, or a regulator-side log) converts the hash-chain to
+adversarially tamper-evident (hash-chain mechanism with external
+witness): the witness
 records what the head was at time T, and a later forger cannot retroactively
 rewrite the chain without producing a witness receipt that contradicts the
 public record.

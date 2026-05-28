@@ -77,15 +77,15 @@ ignore = ["ANN401"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
 "examples/*" = ["ANN"]
+"examples/integration/*" = ["ANN", "N818"]
 "schemas/*" = ["ANN"]
 "patterns/*" = ["ANN"]
 "scripts/*" = ["ANN", "SIM", "N816"]
-"src/finserv_agent_audit/*" = ["ANN"]
 
 
 [tool.mypy]
 python_version = "3.12"
-strict = false
+strict = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
@@ -99,8 +99,21 @@ markers = [
 
 [tool.coverage.run]
 source = ["src/finserv_agent_audit", "examples", "schemas", "patterns"]
-omit = ["tests/*"]
+omit = [
+    "tests/*",
+    # Reference integration sinks require live external services (Splunk HEC,
+    # cloud endpoints). They ship as documented reference patterns and are
+    # exercised in dedicated integration tests gated by env var, not the
+    # default unit-test suite.
+    "examples/integration/*",
+]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 90
 show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

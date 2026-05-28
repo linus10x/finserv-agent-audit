@@ -35,8 +35,8 @@ jobs:
       - name: Format check (ruff)
         run: ruff format --check .
 
-      - name: Type check (mypy)
-        run: mypy src/finserv_agent_audit/ examples/ schemas/ patterns/ --ignore-missing-imports
+      - name: Type check (mypy --strict)
+        run: mypy --strict src/finserv_agent_audit/ --ignore-missing-imports
 
       - name: Run tests with coverage
         run: |
@@ -48,7 +48,18 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
             --cov-report=html:htmlcov \
-            --cov-fail-under=80
+            --cov-fail-under=90
+
+      - name: Lint (banned terms)
+        run: python3 scripts/banned_term_lint.py
+
+      - name: Lint (banned names)
+        run: python3 scripts/banned_names_lint.py
+        env:
+          BANNED_NAMES_FILE: ${{ secrets.BANNED_NAMES_FILE_PATH || '.banned-names.txt' }}
+
+      - name: Lint (tamper language)
+        run: python3 scripts/tamper_language_lint.py
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

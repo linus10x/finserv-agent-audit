@@ -40,7 +40,7 @@ The patterns map as follows.
 | V. Model Validation — Effective Challenge | Critical analysis by objective, informed parties with influence | 2L | `sovereign_veto` — second-line block with documented human clearance | `patterns/sovereign_veto.py` |
 | VI. Governance, Policies, and Controls — Board and Senior Management | Establish framework; set risk appetite | Board | `autonomy_ladder` — board-approved A-band ceiling per decision class | `docs/autonomy_ladder.md` |
 | VI. Governance, Policies, and Controls — Policies | Written MRM policy, model inventory, tiering | 1L/2L | `model_inventory` plus `autonomy_ladder` tiering table | `patterns/model_inventory.py` |
-| VI. Governance, Policies, and Controls — Internal Audit | Independent assessment of the MRM framework | 3L | `audit_chain` + `witness_anchor` — tamper-evident evidence trail for audit walk-through | `patterns/witness_anchor.py` |
+| VI. Governance, Policies, and Controls — Internal Audit | Independent assessment of the MRM framework | 3L | `audit_chain` + `witness_anchor` — tamper-evident evidence trail (hash-chain mechanism with external witness) for audit walk-through | `patterns/witness_anchor.py` |
 | VI. Governance, Policies, and Controls — External Resources | Vendor model risk same standard as internal | 1L/2L | `vendor_score_gate` — pre-deployment gate for third-party models | `patterns/vendor_score_gate.py` |
 | Footnote — Record-keeping for examiner inspection | Validation evidence retained and retrievable | 3L | `ledger_store` (WORM-eligible) plus `timestamp_source` (RFC 3161) | `patterns/ledger_store.py`, `patterns/timestamp_source.py` |
 
@@ -86,9 +86,10 @@ each stage as follows.
   live inputs without binding effect; deltas are streamed to validators.
 - **Ongoing performance signals.** `mi_proxy` exposes calibration drift,
   population stability, and outcome agreement as observable metrics.
-- **Tamper-evident validation evidence.** `witness_anchor` anchors validation
-  result hashes to an external witness (e.g., RFC 3161 TSA, blockchain anchor)
-  so the validation record cannot be silently rewritten.
+- **Tamper-evident validation evidence (hash-chain mechanism).**
+  `witness_anchor` anchors validation result hashes to an external
+  witness (e.g., RFC 3161 TSA, blockchain anchor) so the validation
+  record cannot be silently rewritten.
 
 ### 5. Retirement
 

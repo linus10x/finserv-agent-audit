@@ -116,7 +116,7 @@ The hook is opt-in to preserve v1.0 backward compatibility. The recommended post
 - Adds approximately 5ms per `verify_chain()` call with the local backend. Measured on Apple Silicon; reproducible via `tests/test_mi_proxy.py::test_attest_latency_local_backend`. For audit pipelines that call `verify_chain()` once per audit cycle, the cost is irrelevant; for hot-path callers, the deployer should cache the attestation result for the duration of a known-stable window.
 
 **Architectural.**
-- The MI Proxy is the **second** out-of-band trust seam in the audit stack. The first is the witness anchor (ADR-0014 Seam 3), which makes the chain history tamper-evident. The MI Proxy makes the verifier itself tamper-detecting. Together they close the loop on "is the chain real and is the function reading it real."
+- The MI Proxy is the **second** out-of-band trust seam in the audit stack. The first is the witness anchor (ADR-0014 Seam 3), which makes the chain history tamper-evident (witness-anchored hash-chain mechanism). The MI Proxy makes the verifier itself tamper-detecting. Together they close the loop on "is the chain real and is the function reading it real."
 - The Protocol-with-default-backend pattern matches ADR-0014's three seams. The same downstream-deployer story applies: small Protocol surface, stdlib reference, opt-in stronger backends. This consistency across the four seams is intentional — adopters learn one pattern and apply it four times.
 
 ## What this ADR does NOT cover

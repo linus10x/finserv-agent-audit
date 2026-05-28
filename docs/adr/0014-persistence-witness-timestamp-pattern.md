@@ -150,11 +150,11 @@ The fourth seam — Module Integrity Proxy for the verifier itself — has its o
 - **SOX 404 ITGC** (15 U.S.C. § 7262) — audit-trail integrity is a documented expectation; the WORM and TSA backends are the technical controls behind the change-management and computer-operations categories. See ADR-0012. [UNVERIFIED — primary source not fetched]
 - **SEC Rule 17a-4** (17 C.F.R. § 240.17a-4) — broker-dealer record retention; `WORMLedgerStore` is the substrate-enforcing `LedgerStore` implementation. See ADR-0013. [UNVERIFIED — primary source not fetched]
 - **FFIEC IT Examination Handbook — Audit Booklet** — IT Audit § "Audit Trail" expects time-attested, retention-policied, integrity-protected records. RFC 3161 trusted timestamps + external witness anchoring address two of three directly. [UNVERIFIED — primary source not fetched]
-- **NYDFS 23 NYCRR Part 500** (Cybersecurity Regulation) — § 500.06 audit-trail integrity; tamper-evident logging required for systems handling Nonpublic Information. [UNVERIFIED — primary source not fetched]
+- **NYDFS 23 NYCRR Part 500** (Cybersecurity Regulation) — § 500.06 audit-trail integrity; tamper-evident logging (witness-anchored hash-chain mechanism) required for systems handling Nonpublic Information. [UNVERIFIED — primary source not fetched]
 - **FINRA Rule 4511** — books and records cross-reference; tamper-evidence supports the 17a-4 substrate posture.
 - **RFC 3161** — *Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)*. The TSA produces a signed time attestation verifiable at any future point against the TSA's signing chain.
 - **RFC 6962** — *Certificate Transparency*. The design rationale for external-witness-as-tamper-evidence is the same: the witness records what existed at time T, and a later attempt to rewrite history must contradict the public record.
-- **SOC 2 Type 2 CC6.1 / CC7.2** — Logical Access Controls and System Monitoring; tamper-evident audit trails support both criteria.
+- **SOC 2 Type 2 CC6.1 / CC7.2** — Logical Access Controls and System Monitoring; tamper-evident audit trails (hash-chain mechanism with external witness) support both criteria.
 - **EU AI Act Article 12** (Regulation (EU) 2024/1689) — logging over the AI system's lifetime; the chain + WORM + witness anchor is the architectural answer. [UNVERIFIED — primary OJ text not fetched]
 
 ## Pre-mortem
