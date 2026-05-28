@@ -83,6 +83,9 @@ class AuditEventType(Enum):
     SAR_FILED = "fsi.sar_filed"  # BSA/AML — ADR-0011
     BEST_INTEREST_CHECKED = "fsi.best_interest_checked"  # SEC Reg-BI — ADR-0013
 
+    # Vendor surface (v1.3 — DeprecationWatch, ADR-0025)
+    DEPRECATION_ALERT = "vendor.deprecation_alert"
+
 
 class AutonomyLevel(Enum):
     """
