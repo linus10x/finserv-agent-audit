@@ -15,7 +15,7 @@ exclude = ["tests*", "scripts*", "docs*"]
 
 [project]
 name = "finserv-agent-audit"
-version = "1.3.0"
+version = "2.0.0"
 description = "Governance patterns for autonomous AI agents in regulated financial services"
 readme = "README.md"
 license = { text = "MIT" }
@@ -58,15 +58,49 @@ dev = [
     "ruff>=0.8",
     "pre-commit>=3.7",
 ]
-# Optional ecosystem-onramp dependencies (v1.2). These are NOT runtime deps;
-# the import-guard pattern in src/finserv_agent_audit/integrations/* and
+# Optional ecosystem-onramp dependencies (v1.2 + v2.0). These are NOT
+# runtime deps; the import-guard pattern in
+# src/finserv_agent_audit/integrations/* and
 # examples/integration/mcp_server.py keeps the base wheel dependency-free.
 mcp = ["mcp>=0.9"]
 otel = ["opentelemetry-api>=1.27", "opentelemetry-sdk>=1.27"]
+# v2.0 agentic-runtime adapter extras. Each adapter import-guards its
+# upstream SDK behind a HAS_X boolean so the base install stays
+# zero-runtime-dependency. Pin floors set to the first SDK release with
+# stable typing + the production-traffic surfaces the adapters wrap.
+a2a = ["a2a-sdk>=1.0"]
+langgraph = ["langgraph>=1.0"]
+maf = ["agent-framework>=1.0"]
+crewai = ["crewai>=0.140"]
+# v2.0 FastAPI governance endpoint extra (ADR-0032). The REST surface
+# is opt-in; adopters wiring DEFCON / veto-log / audit-chain verification
+# over HTTP install `[api]` to pull FastAPI + Uvicorn + httpx (the test
+# client's HTTP backend). SSE streaming uses Starlette's built-in
+# StreamingResponse — no extra dependency needed.
+api = [
+    "fastapi>=0.136",
+    "uvicorn[standard]>=0.30",
+    "httpx>=0.27",
+]
+# Convenience bundle for adopters who want every agentic-runtime adapter
+# without naming each extra individually.
+all-agentic = [
+    "a2a-sdk>=1.0",
+    "langgraph>=1.0",
+    "agent-framework>=1.0",
+    "crewai>=0.140",
+]
 all-integrations = [
     "mcp>=0.9",
     "opentelemetry-api>=1.27",
     "opentelemetry-sdk>=1.27",
+    "a2a-sdk>=1.0",
+    "langgraph>=1.0",
+    "agent-framework>=1.0",
+    "crewai>=0.140",
+    "fastapi>=0.136",
+    "uvicorn[standard]>=0.30",
+    "httpx>=0.27",
 ]
 
 [project.scripts]
@@ -119,6 +153,19 @@ omit = [
     # exercised in dedicated integration tests gated by env var, not the
     # default unit-test suite.
     "examples/integration/*",
+    # v2.0 agentic-runtime adapters (a2a, langgraph, maf, crewai) wrap
+    # third-party agent frameworks. The frameworks are opt-in dependencies
+    # (extras [a2a]/[langgraph]/[maf]/[crewai]/[all-agentic]); CI does not
+    # install them. Default test suite exercises the import-guard fallback;
+    # live-integration paths are exercised in deployer CI with the extras
+    # installed. Pattern matches examples/integration/* above.
+    "src/finserv_agent_audit/integrations/a2a_adapter.py",
+    "src/finserv_agent_audit/integrations/langgraph_adapter.py",
+    "src/finserv_agent_audit/integrations/maf_adapter.py",
+    "src/finserv_agent_audit/integrations/crewai_adapter.py",
+    # PE-portfolio dashboard is a reference operator script (parallel to
+    # examples/integration/*), not a unit-tested module.
+    "examples/portfolio_governance_dashboard.py",
 ]
 
 [tool.coverage.report]
