@@ -9,20 +9,69 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Planned (v1.2)
-- `protected_class_proxy_detector.py` — implementation per ADR-0019 (mutual-information threshold)
-- Drift Monitor — statistical divergence detection
-- Explainability Stub — EU AI Act Art. 13 transparency mapping
-- Rate Limiter / Throttle
-- MiFID II Art. 17 Checklist as executable Python assertions
+### Planned (v1.3) — Discrimination Frontier + Vendor Surface
+- Discrimination-frontier patterns — LDA search for protected-class proxies beyond mutual-information, LLM-as-classifier disparate-impact harness, effective-challenge harness, customer-facing chatbot guardrail
+- Vendor-clauses foundation-model class — sixth vendor class covering foundation-model API providers
+- NYDFS Part 500 AI mapping
+- State-AG enforcement matrix — multi-jurisdiction AI-enforcement actions catalog
+- Retraining-cadence monitor
+- Deprecation-watch — model + vendor deprecation calendar with sunset-date assertions
+- Vendor-attestation ledger
+- Disclosure templates — adverse-action, model-use, vendor-AI
+- Incident-retrospective template aligned to NIST AI RMF GOVERN-6.2
 
 ### Planned (v2.0)
-- LangChain / LangGraph adapter
-- CrewAI adapter
-- OpenTelemetry export
-- PyPI packaging
+- Agentic-AI ecosystem adapters — Google A2A · LangGraph · Microsoft Agent Framework · CrewAI
+- AIBOM generator (CISA + EU specs)
+- FastAPI governance endpoint
+- Kubernetes operator (DEFCON as CRD)
+- Adversarial test pack per ADR-0018 threat model
+- PE portfolio playbook
+- NAIC insurance mapping — NAIC Model Bulletin on Use of AI Systems by Insurers
 - `docs/fca_mapping.md` — UK FCA AI governance control mapping
 - `docs/mas_mapping.md` — Singapore MAS control mapping
+
+---
+
+## [1.2.0] — 2026-XX-XX (release date set at tag time)
+
+**OCC 2026-13 response + ecosystem onramps.** Treats the OCC's rescission of Bulletin 2011-12 as the v1.2 buyer-conversation opener, lands the Treasury FS AI RMF + NIST AI 600-1 GenAI Profile mappings, ships the first wave of ecosystem onramps (MCP server adapter, OpenTelemetry GenAI emitter, GitHub Actions composite action + reusable workflow, CLI tool), the buyer-conversation closers (pre-examination self-assessment, Big-4 engagement-letter exhibit, sample evidence pack, CAIO first-90-days playbook), the maturity model + CLI self-score, the drift-detection test pack, the `ProtectedClassProxyDetector` real implementation (closes v1.1 stub per ADR-0019), and the PyPI Trusted Publishing release pipeline.
+
+> Maintainer: the bullets below anticipate the full shape of v1.2 across Tranches A-D. Refresh from the actual landed commits at tag time — keep only what shipped; move the rest to `[Unreleased]` `### Planned (v1.3)`.
+
+### Added — Code
+- `protected_class_proxy_detector.py` — real implementation per ADR-0019; mutual-information threshold on `(feature, protected_class)` pairs; HMDA + GiveMeSomeCredit benchmark; published FPR/FNR failure-mode list. Closes the v1.1 stub.
+- MCP server adapter — exposes DEFCON state, veto log, audit-chain verification, and vendor-score drift status as Model Context Protocol tools. Optional extra `[mcp]`.
+- OpenTelemetry GenAI emitter — emits the v1.1 `AuditEventType` taxonomy as OTEL spans + attributes aligned to OTel GenAI semantic conventions. Optional extra `[otel]`.
+- CLI tool — `finserv-audit verify --jsonl PATH` and `finserv-audit maturity`; exit codes 0/1 for CI consumption.
+- Maturity-model self-score helper — evaluates current repo surface coverage against the 5-level FSI-AI-governance maturity rubric.
+
+### Added — Documentation
+- `docs/occ_2026_13_overlay.md` — the white-space play. Maps every v1.1 governance pattern to OCC's post-rescission posture and the model-risk governance principles surviving via SR 11-7 + the interagency Statement of Principles.
+- `docs/treasury_fs_ai_rmf_mapping.md` — Treasury's Financial Services AI Risk Management framework crosswalked to NIST AI RMF + the 14 v1.1 FSI mappings.
+- `docs/nist_ai_600_1_genai_profile_mapping.md` — GenAI-specific risk controls (confabulation, dangerous-content, data-integrity, IP, obscene/abusive/illegal content, information-security, value-chain).
+- 4 buyer-conversation closers: `docs/pre_examination_self_assessment.md` · `docs/big_four_engagement_letter_exhibit.md` · `docs/sample_evidence_pack.md` · `docs/caio_first_90_days_playbook.md`.
+- `docs/mrm_bridge_template.md` — MRM BRIDGE artifact reconciling SR 11-7 model-risk lifecycle owners with v1.1 governance gate owners.
+
+### Added — CI + tooling
+- `.github/workflows/publish.yml` — PyPI Trusted Publishing (OIDC, no API tokens) + PEP 740 Sigstore-attested wheels via `pypa/gh-action-pypi-publish@release/v1`. Two-stage flow: TestPyPI smoke -> required-reviewer gate -> production PyPI.
+- `docs/PYPI_TRUSTED_PUBLISHING_SETUP.md` — one-time maintainer setup walkthrough + troubleshooting.
+- `.github/actions/finserv-audit-verify/` — composite action; adopters gate a PR on an audit-stream verify in three lines of YAML.
+- `.github/workflows/finserv-audit-verify.reusable.yml` — reusable workflow alternative for adopters preferring `workflow_call`.
+- `tests/test_failure_modes_matrix.py` — drift detection between `FAILURE-MODES.md` and code (deferred from v1.1).
+- `tests/test_doc_staleness.py` — drift detection between `__all__` exports and "v0.X candidate" markers in docs (deferred from v1.1).
+- Project entry point `finserv-audit` declared in `pyproject.toml`.
+
+### Changed
+- Cross-cutting OCC 2011-12 citation updates note the OCC 2026-13 rescission while preserving the historical citation in `docs/occ_2011_12_mapping.md` (rebadged "historical reference; supersession context in `docs/occ_2026_13_overlay.md`"). The model-risk governance principles continue to apply via SR 11-7 + interagency Statement of Principles.
+- `pyproject.toml` gains optional extras `[mcp]`, `[otel]`, `[all-integrations]`. Default install remains zero-runtime-dependency.
+
+### Fixed
+- `ProtectedClassProxyDetector` stub from v1.1 raises `NotImplementedError` no longer; real implementation lands per ADR-0019 ship-gate.
+- Two v1.1-deferred drift tests (`test_failure_modes_matrix.py`, `test_doc_staleness.py`) lift to CI-required green status.
+
+### Removed — Pending Tranche A confirmation
+- v1.1 deprecation re-export shims at `patterns/*`, `schemas/*`, `examples/defcon_state_machine.py` (announced for v1.2 removal in the v1.1 release notes). Maintainer: confirm Tranche A actually landed the removal before keeping this line in the final CHANGELOG; if deferred, move to `[Unreleased]` `### Planned (v1.3)`.
 
 ---
 
