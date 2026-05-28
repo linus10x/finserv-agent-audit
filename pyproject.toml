@@ -93,6 +93,9 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--tb=short -q"
+markers = [
+    "network: tests that hit external network (e.g. Sigstore Rekor public-good); default-skipped unless FINSERV_AUDIT_NETWORK_TESTS=1",
+]
 
 [tool.coverage.run]
 source = ["src/finserv_agent_audit", "examples", "schemas", "patterns"]
