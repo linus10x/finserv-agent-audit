@@ -1,9 +1,11 @@
-# ADR: CI Self-Healing Watch Loop
+# OPS-001: CI Self-Healing Watch Loop
 
 **Status:** ACTIVE  
 **Date:** 2026-05-15  
 **Author:** Kunjar Bhaduri  
 **Repo:** finserv-agent-audit  
+
+> **Scope note:** This ADR records an internal CI tooling decision (the `scripts/ci_watch.py` self-heal loop) and is **not** part of the published governance pattern set. Governance ADRs live in `docs/adr/` numbered 0001 onward. Operational tooling ADRs live here in `docs/adr/ops/` with the `OPS-NNN` prefix.
 
 ---
 
