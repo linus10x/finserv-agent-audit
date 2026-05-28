@@ -37,8 +37,8 @@ from datetime import UTC, datetime
 from typing import Protocol
 from urllib.parse import urlparse
 
+from finserv_agent_audit.governance.audit_chain import AuditChain
 from finserv_agent_audit.schemas.audit_event import (
-    AuditChain,
     AuditEvent,
     AuditEventType,
     AutonomyLevel,

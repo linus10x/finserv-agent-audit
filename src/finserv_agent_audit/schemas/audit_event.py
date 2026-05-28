@@ -171,6 +171,16 @@ class AuditEvent:
 # WitnessRegister, MIProxy). It is re-exported here so the v1.0 imports
 # `from finserv_agent_audit.schemas.audit_event import AuditChain` and
 # `from schemas.audit_event import AuditChain` continue to resolve.
-from finserv_agent_audit.governance.audit_chain import AuditChain  # noqa: E402
+# Lazy via module __getattr__ to avoid a circular import when the
+# governance package is loaded first.
 
-__all__ = ["AuditChain", "AuditEvent", "AuditEventType", "AutonomyLevel"]
+
+def __getattr__(name: str) -> Any:
+    if name == "AuditChain":
+        from finserv_agent_audit.governance.audit_chain import AuditChain
+
+        return AuditChain
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+__all__ = ["AuditChain", "AuditEvent", "AuditEventType", "AutonomyLevel"]  # noqa: F822  # AuditChain resolved via __getattr__
