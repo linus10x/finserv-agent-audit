@@ -36,11 +36,12 @@ jobs:
         run: ruff format --check .
 
       - name: Type check (mypy)
-        run: mypy examples/ schemas/ patterns/ --ignore-missing-imports
+        run: mypy src/finserv_agent_audit/ examples/ schemas/ patterns/ --ignore-missing-imports
 
       - name: Run tests with coverage
         run: |
           pytest tests/ -v \
+            --cov=src/finserv_agent_audit \
             --cov=examples \
             --cov=schemas \
             --cov=patterns \

@@ -1,3 +1,7 @@
-"""Governance patterns: sovereign veto, shadow mode, circuit breaker, and more."""
+"""DEPRECATED in v1.1 — import from `finserv_agent_audit.governance` instead.
 
-__version__ = "1.0.0"
+This package's re-export shims are kept for backward compatibility through the v1.1.x line;
+removed in v1.2.
+"""
+
+__version__ = "1.1.0.dev0"

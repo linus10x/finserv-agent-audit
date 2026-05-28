@@ -3,7 +3,15 @@ requires = ["setuptools>=70", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["schemas*", "patterns*", "examples*"]
+where = ["src", "."]
+include = ["finserv_agent_audit*", "schemas*", "patterns*", "examples*"]
+exclude = ["tests*", "scripts*", "docs*"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+"schemas" = "schemas"
+"patterns" = "patterns"
+"examples" = "examples"
 
 [project]
 name = "finserv-agent-audit"
@@ -72,6 +80,8 @@ ignore = ["ANN401"]
 "schemas/*" = ["ANN"]
 "patterns/*" = ["ANN"]
 "scripts/*" = ["ANN", "SIM", "N816"]
+"src/finserv_agent_audit/*" = ["ANN"]
+
 
 [tool.mypy]
 python_version = "3.12"
@@ -85,7 +95,7 @@ testpaths = ["tests"]
 addopts = "--tb=short -q"
 
 [tool.coverage.run]
-source = ["examples", "schemas", "patterns"]
+source = ["src/finserv_agent_audit", "examples", "schemas", "patterns"]
 omit = ["tests/*"]
 
 [tool.coverage.report]
