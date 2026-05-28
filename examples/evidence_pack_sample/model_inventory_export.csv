@@ -1,0 +1,8 @@
+model_id,version,owner,validator,implementation_status,validation_date,next_validation_due,autonomy_band,intended_use
+credit-decision-v7.2,7.2.1,first-line-credit-decisioning,second-line-mrm-team,approved_for_production,2026-05-27,2027-05-27,A2,Consumer unsecured installment credit decisioning; income + bureau + internal payment history
+fraud-triage-v2.1,2.1.0,first-line-fraud-ops,second-line-mrm-team,approved_for_limited_use,2026-05-28,2026-11-28,A2,Consumer card transaction triage (consumer-card-only scope; small-business deferred to v2.2)
+aml-alert-prioritizer-v1.4,1.4.3,first-line-bsa-aml,second-line-mrm-team,approved_for_production,2026-02-12,2027-02-12,A2,Prioritization of BSA / AML alert queue; downstream of vendor-aml-monitor-D
+robo-allocator-internal-v3.0,3.0.2,first-line-wealth-platform,second-line-mrm-team,in_validation,,2026-08-15,A1,Retail robo-advisor model-portfolio allocation for taxable accounts ≤ $500K; second-line review in progress
+collections-segmenter-v4.5,4.5.0,first-line-collections,second-line-mrm-team,approved_for_production,2025-11-08,2026-11-08,A2,Post-charge-off recovery segmentation
+copilot-customer-comms-v0.9,0.9.1,first-line-customer-experience,second-line-mrm-team,proposed,,2026-06-30,A0,Drafting assistant for customer-service representative responses; A0 advisory-only; representative reviews and edits every output
+legacy-collections-scorer-v2,2.0.7,first-line-collections,second-line-mrm-team,retired,2024-08-15,2025-08-15,A2,Retired 2025-12-31; superseded by collections-segmenter-v4.5
