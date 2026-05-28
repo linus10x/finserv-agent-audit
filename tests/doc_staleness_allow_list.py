@@ -98,5 +98,19 @@ ALLOW_LIST: Final[frozenset[tuple[str, str, str]]] = frozenset(
         # remain on the v1.3 roadmap; this is current posture, not
         # stale documentation.
         ("ProtectedClassProxyDetector", "docs/caio_first_90_days_playbook.md", "not yet shipped"),
+        # --- v1.3 deferred-arm reconciliations -------------------------------
+        # `LDASearchHarness` IS shipped in v1.3. Both CHANGELOG.md and
+        # ROADMAP.md cite the "deferred" word in proximity to the name
+        # because the prose names the continuous-feature quantile-binning
+        # helper as still on the v1.4 roadmap. The proximity test fires
+        # on the legitimate v1.4-deferral mention.
+        ("LDASearchHarness", "CHANGELOG.md", "deferred"),
+        ("LDASearchHarness", "ROADMAP.md", "deferred"),
+        # `ProtectedClassProxyDetector` MI arm shipped in v1.2; LDA arm
+        # shipped via `LDASearchHarness` in v1.3; the v1.3 CHANGELOG and
+        # ROADMAP both cite the v1.4 "deferred" SHAP / CDD arms in
+        # proximity to the name. This is current posture, not stale.
+        ("ProtectedClassProxyDetector", "CHANGELOG.md", "deferred"),
+        ("ProtectedClassProxyDetector", "ROADMAP.md", "deferred"),
     }
 )

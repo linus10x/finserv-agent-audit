@@ -9,16 +9,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Planned (v1.3) — Discrimination Frontier + Vendor Surface
-- Discrimination-frontier patterns — LDA search for protected-class proxies beyond mutual-information, LLM-as-classifier disparate-impact harness, effective-challenge harness, customer-facing chatbot guardrail
-- Vendor-clauses foundation-model class — sixth vendor class covering foundation-model API providers
-- NYDFS Part 500 AI mapping
-- State-AG enforcement matrix — multi-jurisdiction AI-enforcement actions catalog
-- Retraining-cadence monitor
-- Deprecation-watch — model + vendor deprecation calendar with sunset-date assertions
-- Vendor-attestation ledger
-- Disclosure templates — adverse-action, model-use, vendor-AI
-- Incident-retrospective template aligned to NIST AI RMF GOVERN-6.2
+### Planned (v1.4) — Operational Refinements
+- `ProtectedClassProxyDetector` SHAP / CDD arms (per ADR-0019 v1.2 reconciliation; v1.3 ships the LDA arm via the new `LDASearchHarness`, SHAP + CDD remain deferred)
+- LDA-search continuous-feature quantile-binning helper (per `ProtectedClassProxyDetector` v1.2 docstring deferral)
+- NAIC Model Bulletin on Use of AI Systems by Insurers — insurance-vertical mapping
+- PCAOB AS 2201 amendment overlay as a separate `ASSURANCE-GUIDE` appendix
+- Additional state-AG enforcement cases as they emerge
+- `docs/fca_mapping.md` — UK FCA AI governance control mapping
+- `docs/mas_mapping.md` — Singapore MAS control mapping
 
 ### Planned (v2.0)
 - Agentic-AI ecosystem adapters — Google A2A · LangGraph · Microsoft Agent Framework · CrewAI
@@ -27,9 +25,68 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Kubernetes operator (DEFCON as CRD)
 - Adversarial test pack per ADR-0018 threat model
 - PE portfolio playbook
-- NAIC insurance mapping — NAIC Model Bulletin on Use of AI Systems by Insurers
-- `docs/fca_mapping.md` — UK FCA AI governance control mapping
-- `docs/mas_mapping.md` — Singapore MAS control mapping
+
+---
+
+## [1.3.0] — 2026-XX-XX (release date set at tag time)
+
+**Discrimination frontier + vendor surface.** Ships seven new governance modules across the discrimination frontier (LDA search beyond mutual-information, LLM-as-classifier disparate-impact harness, effective-challenge harness, customer-facing chatbot guardrail) and the third-party vendor surface (vendor-attestation ledger, retraining-cadence monitor, deprecation-watch), seven new ADRs (0020-0026), six new regulatory + incident + disclosure docs, and the sixth vendor class (foundation-model API providers).
+
+> Maintainer: the bullets below anticipate the full shape of v1.3 across Tranches A-D. Refresh from the actual landed commits at tag time — keep only what shipped; move anything that slipped to `[Unreleased]` `### Planned (v1.4)`.
+
+### Added — Code
+
+#### Discrimination-frontier patterns (Tranche A)
+- `lda_search.py` — `LDASearchHarness`: equally-accurate-less-discriminatory alternative search per ECOA / CFPB Circular 2023-09. Iterates feature-removal + threshold-shift + monotonic-constraint candidate set; surfaces the EALD frontier (per ADR-0020).
+- `llm_disparate_impact_harness.py` — `LLMDisparateImpactHarness`: EEOC 4/5ths-rule disparate-impact testing for LLM-agent outputs. Anchored to *Mobley v. Workday* (per ADR-0021).
+- `effective_challenge_harness.py` — `EffectiveChallengeHarness`: frontier-API model-validation surface satisfying SR 11-7 effective-challenge + OCC 2026-13 third-party-model expectations. Pluggable challenger-model interface (per ADR-0022).
+
+#### Vendor-surface patterns (Tranche B)
+- `vendor_attestation_ledger.py` — `VendorAttestationLedger`: append-only chain-of-custody ledger for third-party model attestations (model cards, eval reports, incident notices) per Treasury FS AI RMF + DORA Art. 28 (per ADR-0023).
+- `retraining_cadence_monitor.py` — `RetrainingCadenceMonitor`: weekly / monthly / continuous fine-tune cadence validation against declared model-card cadence; emits drift events when vendor cadence slips beyond the declared window (per ADR-0024).
+- `deprecation_watch.py` — `DeprecationWatch`: vendor model deprecation calendar with sunset-date assertions; emits `AuditEventType.DEPRECATION_ALERT` when a model's sunset enters the configured warning horizon (per ADR-0025).
+
+#### Customer-facing chatbot guardrail (Tranche C)
+- `customer_facing_chatbot_guardrail.py` — `CustomerFacingChatbotGuardrail`: policy-grounded RAG + commitment-interception + fabricated-policy block. Anchored to *Moffatt v. Air Canada* and EU AI Act Art. 13 (per ADR-0026).
+
+#### Schema extension (Tranche B)
+- `AuditEventType` enum gains `DEPRECATION_ALERT = "vendor.deprecation_alert"` for the `DeprecationWatch` surface.
+
+### Added — Documentation
+
+#### Seven new ADRs in `docs/adr/`
+0020 LDA Search · 0021 LLM Disparate-Impact Harness · 0022 Effective Challenge Harness · 0023 Vendor Attestation Ledger · 0024 Retraining Cadence Monitor · 0025 Deprecation Watch · 0026 Customer-Facing Chatbot Guardrail.
+
+#### Six new regulatory + incident + disclosure docs in `docs/` (Tranche D)
+- `docs/nydfs_part_500_ai_mapping.md` — New York DFS 23 NYCRR 500 AI overlay (cybersecurity-program controls applied to third-party model risk).
+- `docs/cfpb_ai_lending_supervisory_landscape.md` — CFPB supervisory landscape on AI in consumer lending (adverse-action, marketing, model risk, third-party oversight).
+- `docs/cfpb_circular_2023_09_mapping.md` — CFPB Circular 2023-09 (AVMs / algorithmic appraisal) overlay.
+- `docs/state_ag_enforcement_matrix.md` — multi-jurisdiction state attorney-general AI enforcement actions catalog.
+- `docs/ai_incident_retrospective_template.md` — post-incident retrospective template aligned to NIST AI RMF GOVERN-6.2.
+- `docs/disclosure_artifact_templates.md` — drop-in adverse-action / model-use / vendor-AI disclosure templates.
+
+#### Foundation-model vendor-clauses (Tranche B)
+- `vendor-clauses/foundation_model_api_vendor_clauses.md` — sixth FSI vendor class covering foundation-model API providers (OpenAI · Anthropic · Google · AWS Bedrock · Azure OpenAI). Sales-tool-grade addendum covering data-handling, training-data exclusion, model-version pinning, deprecation-notice SLAs, and incident-disclosure obligations.
+
+### Added — Tests
+
+- `tests/test_lda_search.py` — `LDASearchHarness` per-pattern test.
+- `tests/test_llm_disparate_impact_harness.py` — `LLMDisparateImpactHarness` per-pattern test.
+- `tests/test_effective_challenge_harness.py` — `EffectiveChallengeHarness` per-pattern test.
+- `tests/test_vendor_attestation_ledger.py` — `VendorAttestationLedger` per-pattern test.
+- `tests/test_retraining_cadence_monitor.py` — `RetrainingCadenceMonitor` per-pattern test.
+- `tests/test_deprecation_watch.py` — `DeprecationWatch` per-pattern test (covers the new `DEPRECATION_ALERT` enum value).
+- `tests/test_customer_facing_chatbot_guardrail.py` — `CustomerFacingChatbotGuardrail` per-pattern test.
+
+### Changed
+- `README.md` Patterns Included section re-versioned to v1.3; seven new rows added under Core Governance; Procurement-companion callout updated to six vendor classes; regulatory-mapping doc count raised; Roadmap "Shipped in v1.3" + "Coming in v1.4" + "Coming in v2.0" lines refreshed.
+- `ROADMAP.md` v1.3 section flipped from `_planned_` to `✅ Released` with the 14 v1.3 items checked; new `v1.4 — Operational Refinements` planned section added; v2.0 retitled "Agentic-AI Ecosystem + Platform Surfaces".
+- `CITATION.cff` abstract expanded to cite the seven new modules + foundation-model API vendor class + six new docs.
+- `src/finserv_agent_audit/__init__.py` docstring updated to enumerate the v1.3 public-API additions.
+
+### Fixed
+- Drift-test allow-lists (`tests/doc_staleness_allow_list.py`, `tests/test_failure_modes_matrix.py`) refreshed to acknowledge the seven new modules and the seven new ADRs.
+- `ProtectedClassProxyDetector` docstring now references `LDASearchHarness` as the LDA-arm complement to the v1.2 mutual-information arm (closes the v1.2 docstring deferral; SHAP / CDD arms remain on the v1.4 roadmap).
 
 ---
 

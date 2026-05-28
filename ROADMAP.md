@@ -53,21 +53,38 @@ This roadmap reflects the current development priorities for `finserv-agent-audi
 
 ---
 
-## v1.3 — Discrimination Frontier + Vendor Surface _(planned)_
+## v1.3 — Discrimination Frontier + Vendor Surface ✅ Released
 
-- [ ] **Discrimination-frontier patterns** — LDA search for protected-class proxies beyond mutual-information · LLM-as-classifier disparate-impact harness · effective-challenge harness · customer-facing chatbot guardrail
-- [ ] **Vendor-clauses foundation-model class** — sixth vendor class covering foundation-model API providers (OpenAI / Anthropic / Google / AWS Bedrock / Azure OpenAI)
-- [ ] **NYDFS Part 500 AI mapping** — New York DFS cybersecurity regulation, AI overlay
-- [ ] **State-AG enforcement matrix** — multi-jurisdiction state attorney-general AI-enforcement actions catalog
-- [ ] **Retraining-cadence monitor** — drift-trigger-based retraining recommendation gate
-- [ ] **Deprecation-watch** — model + vendor deprecation calendar with sunset-date assertions
-- [ ] **Vendor-attestation ledger** — append-only ledger of vendor attestations (model cards, eval reports, incident notices)
-- [ ] **Disclosure templates** — adverse-action, model-use, vendor-AI
-- [ ] **Incident-retrospective template** — aligned to NIST AI RMF GOVERN-6.2
+- [x] **Discrimination-frontier patterns** — `LDASearchHarness` (EALD search beyond mutual-information, ADR-0020) · `LLMDisparateImpactHarness` (EEOC 4/5ths-rule DI testing for LLM-agent outputs, anchored to *Mobley v. Workday*, ADR-0021) · `EffectiveChallengeHarness` (frontier-API model validation per SR 11-7, ADR-0022) · `CustomerFacingChatbotGuardrail` (policy-grounded RAG + commitment interception + fabricated-policy block, anchored to *Moffatt v. Air Canada* and EU AI Act Art. 13, ADR-0026)
+- [x] **Vendor-clauses foundation-model class** — sixth vendor class covering foundation-model API providers (OpenAI / Anthropic / Google / AWS Bedrock / Azure OpenAI)
+- [x] **NYDFS Part 500 AI mapping** — `docs/nydfs_part_500_ai_mapping.md`
+- [x] **CFPB AI lending supervisory landscape** — `docs/cfpb_ai_lending_supervisory_landscape.md`
+- [x] **CFPB Circular 2023-09 mapping** — `docs/cfpb_circular_2023_09_mapping.md` (AVMs / algorithmic appraisal)
+- [x] **State-AG enforcement matrix** — `docs/state_ag_enforcement_matrix.md` (multi-jurisdiction state attorney-general AI-enforcement actions catalog)
+- [x] **AI incident retrospective template** — `docs/ai_incident_retrospective_template.md` aligned to NIST AI RMF GOVERN-6.2
+- [x] **Disclosure artifact templates** — `docs/disclosure_artifact_templates.md` (adverse-action / model-use / vendor-AI)
+- [x] **VendorAttestationLedger** — append-only ledger of vendor attestations (model cards, eval reports, incident notices) per Treasury FS AI RMF + DORA Art. 28 (ADR-0023)
+- [x] **RetrainingCadenceMonitor** — weekly / monthly / continuous fine-tune validation cadence per SR 11-7 + OCC 2026-13 (ADR-0024)
+- [x] **DeprecationWatch** — model + vendor deprecation calendar with sunset-date assertions; new `AuditEventType.DEPRECATION_ALERT` enum value (ADR-0025)
+- [x] **Seven new governance ADRs** (0020-0026)
+- [x] **Seven new per-pattern tests** wiring the new modules into the existing 90% coverage gate
+- [x] **`__init__.py` + `CITATION.cff` abstract** refreshed to enumerate the v1.3 public-API additions
+
+---
+
+## v1.4 — Operational Refinements _(planned)_
+
+- [ ] **ProtectedClassProxyDetector SHAP / CDD arms** — per ADR-0019 v1.2 reconciliation deferral; v1.3 ships the LDA arm via the new `LDASearchHarness`, SHAP + CDD remain deferred
+- [ ] **LDA-search continuous-feature quantile-binning helper** — per `ProtectedClassProxyDetector` v1.2 docstring deferral
+- [ ] **NAIC Model Bulletin on Use of AI Systems by Insurers** — insurance-vertical mapping
+- [ ] **PCAOB AS 2201 amendment overlay** — separate `ASSURANCE-GUIDE` appendix
+- [ ] **Additional state-AG enforcement cases** as they emerge
 - [ ] **Drift Monitor** — statistical divergence detection between shadow and live agent outputs; triggers DEFCON escalation (carried from prior v1.2 plan)
 - [ ] **Explainability Stub** — structured rationale capture per agent decision; EU AI Act Art. 13 mapping (carried)
 - [ ] **Rate Limiter / Throttle** — per-agent execution budget (carried)
 - [ ] **MiFID II Art. 17 Checklist** — algorithmic trading pre-approval checklist as executable Python assertions (carried)
+- [ ] **UK FCA mapping** (`docs/fca_mapping.md`)
+- [ ] **Singapore MAS mapping** (`docs/mas_mapping.md`)
 
 ---
 
@@ -79,10 +96,7 @@ This roadmap reflects the current development priorities for `finserv-agent-audi
 - [ ] **Kubernetes operator** — DEFCON as a Kubernetes custom resource with controller-driven escalation
 - [ ] **Adversarial test pack** — red-team scenarios per ADR-0018 threat model
 - [ ] **PE portfolio playbook** — operating-partner-facing rollout sequence for portco AI governance
-- [ ] **NAIC insurance mapping** — NAIC Model Bulletin on Use of AI Systems by Insurers
 - [ ] **Async-native patterns** — `asyncio`-compatible versions of all patterns for high-throughput pipelines
-- [ ] **UK FCA mapping** (`docs/fca_mapping.md`)
-- [ ] **Singapore MAS mapping** (`docs/mas_mapping.md`)
 
 ---
 

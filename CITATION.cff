@@ -23,14 +23,25 @@ abstract: >-
   architecture, shadow-mode rollout, tamper-detecting hash-chain audit
   logging (within-trust-boundary), four Protocol seams for audit-chain
   integrity (LedgerStore, TimestampSource, WitnessRegister, MIProxy),
-  VendorScoreGate for third-party AI scoring drift detection, and six
+  VendorScoreGate for third-party AI scoring drift detection, and the
   FSI-specific governance gates (ModelInventory for SR 11-7,
   AdverseActionGate for FCRA + CFPB Circular 2022-03, SARWorkflowAudit
   for BSA/AML, EquityAudit for ECOA/Reg B, BestInterestCheck for SEC
-  Reg-BI, ProtectedClassProxyDetector stub per ADR-0019). Maps to
-  fourteen regulatory frameworks: SR 11-7, OCC 2011-12, GLBA, FCRA,
+  Reg-BI, ProtectedClassProxyDetector mutual-information arm). v1.3 adds
+  seven new governance modules covering the discrimination frontier and
+  third-party vendor surface (LDASearchHarness, LLMDisparateImpactHarness,
+  EffectiveChallengeHarness, VendorAttestationLedger, RetrainingCadenceMonitor,
+  DeprecationWatch, CustomerFacingChatbotGuardrail), the foundation-model
+  API vendor-clauses (sixth vendor class), and six new regulatory +
+  incident + disclosure docs (NYDFS Part 500 AI mapping, CFPB AI lending
+  supervisory landscape, CFPB Circular 2023-09 mapping, State-AG
+  enforcement matrix, AI incident retrospective template, Disclosure
+  artifact templates). Maps to twenty-plus regulatory frameworks including
+  SR 11-7, OCC 2011-12 (historical) + OCC 2026-13 overlay, GLBA, FCRA,
   ECOA, BSA/AML, SOX 404 ITGC, SEC 17a-4, SEC Reg-BI, CFPB Circular
-  2022-03, NIST AI RMF, ISO/IEC 42001, COSO ICAIR, EU AI Act 2024/1689.
+  2022-03, CFPB Circular 2023-09, NYDFS Part 500, NIST AI RMF, NIST AI
+  600-1 GenAI Profile, Treasury FS AI RMF, ISO/IEC 42001, COSO ICAIR,
+  EU AI Act 2024/1689, and multiple state-AG AI enforcement matters.
   Patterns were extracted from a multi-year private quantitative
   options research program with Marcos López de Prado as named advisor
   on adjacent work; the source program operates in paper-trading
@@ -47,5 +58,5 @@ keywords:
   - multi-agent systems
   - compliance
 license: MIT
-version: "1.2.0"
+version: "1.3.0"
 date-released: "2026-XX-XX"

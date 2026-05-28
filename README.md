@@ -148,7 +148,7 @@ flowchart LR
 
 ---
 
-## Patterns Included (v1.1)
+## Patterns Included (v1.3)
 
 **Core governance** (`src/finserv_agent_audit/governance/`)
 
@@ -159,6 +159,13 @@ flowchart LR
 | Audit Chain | `audit_chain.py` | Tamper-detecting hash-chain logging (within-trust-boundary) | EU AI Act Art. 12 · SEC 17a-4 |
 | Autonomy Ladder A0→A4 | `autonomy_ladder.py` | A2→A3 promotion-gate runtime helper | EU AI Act Art. 14 · SR 11-7 |
 | Shadow Mode Rollout | `shadow_mode.py` | SR 11-7 pre-promotion parallel runs | SR 11-7 |
+| LDA Search Harness | `lda_search.py` | Equally-accurate-less-discriminatory alternative search | ECOA · CFPB Circular 2023-09 |
+| LLM Disparate-Impact Harness | `llm_disparate_impact_harness.py` | EEOC 4/5ths-rule DI testing for LLM-agent outputs | ECOA · *Mobley v. Workday* |
+| Effective Challenge Harness | `effective_challenge_harness.py` | Frontier-API model validation per SR 11-7 | SR 11-7 · OCC 2026-13 |
+| Vendor Attestation Ledger | `vendor_attestation_ledger.py` | Third-party model attestation chain-of-custody | Treasury FS AI RMF · DORA Art. 28 |
+| Retraining Cadence Monitor | `retraining_cadence_monitor.py` | Weekly / monthly / continuous fine-tune validation cadence | SR 11-7 · OCC 2026-13 |
+| Deprecation Watch | `deprecation_watch.py` | Vendor model deprecation calendar with sunset-date assertions | SR 11-7 |
+| Customer-Facing Chatbot Guardrail | `customer_facing_chatbot_guardrail.py` | Policy-grounded RAG + commitment interception + fabricated-policy block | *Moffatt v. Air Canada* · EU AI Act Art. 13 |
 
 **Four Protocol seams** (audit-chain integrity layer, [ADR-0014](docs/adr/0014-persistence-witness-timestamp-pattern.md) + [ADR-0015](docs/adr/0015-mi-proxy-module-integrity.md))
 
@@ -194,19 +201,21 @@ flowchart LR
 
 ---
 
-## Regulatory mapping documents (17 in `docs/`)
+## Regulatory mapping documents (20+ in `docs/`)
 
 **Interagency MRM (post-April 17, 2026):** [Interagency MRM 2026 Overlay](docs/interagency_mrm_2026_overlay.md) · [MRM Bridge Whitepaper Template](docs/MRM_BRIDGE_TEMPLATE.md) — operational reference for agentic-AI workloads during the period between OCC Bulletin 2026-13 (joint OCC/FRB/FDIC, rescinds OCC 2011-12 and excludes generative + agentic AI from scope) and the forthcoming joint RFI.
 US Federal Reserve / OCC (legacy citation lineage): [SR 11-7](docs/sr11_7_mapping.md) · [OCC 2011-12](docs/occ_2011_12_mapping.md) — **rescinded by OCC Bulletin 2026-13 (April 17, 2026); retained as conceptual ancestry.**
 Consumer protection: [GLBA Safeguards](docs/glba_safeguards_mapping.md) · [FCRA / Reg V](docs/fcra_reg_v_mapping.md) · [ECOA / Reg B](docs/ecoa_reg_b_mapping.md)
 BSA / SOX / broker-dealer: [BSA / AML](docs/bsa_aml_mapping.md) · [SOX 404 ITGC](docs/sox_404_itgc_mapping.md) · [SEC 17a-4](docs/sec_17a_4_mapping.md)
-SEC + CFPB algorithmic posture: [SEC Reg-BI](docs/sec_reg_bi_mapping.md) · [CFPB Circular 2022-03](docs/cfpb_circular_2022_03_mapping.md)
+SEC + CFPB algorithmic posture: [SEC Reg-BI](docs/sec_reg_bi_mapping.md) · [CFPB Circular 2022-03](docs/cfpb_circular_2022_03_mapping.md) · [CFPB Circular 2023-09](docs/cfpb_circular_2023_09_mapping.md) (AVMs / algorithmic appraisal) · [CFPB AI Lending Supervisory Landscape](docs/cfpb_ai_lending_supervisory_landscape.md)
+State + multi-jurisdiction posture: [NYDFS Part 500 AI Mapping](docs/nydfs_part_500_ai_mapping.md) · [State-AG Enforcement Matrix](docs/state_ag_enforcement_matrix.md)
 AI-management standards: [NIST AI RMF](docs/nist_ai_rmf_mapping.md) · [NIST AI 600-1 GenAI Profile](docs/nist_ai_600_1_genai_profile_mapping.md) · [Treasury FS AI RMF](docs/treasury_fs_ai_rmf_mapping.md) · [ISO/IEC 42001](docs/iso_42001_mapping.md) · [COSO ICAIR](docs/coso_icair_mapping.md) · [EU AI Act](docs/eu_ai_act_mapping.md)
+Incident + disclosure artifacts: [AI Incident Retrospective Template](docs/ai_incident_retrospective_template.md) (NIST AI RMF GOVERN-6.2) · [Disclosure Artifact Templates](docs/disclosure_artifact_templates.md) (adverse-action / model-use / vendor-AI)
 Liability anchors: [FSI Settled Matters](docs/fsi_settled_matters.md) (Apple Card / NYDFS · CFPB Circular 2022-03 · CFPB v. Wells Fargo · SEC v. Schwab Intelligent Portfolios · cross-vertical TransUnion)
 
 ## Procurement companion (`vendor-clauses/`)
 
-Sales-tool-grade vendor-contract addenda for 5 FSI vendor classes: [KYC](vendor-clauses/kyc_vendor_clauses.md) · [Fraud-Score](vendor-clauses/fraud_score_vendor_clauses.md) · [Credit-Decision](vendor-clauses/credit_decision_vendor_clauses.md) · [Robo-Advisor](vendor-clauses/robo_advisor_vendor_clauses.md) · [AML Transaction Monitoring](vendor-clauses/aml_transaction_monitoring_vendor_clauses.md)
+Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-clauses/kyc_vendor_clauses.md) · [Fraud-Score](vendor-clauses/fraud_score_vendor_clauses.md) · [Credit-Decision](vendor-clauses/credit_decision_vendor_clauses.md) · [Robo-Advisor](vendor-clauses/robo_advisor_vendor_clauses.md) · [AML Transaction Monitoring](vendor-clauses/aml_transaction_monitoring_vendor_clauses.md) · [Foundation-Model API](vendor-clauses/foundation_model_api_vendor_clauses.md) (v1.3 — OpenAI / Anthropic / Google / AWS Bedrock / Azure OpenAI)
 
 ## Governance surfaces
 
@@ -262,11 +271,13 @@ See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
 
 **Shipped in v1.1:** Shadow Mode Rollout · four Protocol seams (LedgerStore + WORM, TimestampSource + RFC3161, WitnessRegister + Sigstore Rekor, MIProxy) · VendorScoreGate with 5 FSI vendor classes · AuditConsumer base + 3 reference agents · 6 FSI-specific governance modules (ModelInventory · AdverseActionGate · SARWorkflowAudit · EquityAudit · BestInterestCheck · v1.1 ProtectedClassProxyDetector API reservation) · 19 governance ADRs · 14 regulatory mapping documents · vendor-clauses procurement companion · 4 reference integrations · mypy --strict CI · 90% coverage gate.
 
-**Closed in v1.2:** ProtectedClassProxyDetector mutual-information arm (closes the ADR-0019 v1.1 deferral; SHAP / CDD arms remain on the v1.3 roadmap) · `tests/test_failure_modes_matrix.py` (parity test between `FAILURE-MODES.md` and the codebase) · `tests/test_doc_staleness.py` (parity test between `__all__` exports and public docs).
+**Shipped in v1.2:** ProtectedClassProxyDetector mutual-information arm (closes the ADR-0019 v1.1 deferral) · OCC 2026-13 overlay · Treasury FS AI RMF + NIST AI 600-1 GenAI Profile mappings · MCP server adapter · OpenTelemetry GenAI emitter · CLI tool (`finserv-audit verify` + `finserv-audit maturity`) · GitHub Actions composite action + reusable workflow · 4 buyer-conversation closers · MRM BRIDGE template · PyPI Trusted Publishing + PEP 740 Sigstore-attested wheels · `tests/test_failure_modes_matrix.py` + `tests/test_doc_staleness.py` drift-detection pack.
 
-**Coming in v1.2 (remainder):** Drift Monitor · Explainability surface · Rate Limiter / Throttle · MiFID II Art. 17 Checklist as executable assertions.
+**Shipped in v1.3:** LDA Search · LLM Disparate-Impact Harness · Effective Challenge Harness · Vendor Attestation Ledger · Retraining Cadence Monitor · Deprecation Watch · Customer-Facing Chatbot Guardrail · 6 new regulatory + incident + disclosure docs (NYDFS Part 500 · CFPB AI lending supervisory landscape · CFPB Circular 2023-09 · State-AG enforcement matrix · AI incident retrospective template · Disclosure artifact templates) · foundation-model API vendor-clauses (sixth vendor class) · 7 new ADRs (0020-0026).
 
-**Coming in v2.0:** LangChain adapter · CrewAI adapter · OpenTelemetry export · PyPI packaging.
+**Coming in v1.4:** ProtectedClassProxyDetector SHAP / CDD arms · LDA-search continuous-feature quantile-binning helper · NAIC Model Bulletin insurance mapping · PCAOB AS 2201 amendment overlay (ASSURANCE-GUIDE appendix) · additional state-AG enforcement cases as they emerge.
+
+**Coming in v2.0:** Agentic-AI ecosystem adapters — LangGraph · CrewAI · Microsoft Agent Framework (MAF) · Google A2A · AIBOM generator · FastAPI governance endpoint · Kubernetes operator (DEFCON as CRD) · adversarial test pack · PE portfolio playbook.
 
 ---
 

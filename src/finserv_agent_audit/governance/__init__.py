@@ -32,6 +32,28 @@ v1.1 (shipped 2026-XX-XX) — Tranche 2 ports + FSI overlay:
     Operational patterns:
         ShadowMode (SR 11-7 pre-promotion parallel runs, ADR-0006)
         AutonomyLadder runtime helper (A2→A3 promotion gate, ADR-0004 + 0007)
+
+v1.3 (ships 2026-XX-XX) — Discrimination-frontier patterns:
+
+    Fair-lending discrimination frontier (ADRs 0020-0022):
+        LDASearchHarness (ADR-0020) — Less Discriminatory Alternative
+        search per ACM-FAccT 2024 + CFPB Circular 2023-09 + the May
+        2026 CFPB final rule + Massachusetts AG July 2025 settlement
+        LLMDisparateImpactHarness (ADR-0021) — DI testing for LLM
+        outputs per EEOC 4/5ths rule + Mobley v. Workday May 2025
+        EffectiveChallengeHarness (ADR-0022) — SR 11-7 effective
+        challenge for frontier-API primaries; closes the OCC 2026-13
+        scope-exclusion gap
+
+    Customer-facing surface (ADR-0026):
+        CustomerFacingChatbotGuardrail — three-layer interception for
+        customer-facing banking chatbots; closes the Moffatt v. Air
+        Canada (BC CRT, Feb 14, 2024) operator-liability precedent
+        with policy-grounded RAG checking, money-movement /
+        commitment-class human-handoff routing, and no-fabricated-
+        policy assertion (PolicyCorpus + RAGSourceCheck Protocol seam
+        + ActionClass enum + GuardrailResponse + RequiresHumanHandoff
+        / FabricatedPolicyDetected exceptions)
 """
 
 # v1.0 core
@@ -55,11 +77,36 @@ from finserv_agent_audit.governance.best_interest_check import (
     BestInterestViolation,
     RecommendationProfile,
 )
+from finserv_agent_audit.governance.customer_facing_chatbot_guardrail import (
+    ActionClass,
+    CustomerFacingChatbotGuardrail,
+    FabricatedPolicyDetected,
+    GuardrailDecision,
+    GuardrailResponse,
+    PolicyCorpus,
+    PolicySource,
+    RAGSourceCheck,
+    RequiresHumanHandoff,
+)
 from finserv_agent_audit.governance.defcon import DEFCON, DEFCONMachine, RiskMetrics
+from finserv_agent_audit.governance.deprecation_watch import (
+    ChangelogParser,
+    DeprecationAnnouncement,
+    DeprecationWatch,
+)
+from finserv_agent_audit.governance.effective_challenge_harness import (
+    ChallengeReport,
+    EffectiveChallengeHarness,
+)
 from finserv_agent_audit.governance.equity_audit import (
     EquityAudit,
     EquityAuditViolation,
     ProtectedClass,
+)
+from finserv_agent_audit.governance.lda_search import (
+    LDACandidateReport,
+    LDASearchHarness,
+    LDASearchResult,
 )
 
 # v1.1 Protocol seams (ADR-0014, ADR-0015)
@@ -72,6 +119,11 @@ from finserv_agent_audit.governance.ledger_store_sqlite import SqliteLedgerStore
 from finserv_agent_audit.governance.ledger_store_worm import (
     WORMLedgerStore,
     WORMViolationError,
+)
+from finserv_agent_audit.governance.llm_disparate_impact_harness import (
+    LLMDisparateImpactHarness,
+    LLMDisparateImpactResult,
+    RubricScorer,
 )
 from finserv_agent_audit.governance.mi_proxy import (
     IntegrityVerificationError,
@@ -88,6 +140,11 @@ from finserv_agent_audit.governance.protected_class_proxy_detector import (
     ProtectedClassProxyDetector,
     ProxyDetectionResult,
     ProxyFeatureFlag,
+)
+from finserv_agent_audit.governance.retraining_cadence_monitor import (
+    RetrainingCadenceMonitor,
+    RetrainingCadenceReport,
+    RetrainingClass,
 )
 from finserv_agent_audit.governance.rfc3161_codec import (
     build_timestamp_request,
@@ -111,6 +168,11 @@ from finserv_agent_audit.governance.timestamp_source import (
     LocalClock,
     RFC3161Source,
     TimestampSource,
+)
+from finserv_agent_audit.governance.vendor_attestation_ledger import (
+    AttestationGap,
+    VendorAttestation,
+    VendorAttestationLedger,
 )
 
 # v1.1 Vendor-mediated AI (ADR-0016)
@@ -192,4 +254,33 @@ __all__ = [
     "PromotionVerdict",
     "ShadowRouter",
     "VetoDirection",
+    # v1.3 Discrimination-frontier patterns (ADRs 0020-0022)
+    "LDASearchHarness",
+    "LDACandidateReport",
+    "LDASearchResult",
+    "LLMDisparateImpactHarness",
+    "LLMDisparateImpactResult",
+    "RubricScorer",
+    "EffectiveChallengeHarness",
+    "ChallengeReport",
+    # v1.3 Customer-facing chatbot guardrail (ADR-0026)
+    "ActionClass",
+    "CustomerFacingChatbotGuardrail",
+    "FabricatedPolicyDetected",
+    "GuardrailDecision",
+    "GuardrailResponse",
+    "PolicyCorpus",
+    "PolicySource",
+    "RAGSourceCheck",
+    "RequiresHumanHandoff",
+    # v1.3 Vendor-surface patterns (ADRs 0023-0025)
+    "VendorAttestationLedger",
+    "VendorAttestation",
+    "AttestationGap",
+    "RetrainingCadenceMonitor",
+    "RetrainingClass",
+    "RetrainingCadenceReport",
+    "DeprecationWatch",
+    "DeprecationAnnouncement",
+    "ChangelogParser",
 ]
