@@ -148,7 +148,7 @@ flowchart LR
 
 ---
 
-## Patterns Included (v1.3)
+## Patterns Included (v2.0)
 
 **Core governance** (`src/finserv_agent_audit/governance/`)
 
@@ -199,6 +199,26 @@ flowchart LR
 
 `splunk_audit_sink.py` (HEC) · `datadog_audit_sink.py` (Logs API v2) · `sigstore_rekor_witness_demo.py` (public-good Rekor) · `aws_dynamo_ledger_store.py` (conditional-write split-brain prevention)
 
+**v2.0 Agentic-AI ecosystem adapters** (`src/finserv_agent_audit/integrations/`)
+
+| Adapter | Module | Wraps | Install extra |
+|---|---|---|---|
+| A2A Audit Adapter | `a2a_adapter.py` | Google / Linux-Foundation Agent2Agent (A2A) Protocol — task-lifecycle and message-exchange events ([ADR-0027](docs/adr/0027-a2a-audit-adapter.md)) | `pip install finserv-agent-audit[a2a]` |
+| LangGraph Audit Callback | `langgraph_adapter.py` | LangGraph node / edge / conditional / human-in-the-loop interrupt callbacks ([ADR-0028](docs/adr/0028-langgraph-audit-callback.md)) | `pip install finserv-agent-audit[langgraph]` |
+| MAF Audit Adapter | `maf_adapter.py` | Microsoft Agent Framework agent-step + tool-call + orchestrator-handoff hooks ([ADR-0029](docs/adr/0029-maf-audit-adapter.md)) | `pip install finserv-agent-audit[maf]` |
+| CrewAI Audit Adapter | `crewai_adapter.py` | CrewAI Crew / Agent / Task lifecycle hooks + tool-invocation events ([ADR-0030](docs/adr/0030-crewai-audit-adapter.md)) | `pip install finserv-agent-audit[crewai]` |
+
+Convenience bundle: `pip install finserv-agent-audit[all-agentic]` installs all four adapters at once.
+
+**v2.0 Platform surfaces**
+
+| Surface | Location | Purpose |
+|---|---|---|
+| AIBOM Generator | `src/finserv_agent_audit/governance/aibom.py` (`AIBOMGenerator`) | One governance call -> CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile dual emit ([ADR-0031](docs/adr/0031-aibom-generator.md)) |
+| Governance API | `src/finserv_agent_audit/integrations/governance_api.py` (`create_app`) | FastAPI REST surface (OpenAPI 3.1) + Server-Sent Events live stream for DEFCON, veto log, audit-chain verify, vendor-score drift, deprecation calendar, AIBOM emit; opt-in extra `[api]` ([ADR-0032](docs/adr/0032-fastapi-governance-endpoint.md)) |
+| Kubernetes Operator | `deploy/k8s/` | Three CRDs (`AuditChain`, `SovereignVeto`, `ChainSink`) + reconciler skeleton + Kyverno / OPA sample admission policies ([ADR-0033](docs/adr/0033-kubernetes-operator.md)) |
+| Adversarial Test Pack | `tests/adversarial/` | Garak probes + Promptfoo scenarios + Python harness coordinating both; per [ADR-0034](docs/adr/0034-adversarial-test-pack.md) and the ADR-0018 threat model |
+
 ---
 
 ## Regulatory mapping documents (20+ in `docs/`)
@@ -219,7 +239,7 @@ Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-
 
 ## Governance surfaces
 
-[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (19 governance ADRs)
+[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough; v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_appendix.md](docs/pcaob_as_2201_amendments_appendix.md)) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
 
 ---
 
@@ -253,6 +273,11 @@ The Autonomy Ladder (A0→A4) framework has been used to onboard compliance team
 | **Zero dependencies** | ✅ | ❌ (heavy) | ❌ (Azure SDK) | N/A |
 | **Runnable examples** | ✅ < 60 sec | ✅ | ⚠️ Complex setup | ❌ |
 | **Python 3.12+ typed** | ✅ mypy strict | ⚠️ Partial | ⚠️ Partial | N/A |
+| **Agentic-runtime adapters** | ✅ v2.0 — A2A · LangGraph · MAF · CrewAI | ⚠️ LangChain only | ⚠️ Azure-runtime only | ❌ |
+| **AIBOM (CycloneDX 1.7 + SPDX 3.0)** | ✅ v2.0 dual emit | ❌ | ❌ | ❌ |
+| **REST governance endpoint** | ✅ v2.0 FastAPI + SSE | ❌ | ⚠️ Azure-portal only | ❌ |
+| **Kubernetes operator + CRDs** | ✅ v2.0 (AuditChain · SovereignVeto · ChainSink) | ❌ | ❌ | ❌ |
+| **Adversarial test pack** | ✅ v2.0 — Garak + Promptfoo + Python harness | ❌ | ❌ | ⚠️ Awareness only |
 
 ---
 
@@ -275,9 +300,24 @@ See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
 
 **Shipped in v1.3:** LDA Search · LLM Disparate-Impact Harness · Effective Challenge Harness · Vendor Attestation Ledger · Retraining Cadence Monitor · Deprecation Watch · Customer-Facing Chatbot Guardrail · 6 new regulatory + incident + disclosure docs (NYDFS Part 500 · CFPB AI lending supervisory landscape · CFPB Circular 2023-09 · State-AG enforcement matrix · AI incident retrospective template · Disclosure artifact templates) · foundation-model API vendor-clauses (sixth vendor class) · 7 new ADRs (0020-0026).
 
-**Coming in v1.4:** ProtectedClassProxyDetector SHAP / CDD arms · LDA-search continuous-feature quantile-binning helper · NAIC Model Bulletin insurance mapping · PCAOB AS 2201 amendment overlay (ASSURANCE-GUIDE appendix) · additional state-AG enforcement cases as they emerge.
+**Shipped in v2.0:** Four agentic-AI runtime adapters (Google A2A · LangGraph · Microsoft Agent Framework · CrewAI) · AIBOMGenerator (CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile dual emit) · FastAPI governance endpoint (OpenAPI 3.1 + SSE) · Kubernetes operator + three CRDs (AuditChain · SovereignVeto · ChainSink) · Kyverno + OPA sample admission policies · adversarial test pack (Garak + Promptfoo + Python harness) · 5 new strategic docs (NAIC Model Bulletin on AI Systems by Insurers · DORA · EU AI Act August 2026 compliance pack · PE portfolio playbook · PCAOB AS 2201 amendments ASSURANCE-GUIDE appendix) · PE portfolio dashboard reference · 8 new ADRs (0027-0034).
 
-**Coming in v2.0:** Agentic-AI ecosystem adapters — LangGraph · CrewAI · Microsoft Agent Framework (MAF) · Google A2A · AIBOM generator · FastAPI governance endpoint · Kubernetes operator (DEFCON as CRD) · adversarial test pack · PE portfolio playbook.
+**Coming in v1.4 (operational refinements):** Drift Monitor · Explainability Stub · Rate Limiter / Throttle · MiFID II Art. 17 Checklist · additional state-AG enforcement cases as they emerge.
+
+**Coming in v2.1 (ecosystem completion):** DSPy adapter · LlamaIndex Workflows adapter · GraphQL governance endpoint (Strawberry-GraphQL alternative to the v2.0 REST surface) · removal of the v1.1 deprecation re-export shims at `patterns/` · `schemas/` · `examples/defcon_state_machine.py` · UK FCA mapping · Singapore MAS mapping · `ProtectedClassProxyDetector` SHAP / CDD arms · LDA-search continuous-feature quantile-binning helper.
+
+**Coming in v3.0 (async + multi-region + WASM):** Async-native pattern variants for high-throughput pipelines · multi-region audit-chain federation with quorum-anchored witness commits · WASM runtime for client-side guardrail evaluation.
+
+---
+
+## Deployment
+
+Two v2.0 platform surfaces ship deployment artifacts that adopters can lift directly into a regulated environment:
+
+- **Kubernetes operator + CRDs** — `deploy/k8s/` contains the controller manifests, three custom resource definitions (`AuditChain`, `SovereignVeto`, `ChainSink`), and Kyverno + OPA sample admission-policy bundles. See [`deploy/k8s/README.md`](deploy/k8s/README.md) for the one-page deploy walkthrough.
+- **FastAPI governance endpoint** — `src/finserv_agent_audit/integrations/governance_api.py` builds an OpenAPI 3.1 REST surface plus a Server-Sent Events live stream for `AuditEvent` flow. Install with `pip install finserv-agent-audit[api]`; serve via `uvicorn finserv_agent_audit.integrations.governance_api:create_app --factory`. See [ADR-0032](docs/adr/0032-fastapi-governance-endpoint.md) for the design rationale, route inventory, and authn / authz integration points.
+
+Earlier-version deployment walkthroughs (AWS / Azure) remain in [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md).
 
 ---
 
@@ -346,8 +386,13 @@ Patterns in this repository were informed by:
 | Fair-Housing Pre-Flight Gate | — | ✅ CRE-specific |
 | Tenant PII Data Residency | — | ✅ CRE-specific |
 | Model Inventory · Adverse-Action Gate · SAR Workflow · Equity Audit · Best-Interest Check | ✅ v1.1 FSI-specific | — |
+| Agentic-AI runtime adapters (A2A · LangGraph · MAF · CrewAI) | ✅ v2.0 | — |
+| AIBOM generator (CycloneDX 1.7 + SPDX 3.0) | ✅ v2.0 | — |
+| FastAPI governance endpoint (OpenAPI 3.1 + SSE) | ✅ v2.0 | — |
+| Kubernetes operator + CRDs (AuditChain · SovereignVeto · ChainSink) | ✅ v2.0 | — |
+| Adversarial test pack (Garak + Promptfoo + Python harness) | ✅ v2.0 | — |
 
-Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, mypy `--strict` clean in CI, and an enforced ≥90% coverage gate.
+Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, mypy `--strict` clean in CI, and an enforced ≥90% coverage gate. v2.0 of `finserv-agent-audit` adds the agentic-AI ecosystem adapters (Google A2A, LangGraph, Microsoft Agent Framework, CrewAI), the AIBOMGenerator (CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile dual emit), a FastAPI governance endpoint (OpenAPI 3.1 + SSE), a Kubernetes operator with three CRDs, and an adversarial test pack (Garak + Promptfoo + Python harness).
 
 The umbrella discipline — **Regulated-Operations AI Governance** — is documented at [autonomy-ladder.io](https://autonomy-ladder.io). One framework, two named verticals, one author.
 

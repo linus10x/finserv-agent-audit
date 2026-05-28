@@ -112,5 +112,29 @@ ALLOW_LIST: Final[frozenset[tuple[str, str, str]]] = frozenset(
         # proximity to the name. This is current posture, not stale.
         ("ProtectedClassProxyDetector", "CHANGELOG.md", "deferred"),
         ("ProtectedClassProxyDetector", "ROADMAP.md", "deferred"),
+        # --- v2.0 deferred-arm reconciliations -------------------------------
+        # `LDASearchHarness` (shipped v1.3) appears in the v2.0
+        # release-notes prose alongside the v2.1 Planned section, which
+        # names the `LDA-search continuous-feature quantile-binning
+        # helper` and `ProtectedClassProxyDetector SHAP / CDD arms` as
+        # deferred. The proximity test fires on the legitimate
+        # v2.1-deferral mention; both names are shipped surfaces.
+        ("LDASearchHarness", ".github/releases/v2.0.0-notes.md", "deferred"),
+        ("ProtectedClassProxyDetector", ".github/releases/v2.0.0-notes.md", "deferred"),
+        # --- v2.0 "operator stub" + "reference stub" prose -------------------
+        # The v2.0 CHANGELOG headline + the Tranche C bullet describe
+        # the Kubernetes operator as a "Kubernetes operator stub" — the
+        # operator ships as a controller-pattern reconciler skeleton
+        # that adopters subclass + extend, exactly as MonitorAgent /
+        # OrchestratorAgent ship as reference stubs (see the
+        # SHIP-RECEIPT.md entries above). The proximity test fires on
+        # the v2.0 surface names that appear in the same paragraph as
+        # the "operator stub" phrase. These are real, shipped names;
+        # the "stub" word references the operator deliberately, not
+        # the listed names.
+        ("AIBOMGenerator", "CHANGELOG.md", "stub"),
+        ("Agent", "CHANGELOG.md", "stub"),
+        ("AuditChain", "CHANGELOG.md", "stub"),
+        ("SovereignVeto", "CHANGELOG.md", "stub"),
     }
 )

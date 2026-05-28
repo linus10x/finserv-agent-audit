@@ -74,29 +74,52 @@ This roadmap reflects the current development priorities for `finserv-agent-audi
 
 ## v1.4 — Operational Refinements _(planned)_
 
-- [ ] **ProtectedClassProxyDetector SHAP / CDD arms** — per ADR-0019 v1.2 reconciliation deferral; v1.3 ships the LDA arm via the new `LDASearchHarness`, SHAP + CDD remain deferred
-- [ ] **LDA-search continuous-feature quantile-binning helper** — per `ProtectedClassProxyDetector` v1.2 docstring deferral
-- [ ] **NAIC Model Bulletin on Use of AI Systems by Insurers** — insurance-vertical mapping
-- [ ] **PCAOB AS 2201 amendment overlay** — separate `ASSURANCE-GUIDE` appendix
-- [ ] **Additional state-AG enforcement cases** as they emerge
 - [ ] **Drift Monitor** — statistical divergence detection between shadow and live agent outputs; triggers DEFCON escalation (carried from prior v1.2 plan)
 - [ ] **Explainability Stub** — structured rationale capture per agent decision; EU AI Act Art. 13 mapping (carried)
 - [ ] **Rate Limiter / Throttle** — per-agent execution budget (carried)
 - [ ] **MiFID II Art. 17 Checklist** — algorithmic trading pre-approval checklist as executable Python assertions (carried)
-- [ ] **UK FCA mapping** (`docs/fca_mapping.md`)
-- [ ] **Singapore MAS mapping** (`docs/mas_mapping.md`)
+- [ ] **Additional state-AG enforcement cases** as they emerge
+
+> v2.0 absorbed the v1.4-planned NAIC Model Bulletin mapping (via `docs/naic_model_bulletin_ai_insurers_mapping.md`), the PCAOB AS 2201 amendment overlay (via `docs/pcaob_as_2201_amendments_appendix.md`), and the LDA arm of `ProtectedClassProxyDetector` (via `LDASearchHarness` in v1.3). The remaining `LDA-search continuous-feature quantile-binning helper`, `SHAP / CDD arms`, `UK FCA mapping`, and `Singapore MAS mapping` items moved to the v2.1 ecosystem-completion planned section below.
 
 ---
 
-## v2.0 — Agentic-AI Ecosystem + Platform Surfaces _(planned)_
+## v2.0 — Agentic-AI Ecosystem + Platform Surfaces ✅ Released
 
-- [ ] **Agentic-AI ecosystem adapters** — Google A2A · LangGraph · Microsoft Agent Framework (MAF) · CrewAI — governance wrappers for each
-- [ ] **AIBOM generator** — AI Bill of Materials per emerging CISA + EU specs
-- [ ] **FastAPI governance endpoint** — REST surface exposing DEFCON state, veto log, audit-chain verification
-- [ ] **Kubernetes operator** — DEFCON as a Kubernetes custom resource with controller-driven escalation
-- [ ] **Adversarial test pack** — red-team scenarios per ADR-0018 threat model
-- [ ] **PE portfolio playbook** — operating-partner-facing rollout sequence for portco AI governance
-- [ ] **Async-native patterns** — `asyncio`-compatible versions of all patterns for high-throughput pipelines
+- [x] **Agentic-AI ecosystem adapters** — Google A2A (ADR-0027) · LangGraph (ADR-0028) · Microsoft Agent Framework (ADR-0029) · CrewAI (ADR-0030); each ships under its own optional extra (`[a2a]`, `[langgraph]`, `[maf]`, `[crewai]`) plus the `[all-agentic]` convenience bundle
+- [x] **AIBOM generator** — `AIBOMGenerator` emits CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile from one governance state (ADR-0031)
+- [x] **FastAPI governance endpoint** — REST surface for DEFCON state, veto log, audit-chain verification, vendor-score drift, deprecation calendar, AIBOM emit, plus an SSE live stream; OpenAPI 3.1; opt-in extra `[api]` (ADR-0032)
+- [x] **Kubernetes operator + CRDs** — controller-pattern operator with three custom resource definitions (`AuditChain`, `SovereignVeto`, `ChainSink`) under `deploy/k8s/` (ADR-0033)
+- [x] **Kyverno + OPA sample admission policies** — pre-cleared bundles for the two most-deployed Kubernetes policy engines
+- [x] **Adversarial test pack** — Garak probes + Promptfoo configs + Python harness coordinating both; targets the customer-facing chatbot guardrail, LangGraph audit callback boundary, EALD-search / effective-challenge / disparate-impact harnesses (ADR-0034)
+- [x] **PE portfolio playbook** — `docs/pe_portfolio_playbook.md` + `docs/pe_portfolio_dashboard.md` (operating-partner 30 / 60 / 90 / 180-day rollout sequence + dashboard reference)
+- [x] **NAIC Model Bulletin on Use of AI Systems by Insurers mapping** — `docs/naic_model_bulletin_ai_insurers_mapping.md` (carried forward from v1.4)
+- [x] **DORA mapping** — `docs/dora_mapping.md` (Regulation (EU) 2022/2554 Art. 28 + ICT incident-reporting overlay)
+- [x] **EU AI Act August 2026 compliance pack** — `docs/eu_ai_act_aug_2026_compliance_pack.md` (deployer checklist timed to the high-risk-AI substantive-obligation entry into force)
+- [x] **PCAOB AS 2201 amendments ASSURANCE-GUIDE appendix** — `docs/pcaob_as_2201_amendments_appendix.md` (carried forward from v1.4)
+- [x] **Eight new governance ADRs** (0027-0034)
+- [x] **`__init__.py` + `CITATION.cff` abstract** refreshed to enumerate the v2.0 public-API additions
+
+---
+
+## v2.1 — Ecosystem Completion _(planned)_
+
+- [ ] **DSPy adapter** — Stanford-originated framework with production usage at Moody's; prestige play for the FSI buyer conversation
+- [ ] **LlamaIndex Workflows adapter** — agentic-runtime adapter for the LlamaIndex Workflows event-driven orchestration surface
+- [ ] **GraphQL governance endpoint** — Strawberry-GraphQL alternative to the v2.0 REST surface for adopters standardized on GraphQL
+- [ ] **Remove v1.1 deprecation re-export shims** at `patterns/`, `schemas/`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.0 for one additional minor-bump grace window)
+- [ ] **UK FCA mapping** (`docs/fca_mapping.md`)
+- [ ] **Singapore MAS mapping** (`docs/mas_mapping.md`)
+- [ ] **`ProtectedClassProxyDetector` SHAP / CDD arms** — per ADR-0019 v1.2 reconciliation deferral; v1.3 shipped the LDA arm via `LDASearchHarness`
+- [ ] **LDA-search continuous-feature quantile-binning helper** — per `ProtectedClassProxyDetector` v1.2 docstring deferral
+
+---
+
+## v3.0 — Async + Multi-Region + WASM _(planned)_
+
+- [ ] **Async-native pattern variants** — `asyncio`-compatible versions of every governance pattern for high-throughput agent pipelines
+- [ ] **Multi-region audit-chain federation** — cross-region replication with quorum-anchored witness commits and a regional-failure de-conflict protocol
+- [ ] **WASM runtime for client-side guardrail evaluation** — compile the customer-facing chatbot guardrail and the autonomy-ladder runtime helper to WebAssembly for in-browser pre-flight enforcement
 
 ---
 

@@ -1,6 +1,6 @@
 """Governance patterns for autonomous AI agents in regulated financial services.
 
-Public API (v1.3.0 — discrimination frontier + vendor surface):
+Public API (v2.0.0 — agentic-AI ecosystem + platform surfaces):
 
     from finserv_agent_audit.governance import SovereignVeto, DEFCONMachine
     from finserv_agent_audit.governance import (
@@ -11,17 +11,36 @@ Public API (v1.3.0 — discrimination frontier + vendor surface):
         RetrainingCadenceMonitor,
         DeprecationWatch,
         CustomerFacingChatbotGuardrail,
+        AIBOMGenerator,
+    )
+    from finserv_agent_audit.integrations import (
+        A2AAuditAdapter,
+        LangGraphAuditCallback,
+        MAFAuditAdapter,
+        CrewAIAuditAdapter,
+        OTELGenAIEmitter,
     )
     from finserv_agent_audit.schemas import AuditEvent, AuditChain, AuditEventType, AutonomyLevel
 
-v1.3 adds seven new governance modules (LDA search beyond mutual-information,
-LLM disparate-impact harness, effective-challenge harness, vendor-attestation
-ledger, retraining-cadence monitor, deprecation-watch, customer-facing chatbot
-guardrail), the foundation-model API vendor-clauses (sixth vendor class), six
-new regulatory + incident + disclosure docs, and seven new ADRs (0020-0026).
+v2.0 adds four agentic-AI runtime adapters (Google A2A · LangGraph ·
+Microsoft Agent Framework · CrewAI), the `AIBOMGenerator` (CycloneDX 1.7
+ML-BOM + SPDX 3.0 AI Profile dual emit), a FastAPI governance endpoint
+with OpenAPI 3.1 + Server-Sent Events live streams, a Kubernetes
+operator stub with three custom resource definitions (AuditChain,
+SovereignVeto, ChainSink) and Kyverno + OPA sample admission policies,
+an adversarial test pack (Garak probes + Promptfoo scenarios + Python
+harness) per the ADR-0018 threat model, eight new ADRs (0027-0034), and
+five new strategic docs (NAIC insurance, DORA, EU AI Act August 2026
+compliance pack, PE portfolio playbook, PCAOB AS 2201 amendments
+appendix) plus a PE portfolio dashboard reference.
 
-The v1.1 legacy import shims at `patterns.*`, `schemas.*`, `examples.defcon_state_machine`
-were scheduled for removal in v1.2; migrate to the canonical `finserv_agent_audit.*` paths.
+v2.0 is additive — no breaking API changes. The major version bump
+signals ecosystem maturity (four runtime adapters + Kubernetes operator
++ REST endpoint + AIBOM dual emit), not a wire-format break. The
+v1.1 deprecation re-export shims at `patterns/`, `schemas/`, and
+`examples/defcon_state_machine.py` remain in place; their removal is
+scheduled for v2.1. Migrate to the canonical `finserv_agent_audit.*`
+paths to insulate from that follow-up bump.
 """
 
-__version__ = "1.3.0"
+__version__ = "2.0.0"

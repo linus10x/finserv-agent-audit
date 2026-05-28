@@ -9,22 +9,95 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Planned (v1.4) — Operational Refinements
-- `ProtectedClassProxyDetector` SHAP / CDD arms (per ADR-0019 v1.2 reconciliation; v1.3 ships the LDA arm via the new `LDASearchHarness`, SHAP + CDD remain deferred)
-- LDA-search continuous-feature quantile-binning helper (per `ProtectedClassProxyDetector` v1.2 docstring deferral)
-- NAIC Model Bulletin on Use of AI Systems by Insurers — insurance-vertical mapping
-- PCAOB AS 2201 amendment overlay as a separate `ASSURANCE-GUIDE` appendix
-- Additional state-AG enforcement cases as they emerge
+### Planned (v2.1) — Ecosystem Completion
+- DSPy adapter — Stanford-originated framework with production usage at Moody's; prestige play for the FSI buyer conversation
+- LlamaIndex Workflows adapter — agentic-runtime adapter for the LlamaIndex Workflows event-driven orchestration surface
+- GraphQL governance endpoint — Strawberry-GraphQL alternative to the v2.0 REST surface for adopters standardized on GraphQL
+- Remove v1.1 deprecation re-export shims at `patterns/*`, `schemas/*`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.0 for one additional minor-bump grace window)
 - `docs/fca_mapping.md` — UK FCA AI governance control mapping
 - `docs/mas_mapping.md` — Singapore MAS control mapping
+- `ProtectedClassProxyDetector` SHAP / CDD arms (per ADR-0019 v1.2 reconciliation; v1.3 shipped the LDA arm via `LDASearchHarness`)
+- LDA-search continuous-feature quantile-binning helper (per `ProtectedClassProxyDetector` v1.2 docstring deferral)
 
-### Planned (v2.0)
-- Agentic-AI ecosystem adapters — Google A2A · LangGraph · Microsoft Agent Framework · CrewAI
-- AIBOM generator (CISA + EU specs)
-- FastAPI governance endpoint
-- Kubernetes operator (DEFCON as CRD)
-- Adversarial test pack per ADR-0018 threat model
-- PE portfolio playbook
+### Planned (v3.0) — Async-Native + Multi-Region + WASM
+- Async-native pattern variants — `asyncio`-compatible versions of every governance pattern for high-throughput agent pipelines
+- Multi-region audit-chain federation — cross-region replication with quorum-anchored witness commits and a regional-failure de-conflict protocol
+- WASM runtime for client-side guardrail evaluation — compile the customer-facing chatbot guardrail and the autonomy-ladder runtime helper to WebAssembly for in-browser pre-flight enforcement
+
+---
+
+## [2.0.0] — 2026-XX-XX (release date set at tag time)
+
+**Agentic-AI ecosystem + platform surfaces.** Ships four agentic-runtime audit adapters (Google A2A, LangGraph, Microsoft Agent Framework, CrewAI), the `AIBOMGenerator` (CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile dual emit), a FastAPI governance endpoint with OpenAPI 3.1 + Server-Sent Events, a Kubernetes operator stub with three custom resource definitions (AuditChain, SovereignVeto, ChainSink) and Kyverno + OPA sample admission policies, an adversarial test pack (Garak probes + Promptfoo scenarios + Python harness) per the ADR-0018 threat model, eight new ADRs (0027-0034), and five new strategic docs (NAIC insurance, DORA, EU AI Act August 2026 compliance pack, PE portfolio playbook, PCAOB AS 2201 amendments) plus a PE portfolio dashboard reference.
+
+> Maintainer: the bullets below anticipate the full shape of v2.0 across Tranches A-E. Refresh from the actual landed commits at tag time — keep only what shipped; move anything that slipped to `[Unreleased]` `### Planned (v2.1)`.
+
+### Added — Code
+
+#### Agentic-runtime adapters (Tranche A — `src/finserv_agent_audit/integrations/`)
+- `a2a_adapter.py` — `A2AAuditAdapter`: wraps an A2A (Agent2Agent, Linux-Foundation-donated 2025) server or client and emits one `AuditEvent` per task-lifecycle transition and per message exchange. Transport-agnostic; integrates SovereignVeto on inbound-task pre-execution (per ADR-0027).
+- `langgraph_adapter.py` — `LangGraphAuditCallback`: LangGraph node / edge callback that emits an `AuditEvent` per node-entry, node-exit, conditional-edge resolution, and human-in-the-loop interrupt. Wires SovereignVeto checks at the node-pre-execution boundary (per ADR-0028).
+- `maf_adapter.py` — `MAFAuditAdapter`: Microsoft Agent Framework adapter; emits one `AuditEvent` per agent-step, tool-call, and orchestrator-handoff. Supports both single-agent and group-chat orchestration patterns (per ADR-0029).
+- `crewai_adapter.py` — `CrewAIAuditAdapter`: CrewAI adapter wrapping Crew, Agent, and Task lifecycle hooks; emits per-task-start / per-task-end / per-tool-invocation AuditEvents and surfaces SovereignVeto at the Crew kickoff boundary (per ADR-0030).
+
+#### Platform surfaces (Tranches B + C)
+- `governance/aibom.py` — `AIBOMGenerator`: dual-emit AI Bill of Materials per the CycloneDX 1.7 ML-BOM profile (machine-learning-model component type + modelCard extension) and the SPDX 3.0 AI Profile (ai_AIPackage class + AI-specific properties). One governance call -> two procurement-grade artifacts (per ADR-0031).
+- `integrations/governance_api.py` — FastAPI governance endpoint exposing DEFCON state, veto log, audit-chain verification, vendor-score drift, deprecation calendar, and AIBOM emit as REST resources under OpenAPI 3.1. Includes a Server-Sent Events live stream of `AuditEvent` flow. Optional extra `[api]` (per ADR-0032).
+- `deploy/k8s/operator/` — Kubernetes operator stub with reconciler skeletons for the three CRDs below. Designed to run as a controller-pattern Deployment in the governance namespace (per ADR-0033).
+
+#### Schema extension
+- `AuditEventType` enum picks up the runtime-adapter and operator surfaces (one event-type per adapter milestone class) where the tranche-A subagents landed enum amendments; the major-version bump validates the enum-vocabulary expansion without a wire-format break.
+
+### Added — Documentation
+
+#### Eight new ADRs in `docs/adr/`
+0027 A2A Audit Adapter · 0028 LangGraph Audit Callback · 0029 Microsoft Agent Framework Audit Adapter · 0030 CrewAI Audit Adapter · 0031 AIBOM Generator (CycloneDX 1.7 + SPDX 3.0) · 0032 FastAPI Governance Endpoint · 0033 Kubernetes Operator + CRDs · 0034 Adversarial Test Pack.
+
+#### Five new strategic docs in `docs/`
+- `docs/naic_model_bulletin_ai_insurers_mapping.md` — NAIC Model Bulletin on the Use of AI Systems by Insurers; insurance-vertical mapping for the v1.4 carry-forward item.
+- `docs/dora_mapping.md` — Regulation (EU) 2022/2554 (Digital Operational Resilience Act) crosswalk; Art. 28 third-party-ICT risk + ICT incident-reporting overlay aligned to `VendorAttestationLedger` + `AuditChain`.
+- `docs/eu_ai_act_aug_2026_compliance_pack.md` — Consolidated EU AI Act compliance pack timed to the August 2026 high-risk-AI substantive-obligation entry into force; bundles the Art. 9 risk-management, Art. 12 logging, Art. 13 transparency, Art. 14 human-oversight, and Art. 15 accuracy / robustness / cybersecurity controls into a deployer checklist.
+- `docs/pe_portfolio_playbook.md` — PE operating-partner-facing rollout sequence for portco AI governance; 30 / 60 / 90 / 180-day deliverables anchored to the v1.1-v2.0 surface.
+- `docs/pcaob_as_2201_amendments_appendix.md` — PCAOB AS 2201 amendment overlay as a separate `ASSURANCE-GUIDE` appendix; Big-4 audit-evidence walkthrough refreshed to the amended ICFR-attestation surface.
+
+#### One PE portfolio dashboard reference + adversarial-testing guide
+- `docs/pe_portfolio_dashboard.md` — Reference dashboard schema (KPIs, status colors, escalation triggers) accompanying the playbook.
+- `tests/adversarial/README.md` — Adversarial test pack guide covering the Garak probe set, Promptfoo scenario set, and the Python harness wiring.
+
+#### Kubernetes deploy README
+- `deploy/k8s/README.md` — One-page operator deployment guide covering the three CRDs, the controller Deployment, and the Kyverno / OPA sample admission policies.
+
+### Added — Tests
+
+#### Adversarial test pack (Tranche D — `tests/adversarial/`)
+- `tests/adversarial/garak/` — Garak probe set targeting prompt-injection, sycophancy, and policy-bypass against the customer-facing chatbot guardrail and the LangGraph audit callback boundary.
+- `tests/adversarial/promptfoo/` — Promptfoo configs for the EALD-search, effective-challenge, and LLM disparate-impact harness surfaces; deterministic-seed scenarios driving the assertion grid.
+- `tests/adversarial/test_harness.py` — Python harness coordinating the Garak + Promptfoo runs and writing the consolidated report consumed by the `ASSURANCE-GUIDE` PCAOB AS 2201 appendix.
+
+#### Per-adapter, AIBOM, and governance-API tests
+- `tests/test_a2a_adapter.py` · `tests/test_langgraph_adapter.py` · `tests/test_maf_adapter.py` · `tests/test_crewai_adapter.py` — per-adapter unit tests covering each lifecycle-hook emission and the SovereignVeto wiring.
+- `tests/test_aibom.py` — `AIBOMGenerator` round-trip tests covering both CycloneDX 1.7 and SPDX 3.0 emit paths plus the canonical hashing of both documents.
+- `tests/test_governance_api.py` — FastAPI governance endpoint tests covering each REST resource + the SSE live stream + the OpenAPI 3.1 schema export.
+
+### Added — CI + tooling
+- `deploy/k8s/crds/` — Three custom resource definitions (`auditchain.yaml`, `sovereignveto.yaml`, `chainsink.yaml`) for the operator.
+- `deploy/k8s/policies/kyverno/` + `deploy/k8s/policies/opa/` — Sample admission-policy bundles for the two most-deployed Kubernetes policy engines.
+- `deploy/k8s/operator/Dockerfile` — Container build for the operator controller process.
+- `pyproject.toml` gains five new optional-dependency groups: `[a2a]`, `[langgraph]`, `[maf]`, `[crewai]`, `[api]`. New convenience bundle `[all-agentic]` pulls every runtime adapter at once; `[all-integrations]` expands to include every v2.0 onramp.
+
+### Changed
+- `README.md` rewrite to v2.0 — Patterns Included section re-versioned, v2.0 agentic-AI ecosystem adapters sub-table added, v2.0 platform surfaces sub-table added, "How It Compares" table picks up v2.0 cells (adversarial-test pack as the named competitive moat), Roadmap section refreshed with "Shipped in v2.0", "Coming in v2.1", "Coming in v3.0", new "Deployment" section linking `deploy/k8s/README.md` + the FastAPI governance API doc, Related-family parity table picks up v2.0 rows, closing summary line picks up the v2.0 surfaces.
+- `ROADMAP.md` — `v2.0 — Agentic-AI Ecosystem + Platform Surfaces` flipped from planned to `✅ Released` with every item checked; new `v2.1 — Ecosystem Completion` planned section added; new `v3.0 — Async + Multi-Region + WASM` planned section added.
+- `CITATION.cff` abstract expanded to cite the four agentic-runtime adapters + AIBOM + FastAPI governance endpoint + Kubernetes operator + adversarial test pack + the five v2.0 strategic docs + DORA + PCAOB AS 2201 amendments + NAIC bulletin.
+- `src/finserv_agent_audit/__init__.py` docstring rewritten to enumerate the v2.0 public-API additions.
+- `src/finserv_agent_audit/integrations/__init__.py` exports refreshed to import-guard the four agentic-runtime adapter classes alongside the v1.2 OTEL emitter.
+- `src/finserv_agent_audit/governance/__init__.py` exports add `AIBOMGenerator`.
+
+### Breaking Changes
+- **None.** v2.0 is fully additive against v1.3. The major-version bump signals ecosystem maturity (four runtime adapters + Kubernetes operator + REST endpoint + AIBOM dual emit) rather than a wire-format or import-path break. All v1.x imports continue to resolve. The v1.1 deprecation re-export shims at `patterns/`, `schemas/`, and `examples/defcon_state_machine.py` are still in place — their removal is now scheduled for v2.1 (one additional minor-bump grace window beyond the originally announced v1.2 removal).
+
+### Fixed
+- Drift-test allow-list (`tests/doc_staleness_allow_list.py`) refreshed to acknowledge the v2.0 prose co-occurrences (adapter-class names appearing in proximity to "deferred" markers that reference the v2.1 ecosystem-completion list, etc.).
 
 ---
 
@@ -264,5 +337,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   are clearly marked as examples and must be calibrated per system before deployment.
 - No strategy logic or alpha signals — this repository is governance-layer only.
 
+[2.0.0]: https://github.com/linus10x/finserv-agent-audit/releases/tag/v2.0.0
 [1.0.0]: https://github.com/linus10x/finserv-agent-audit/releases/tag/v1.0.0
-[Unreleased]: https://github.com/linus10x/finserv-agent-audit/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/linus10x/finserv-agent-audit/compare/v2.0.0...HEAD

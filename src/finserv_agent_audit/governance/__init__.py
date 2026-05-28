@@ -1,4 +1,4 @@
-"""Governance patterns — v1.1.
+"""Governance patterns — v2.0.
 
 v1.0 (shipped 2026-05-15):
     - DEFCONMachine (risk-state machine with hysteresis)
@@ -54,6 +54,16 @@ v1.3 (ships 2026-XX-XX) — Discrimination-frontier patterns:
         policy assertion (PolicyCorpus + RAGSourceCheck Protocol seam
         + ActionClass enum + GuardrailResponse + RequiresHumanHandoff
         / FabricatedPolicyDetected exceptions)
+
+v2.0 (ships 2026-XX-XX) — Platform surfaces:
+
+    AIBOM dual emit (ADR-0031):
+        AIBOMGenerator — one governance call yields a CycloneDX 1.7
+        ML-BOM (machine-learning-model component type + modelCard
+        extension) and an SPDX 3.0 AI Profile document
+        (ai_AIPackage class + AI-specific properties). The class is
+        re-exported here when `governance/aibom.py` is present;
+        the v2.0 Tranche B subagent lands that module.
 """
 
 # v1.0 core
@@ -62,6 +72,17 @@ from finserv_agent_audit.governance.adverse_action_gate import (
     AdverseActionGate,
     AdverseActionViolation,
 )
+
+# v2.0 platform surface — AIBOM dual emit (ADR-0031)
+try:  # pragma: no cover - module ships in v2.0 Tranche B
+    from finserv_agent_audit.governance.aibom import (  # noqa: F401
+        AIBOMGenerator,
+        AIBOMModelRecord,
+    )
+
+    _HAS_AIBOM = True
+except ImportError:  # pragma: no cover
+    _HAS_AIBOM = False
 from finserv_agent_audit.governance.audit_chain import AuditChain, AuditChainTamperError
 
 # v1.1 Operational (ADR-0004, ADR-0006)
@@ -284,3 +305,9 @@ __all__ = [
     "DeprecationAnnouncement",
     "ChangelogParser",
 ]
+
+# v2.0 platform surface — AIBOM dual emit (ADR-0031). The names are
+# appended dynamically so the module gracefully no-ops if the v2.0
+# Tranche B subagent has not yet landed `governance/aibom.py`.
+if _HAS_AIBOM:  # pragma: no cover
+    __all__.extend(["AIBOMGenerator", "AIBOMModelRecord"])
