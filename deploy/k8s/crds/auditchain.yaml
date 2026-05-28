@@ -1,0 +1,171 @@
+# AuditChain CustomResourceDefinition.
+#
+# Declarative spec for a finserv-agent-audit AuditChain instance running
+# inside a Kubernetes cluster. The operator (deploy/k8s/operator/) watches
+# this CRD and reconciles each Spec into a live Python AuditChain backed
+# by the named ledger store, timestamp source, and optional witness +
+# MI proxy seams (see ADR-0003, ADR-0014, ADR-0015).
+#
+# Production deployers should run the chain verify() job on a cron and
+# write the result back into .status.intact + .status.last_verified_at.
+# See deploy/k8s/README.md for the full deployment narrative.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: auditchains.finserv.io
+spec:
+  group: finserv.io
+  scope: Namespaced
+  names:
+    plural: auditchains
+    singular: auditchain
+    kind: AuditChain
+    shortNames:
+      - ac
+    categories:
+      - finserv
+      - governance
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - ledger_store_class
+                - timestamp_source_class
+                - retention_days
+              properties:
+                ledger_store_class:
+                  type: string
+                  enum:
+                    - inmemory
+                    - jsonl
+                    - sqlite
+                    - worm
+                    - custom
+                  description: |
+                    Ledger-store backend the operator should construct.
+                    Maps 1:1 to a class in
+                    finserv_agent_audit.governance.ledger_store*.
+                    'custom' defers construction to a deployer-supplied
+                    factory referenced via .spec.custom_factory_ref.
+                ledger_store_config:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                  description: |
+                    Free-form configuration passed to the ledger-store
+                    constructor. Schema is store-specific (e.g. jsonl
+                    expects 'path'; worm expects 'path' + 'manifest_dir').
+                timestamp_source_class:
+                  type: string
+                  description: |
+                    Fully-qualified class name of the TimestampSource
+                    seam (e.g. 'finserv_agent_audit.governance.timestamp_source.LocalClock'
+                    or '....RFC3161Source'). See ADR-0014.
+                timestamp_source_config:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                witness_register_class:
+                  type: string
+                  description: |
+                    Optional. Fully-qualified WitnessRegister class
+                    (e.g. RekorWitness). See ADR-0014.
+                witness_register_config:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                mi_proxy_class:
+                  type: string
+                  description: |
+                    Optional. Fully-qualified MIProxy class for module-
+                    integrity attestation. See ADR-0015.
+                mi_proxy_config:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                retention_days:
+                  type: integer
+                  minimum: 1
+                  description: |
+                    Operator-side retention policy in days. The operator
+                    does NOT delete chain events; it surfaces the value
+                    on .status.retention_days_configured so a downstream
+                    retention job can act on it consistent with the
+                    deployer's privilege-classification framework
+                    (ADR-0017).
+                custom_factory_ref:
+                  type: string
+                  description: |
+                    When ledger_store_class == 'custom', the fully-
+                    qualified Python callable the operator imports to
+                    construct the ledger store. The callable receives
+                    .spec.ledger_store_config as keyword arguments.
+            status:
+              type: object
+              properties:
+                chain_length:
+                  type: integer
+                  minimum: 0
+                  description: Number of events in the chain at last reconcile.
+                head_hash:
+                  type: string
+                  description: SHA-256 hex of the chain head event.
+                last_verified_at:
+                  type: string
+                  format: date-time
+                  description: ISO-8601 timestamp of last verify() pass.
+                intact:
+                  type: boolean
+                  description: |
+                    Result of the last verify() pass. False indicates the
+                    hash-chain mechanism detected a discrepancy within
+                    the trust boundary; the operator should emit a
+                    Kubernetes Event and the deployer should triage per
+                    ADR-0003 + ADR-0017.
+                retention_days_configured:
+                  type: integer
+                  minimum: 1
+                last_reconciled_at:
+                  type: string
+                  format: date-time
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", "Unknown"]
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Length
+          type: integer
+          jsonPath: .status.chain_length
+        - name: Intact
+          type: boolean
+          jsonPath: .status.intact
+        - name: LastVerified
+          type: string
+          jsonPath: .status.last_verified_at
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

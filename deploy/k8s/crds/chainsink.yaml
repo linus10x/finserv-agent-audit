@@ -1,0 +1,166 @@
+# ChainSink CustomResourceDefinition.
+#
+# Declarative spec for an audit-chain destination — a downstream
+# observability or storage system that consumes AuditEvent records
+# emitted by an AuditChain. Sinks are append-only; the operator never
+# mutates upstream chain state in response to sink failure.
+#
+# Reference sink_type values match the in-tree integration sinks under
+# examples/integration/. Deployers shipping a custom sink set
+# sink_type='custom' and a custom_sink_class.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: chainsinks.finserv.io
+spec:
+  group: finserv.io
+  scope: Namespaced
+  names:
+    plural: chainsinks
+    singular: chainsink
+    kind: ChainSink
+    shortNames:
+      - cs
+    categories:
+      - finserv
+      - governance
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - sink_type
+                - endpoint
+              properties:
+                sink_type:
+                  type: string
+                  enum:
+                    - splunk
+                    - datadog
+                    - s3
+                    - custom
+                  description: |
+                    Sink backend the operator should instantiate. 'splunk'
+                    targets the HEC endpoint; 'datadog' targets the
+                    logs intake API; 's3' targets an S3 bucket via PutObject;
+                    'custom' defers construction to .spec.custom_sink_class.
+                endpoint:
+                  type: string
+                  description: |
+                    Target URL or resource identifier for the sink.
+                    Splunk HEC: full HEC URL. Datadog: logs intake URL.
+                    S3: bucket/prefix path (e.g. 's3://my-bucket/audit/').
+                auth_secret_ref:
+                  type: object
+                  description: |
+                    Kubernetes Secret reference carrying the credential
+                    the sink needs (HEC token, Datadog API key, AWS
+                    access-key-id + secret-access-key pair, etc.).
+                  properties:
+                    name:
+                      type: string
+                    keys:
+                      type: object
+                      additionalProperties:
+                        type: string
+                      description: |
+                        Map of credential-name -> Secret key. Sink-
+                        specific; e.g. for s3 the operator expects
+                        {access_key_id: 'access-key', secret_access_key: 'secret-key'}.
+                  required:
+                    - name
+                audit_chain_ref:
+                  type: string
+                  description: |
+                    Name of the AuditChain CRD in the same namespace
+                    whose events this sink consumes.
+                batch_size:
+                  type: integer
+                  minimum: 1
+                  default: 100
+                  description: Number of events flushed per sink emit batch.
+                flush_interval_seconds:
+                  type: integer
+                  minimum: 1
+                  default: 30
+                  description: Maximum interval between sink emit batches.
+                custom_sink_class:
+                  type: string
+                  description: |
+                    When sink_type == 'custom', the fully-qualified
+                    Python class the operator imports to construct the
+                    sink. The class must implement the AuditConsumer
+                    Protocol (see examples/integration/audit_consumer.py).
+                custom_sink_config:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                last_emit_at:
+                  type: string
+                  format: date-time
+                  description: ISO-8601 timestamp of the last successful emit batch.
+                events_emitted_total:
+                  type: integer
+                  minimum: 0
+                  description: Cumulative count of events successfully emitted.
+                events_dropped_total:
+                  type: integer
+                  minimum: 0
+                  description: |
+                    Cumulative count of events the sink failed to emit
+                    after retry exhaustion. The operator emits a
+                    Kubernetes Event on each drop so the deployer can
+                    alert; drops indicate a downstream backpressure or
+                    credential issue, not an upstream chain failure.
+                last_error:
+                  type: string
+                  description: Most recent sink error message, if any.
+                last_reconciled_at:
+                  type: string
+                  format: date-time
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", "Unknown"]
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: SinkType
+          type: string
+          jsonPath: .spec.sink_type
+        - name: Emitted
+          type: integer
+          jsonPath: .status.events_emitted_total
+        - name: LastEmit
+          type: string
+          jsonPath: .status.last_emit_at
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

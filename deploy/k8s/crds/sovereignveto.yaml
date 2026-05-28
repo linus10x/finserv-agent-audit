@@ -1,0 +1,168 @@
+# SovereignVeto CustomResourceDefinition.
+#
+# Declarative spec for a SovereignVeto kill switch attached to a named
+# agent. The operator (deploy/k8s/operator/) watches this CRD and
+# reconciles each Spec into a live Python SovereignVeto instance. When
+# the veto is armed (.status.is_vetoed == true), the operator fires
+# the on_veto_webhook so the agent's runtime can halt itself. When the
+# veto is cleared, the on_clear_webhook fires.
+#
+# This is the Kubernetes-native surface for ADR-0002. The CRD does not
+# replace the in-process SovereignVeto — it provides an admission-gated,
+# cluster-wide control plane for arming/clearing it.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: sovereignvetoes.finserv.io
+spec:
+  group: finserv.io
+  scope: Namespaced
+  names:
+    plural: sovereignvetoes
+    singular: sovereignveto
+    kind: SovereignVeto
+    shortNames:
+      - sv
+    categories:
+      - finserv
+      - governance
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - agent_id
+              properties:
+                agent_id:
+                  type: string
+                  minLength: 1
+                  description: |
+                    Identifier of the agent this veto controls. Must
+                    match the agent_id the runtime registered with the
+                    in-process SovereignVeto.
+                on_veto_webhook:
+                  type: string
+                  format: uri
+                  description: |
+                    Optional HTTPS URL the operator POSTs to when the
+                    veto is armed. Payload includes agent_id, reason,
+                    actor, and ISO-8601 asserted_at. The runtime is
+                    expected to halt the agent and acknowledge with HTTP
+                    200; the operator retries with exponential backoff
+                    on non-2xx responses.
+                on_clear_webhook:
+                  type: string
+                  format: uri
+                  description: |
+                    Optional HTTPS URL the operator POSTs to when the
+                    veto is cleared. Same payload schema as on_veto_webhook
+                    with reason='cleared'.
+                auth_secret_ref:
+                  type: object
+                  description: |
+                    Optional Kubernetes Secret reference carrying the
+                    bearer token the operator should attach to webhook
+                    POSTs as 'Authorization: Bearer <token>'.
+                  properties:
+                    name:
+                      type: string
+                    key:
+                      type: string
+                  required:
+                    - name
+                    - key
+                audit_chain_ref:
+                  type: string
+                  description: |
+                    Optional name of an AuditChain CRD in the same
+                    namespace. When set, the operator records every
+                    arm/clear transition as an AuditEvent on the named
+                    chain (event_type=SOVEREIGN_VETO_ARMED or
+                    SOVEREIGN_VETO_CLEARED).
+            status:
+              type: object
+              properties:
+                is_vetoed:
+                  type: boolean
+                  description: True iff at least one active veto exists.
+                active_vetos:
+                  type: array
+                  description: List of active veto records.
+                  items:
+                    type: object
+                    properties:
+                      reason:
+                        type: string
+                      actor:
+                        type: string
+                      asserted_at:
+                        type: string
+                        format: date-time
+                      cleared_at:
+                        type: string
+                        format: date-time
+                last_armed_at:
+                  type: string
+                  format: date-time
+                last_cleared_at:
+                  type: string
+                  format: date-time
+                last_reconciled_at:
+                  type: string
+                  format: date-time
+                webhook_delivery_status:
+                  type: string
+                  enum:
+                    - none
+                    - succeeded
+                    - failed
+                    - retrying
+                  description: |
+                    Status of the last webhook delivery attempt. 'failed'
+                    after retries surfaces as a Kubernetes Event so the
+                    deployer can alert.
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", "Unknown"]
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: AgentID
+          type: string
+          jsonPath: .spec.agent_id
+        - name: Vetoed
+          type: boolean
+          jsonPath: .status.is_vetoed
+        - name: ActiveCount
+          type: integer
+          jsonPath: .status.active_vetos
+          description: Number of active vetos (length of array).
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

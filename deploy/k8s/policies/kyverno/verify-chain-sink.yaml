@@ -1,0 +1,55 @@
+# Kyverno 1.17+ admission policy: REQUIRE a ChainSink in any namespace
+# carrying an AuditChain.
+#
+# An AuditChain without a ChainSink is a chain that never escapes the
+# cluster — the evidentiary record is bottled up inside the operator's
+# in-memory store and lost on restart. This policy fails closed: creating
+# an AuditChain CRD in a namespace that has no ChainSink CRD is denied.
+#
+# Pairs with ADR-0017 (audit-chain retention) — the sink is the wire
+# carrying chain events to the deployer's long-term retention substrate
+# (Splunk, Datadog, S3 with WORM).
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-chain-sink
+  annotations:
+    policies.kyverno.io/title: Require ChainSink Alongside AuditChain
+    policies.kyverno.io/category: finserv-agent-audit
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: AuditChain
+    policies.kyverno.io/description: >-
+      Any namespace containing an AuditChain CRD must also contain at
+      least one ChainSink CRD. Without a sink, chain events never escape
+      the cluster and are lost on restart. Implements ADR-0017 at the
+      cluster boundary.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: audit-chain-namespace-must-have-sink
+      match:
+        any:
+          - resources:
+              kinds:
+                - finserv.io/v1/AuditChain
+      context:
+        - name: namespaceChainSinks
+          apiCall:
+            urlPath: "/apis/finserv.io/v1/namespaces/{{ request.namespace }}/chainsinks"
+            jmesPath: "items[?metadata.namespace == '{{ request.namespace }}'] | length(@)"
+      validate:
+        message: >-
+          Namespace '{{ request.namespace }}' is being assigned an
+          AuditChain '{{ request.object.metadata.name }}' but has no
+          ChainSink CRD instances. Create at least one ChainSink (see
+          deploy/k8s/crds/chainsink.yaml) so chain events are emitted
+          to a long-term retention substrate. See ADR-0017 for the
+          retention requirement.
+        deny:
+          conditions:
+            all:
+              - key: "{{ namespaceChainSinks }}"
+                operator: Equals
+                value: 0

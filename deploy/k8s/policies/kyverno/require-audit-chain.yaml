@@ -1,0 +1,55 @@
+# Kyverno 1.17+ admission policy: REQUIRE an AuditChain in agent namespaces.
+#
+# Any namespace labeled `finserv.io/agent-namespace=true` must declare at
+# least one AuditChain CRD instance BEFORE the cluster will admit any Pod
+# into that namespace. The policy fails closed: if the AuditChain CRD list
+# is empty (or unreadable) for the namespace, Pod admission is denied.
+#
+# Pairs with ADR-0003 (hash-chained audit ledger) + ADR-0014 (persistence
+# witness timestamp). The policy is the cluster-side enforcement that
+# every agent workload writes to an audit chain.
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-audit-chain
+  annotations:
+    policies.kyverno.io/title: Require AuditChain in Agent Namespaces
+    policies.kyverno.io/category: finserv-agent-audit
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Every namespace labeled finserv.io/agent-namespace=true must declare
+      at least one AuditChain CRD before any Pod in that namespace is
+      admitted. Implements ADR-0003 at the cluster boundary.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: namespace-must-have-audit-chain
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaceSelector:
+                matchLabels:
+                  finserv.io/agent-namespace: "true"
+      context:
+        - name: namespaceAuditChains
+          apiCall:
+            urlPath: "/apis/finserv.io/v1/namespaces/{{ request.namespace }}/auditchains"
+            jmesPath: "items[?metadata.namespace == '{{ request.namespace }}'] | length(@)"
+      validate:
+        message: >-
+          Namespace '{{ request.namespace }}' is labeled
+          finserv.io/agent-namespace=true but has no AuditChain CRD
+          instances. Create at least one AuditChain (see
+          deploy/k8s/crds/auditchain.yaml) before deploying agent Pods.
+          See ADR-0003 for the audit-chain requirement.
+        deny:
+          conditions:
+            all:
+              - key: "{{ namespaceAuditChains }}"
+                operator: Equals
+                value: 0

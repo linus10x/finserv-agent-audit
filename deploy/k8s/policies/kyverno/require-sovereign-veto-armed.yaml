@@ -1,0 +1,84 @@
+# Kyverno 1.17+ admission policy: REQUIRE a SovereignVeto reference on every agent Pod.
+#
+# Every Pod with label `app.kubernetes.io/component=agent` must carry an
+# annotation `finserv.io/sovereign-veto-ref=<name>` pointing at a
+# SovereignVeto CRD instance in the same namespace. The policy fails closed:
+# an agent Pod without the annotation is denied admission, so an agent
+# runtime cannot be deployed without a wired kill switch.
+#
+# Pairs with ADR-0002 (sovereign veto). The annotation gives the runtime a
+# single look-up key for the cluster-side veto control plane; the runtime
+# is then responsible for polling or watching the CRD and halting when
+# .status.is_vetoed flips to true.
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-sovereign-veto-armed
+  annotations:
+    policies.kyverno.io/title: Require SovereignVeto Reference on Agent Pods
+    policies.kyverno.io/category: finserv-agent-audit
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Every Pod labeled app.kubernetes.io/component=agent must carry an
+      annotation finserv.io/sovereign-veto-ref pointing at a SovereignVeto
+      CRD in the same namespace. Implements ADR-0002 at the cluster
+      boundary so an agent runtime cannot be deployed without a wired
+      kill switch.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: agent-pod-must-have-veto-ref-annotation
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  app.kubernetes.io/component: agent
+      validate:
+        message: >-
+          Pod '{{ request.object.metadata.name }}' is labeled
+          app.kubernetes.io/component=agent but is missing the required
+          annotation 'finserv.io/sovereign-veto-ref'. Create a
+          SovereignVeto CRD (see deploy/k8s/crds/sovereignveto.yaml) and
+          add the annotation 'finserv.io/sovereign-veto-ref: <name>' to
+          the Pod spec. See ADR-0002 for the kill-switch requirement.
+        pattern:
+          metadata:
+            annotations:
+              finserv.io/sovereign-veto-ref: "?*"
+
+    - name: agent-pod-veto-ref-must-exist
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  app.kubernetes.io/component: agent
+      preconditions:
+        all:
+          - key: "{{ request.object.metadata.annotations.\"finserv.io/sovereign-veto-ref\" || '' }}"
+            operator: NotEquals
+            value: ""
+      context:
+        - name: vetoLookup
+          apiCall:
+            urlPath: "/apis/finserv.io/v1/namespaces/{{ request.namespace }}/sovereignvetoes/{{ request.object.metadata.annotations.\"finserv.io/sovereign-veto-ref\" }}"
+            jmesPath: "metadata.name || ''"
+      validate:
+        message: >-
+          Pod '{{ request.object.metadata.name }}' references SovereignVeto
+          '{{ request.object.metadata.annotations."finserv.io/sovereign-veto-ref" }}'
+          which does not exist in namespace '{{ request.namespace }}'.
+        deny:
+          conditions:
+            all:
+              - key: "{{ vetoLookup }}"
+                operator: Equals
+                value: ""

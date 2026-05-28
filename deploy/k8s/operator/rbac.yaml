@@ -1,0 +1,108 @@
+# RBAC for the finserv-agent-audit operator stub.
+#
+# Grants the operator a ServiceAccount with the minimum permissions
+# required to reconcile AuditChain, SovereignVeto, and ChainSink CRDs:
+#
+#   * get/list/watch on the three CRDs (read the desired state)
+#   * patch on the .status subresource (write the observed state)
+#   * create on Events (surface reconcile failures to kubectl describe)
+#
+# The operator does NOT need cluster-wide permissions on core resources
+# (Pods, Deployments, Secrets) in the stub. Production controllers that
+# read Secrets for sink credentials should add a namespaced get on
+# secrets — narrow to the namespace where the secret lives, never
+# cluster-wide.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/component: operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: finserv-agent-audit-operator
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+rules:
+  - apiGroups: ["finserv.io"]
+    resources:
+      - auditchains
+      - sovereignvetoes
+      - chainsinks
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["finserv.io"]
+    resources:
+      - auditchains/status
+      - sovereignvetoes/status
+      - chainsinks/status
+    verbs: ["get", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: finserv-agent-audit-operator
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+subjects:
+  - kind: ServiceAccount
+    name: finserv-agent-audit-operator
+    namespace: finserv-system
+roleRef:
+  kind: ClusterRole
+  name: finserv-agent-audit-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/component: operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: finserv-agent-audit-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: finserv-agent-audit-operator
+        app.kubernetes.io/component: operator
+    spec:
+      serviceAccountName: finserv-agent-audit-operator
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: operator
+          image: ghcr.io/linus10x/finserv-agent-audit-operator:1.3.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FINSERV_OPERATOR_LOG_LEVEL
+              value: "INFO"
+            - name: FINSERV_OPERATOR_RECONCILE_INTERVAL
+              value: "30"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
