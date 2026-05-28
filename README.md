@@ -273,7 +273,7 @@ Patterns in this repository were informed by:
 | Fair-Housing Pre-Flight Gate | — | ✅ CRE-specific |
 | Tenant PII Data Residency | — | ✅ CRE-specific |
 
-Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, `mypy --strict` clean, ≥85% branch coverage.
+Both repos: MIT, zero runtime dependencies, primary-source regulatory citations, mypy-checked in CI, and an enforced ≥80% coverage gate.
 
 The umbrella discipline — **Regulated-Operations AI Governance** — is documented at [autonomy-ladder.io](https://autonomy-ladder.io). One framework, two named verticals, one author.
 
