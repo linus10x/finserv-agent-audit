@@ -243,6 +243,20 @@ Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-
 
 [ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough; v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_appendix.md](docs/pcaob_as_2201_amendments_appendix.md)) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
 
+## v2.1 Hardening Pack (May 2026)
+
+v2.1 closes all 12 Critical findings from a May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) calibrated to the questionnaire bar applied by Tier-1 FSI buyer review boards (JPMC Tech Risk, BoA AppSec, Schwab Compliance Tech, BNY Mellon Trust Architecture, Fidelity Risk, Citi Model Risk, UBS Group Information Security, Broadridge InfoSec, First Data).
+
+**Numbers:** 532 → 630 tests (+98 across the 12 CRs) · 91.74% → 93.47% coverage · `mypy --strict` clean on 46 source files · ruff + format + banned-term + tamper-language drift lints clean · CI now SHA-pins every GitHub Action and runs CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner per push.
+
+**Tier-1 buyer pre-fills:** v2.1 ships pre-filled vendor questionnaires at [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) — SIG Lite 2025 (~60% pre-fill rate) · CSA CAIQ v4.0.3 (~45%) · BITS Shared Assessments AUP (FS-ISAC member-bank deep-review questionnaire).
+
+**Buyer-facing companion docs:** [`docs/ETHICS_WALL.md`](docs/ETHICS_WALL.md) (NTCI buy-side / advisory separation) · [`docs/SOC2_ENGAGEMENT_RFP.md`](docs/SOC2_ENGAGEMENT_RFP.md) (Schellman / A-LIGN / Coalfire RFP template) · [`docs/TRADEMARK.md`](docs/TRADEMARK.md) (Autonomy Ladder™ usage) · [`docs/COHORT_ZERO_PRICING_PUBLIC.md`](docs/COHORT_ZERO_PRICING_PUBLIC.md) (formal $1K pilot publication for the first 5 logos) · [`docs/LFAI_SANDBOX_APPLICATION_DRAFT.md`](docs/LFAI_SANDBOX_APPLICATION_DRAFT.md) · [`docs/CO_MAINTAINER_RECRUITMENT_DRAFT.md`](docs/CO_MAINTAINER_RECRUITMENT_DRAFT.md).
+
+**License optionality (Apache 2.0 standby):** [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0) is staged alongside the existing MIT [`LICENSE`](LICENSE) (not replacing it). Adopters whose legal review requires the Apache 2.0 §3 express patent grant can request dual-license election by opening an issue. Rationale in [`MANUAL_REMEDIATION_AUTHOR.md`](MANUAL_REMEDIATION_AUTHOR.md) §2.
+
+Full per-CR remediation detail in [CHANGELOG.md § 2.1.0](CHANGELOG.md). Release notes at [.github/releases/v2.1.0-notes.md](.github/releases/v2.1.0-notes.md).
+
 ---
 
 ## Real-World Use Cases
@@ -304,9 +318,11 @@ See [ROADMAP.md](ROADMAP.md) for the full versioned roadmap.
 
 **Shipped in v2.0:** Four agentic-AI runtime adapters (Google A2A · LangGraph · Microsoft Agent Framework · CrewAI) · AIBOMGenerator (CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile dual emit) · FastAPI governance endpoint (OpenAPI 3.1 + SSE) · Kubernetes operator + three CRDs (AuditChain · SovereignVeto · ChainSink) · Kyverno + OPA sample admission policies · adversarial test pack (Garak + Promptfoo + Python harness) · 5 new strategic docs (NAIC Model Bulletin on AI Systems by Insurers · DORA · EU AI Act August 2026 compliance pack · PE portfolio playbook · PCAOB AS 2201 amendments ASSURANCE-GUIDE appendix) · PE portfolio dashboard reference · 8 new ADRs (0027-0034).
 
+**Shipped in v2.1 (Tier-1 FSI-buyer hardening release, 2026-05-28):** All 12 Critical findings (CR-1..CR-12) from the May 2026 6-chamber adversarial deep-dive closed — `AuditChainTamperError` consolidated · `AuditEvent` frozen + self-verifying on replay · TSA pre-digest bound to event content · `AuditChain` thread- and process-safe · DEFCON `metrics_snapshot` covered by canonical hash · RFC 3161 codec bounded + structural ASN.1 walk + Hypothesis fuzz · domain-separated genesis hash · PII hashing via `HashedSubjectId` + `SubjectIdHasher` · `--mi-proxy-key` argv rejected · `BestEffortWORMLedgerStore` rename + filesystem-capability probe · `LocalMIProxyFreshnessCheck` + new `BaselineMIProxy` scaffold · `Authorizer` Protocol + self-clearing rule. SHA-pinned every GitHub Action + CodeQL/Bandit/pip-audit/gitleaks/OSV-Scanner workflows · K8s operator hardening (multi-stage Dockerfile, probes, PDB, network policy, fail-closed Kyverno + OPA) · 11 Tier-2 author-action drafts (`MANUAL_REMEDIATION_AUTHOR.md` + `LICENSE-APACHE-2.0` standby + `ETHICS_WALL.md` + `SOC2_ENGAGEMENT_RFP.md` + `TRADEMARK.md` + `CO_MAINTAINER_RECRUITMENT_DRAFT.md` + `LFAI_SANDBOX_APPLICATION_DRAFT.md` + `COHORT_ZERO_PRICING_PUBLIC.md` + SIG Lite/CAIQ/BITS AUP pre-fills). 532 → 630 tests · 91.74% → 93.47% coverage · `mypy --strict` clean on 46 source files.
+
 **Coming in v1.4 (operational refinements):** Drift Monitor · Explainability Stub · Rate Limiter / Throttle · MiFID II Art. 17 Checklist · additional state-AG enforcement cases as they emerge.
 
-**Coming in v2.1 (ecosystem completion):** DSPy adapter · LlamaIndex Workflows adapter · GraphQL governance endpoint (Strawberry-GraphQL alternative to the v2.0 REST surface) · removal of the v1.1 deprecation re-export shims at `patterns/` · `schemas/` · `examples/defcon_state_machine.py` · UK FCA mapping · Singapore MAS mapping · `ProtectedClassProxyDetector` SHAP / CDD arms · LDA-search continuous-feature quantile-binning helper.
+**Coming in v2.2 (ecosystem completion — carried forward from the originally-scoped v2.1):** DSPy adapter · LlamaIndex Workflows adapter · GraphQL governance endpoint (Strawberry-GraphQL alternative to the v2.0 REST surface) · removal of the v1.1 deprecation re-export shims at `patterns/` · `schemas/` · `examples/defcon_state_machine.py` · UK FCA mapping · Singapore MAS mapping · `ProtectedClassProxyDetector` SHAP / CDD arms · LDA-search continuous-feature quantile-binning helper · Sigstore cosign signature verification of `BaselineMIProxy` pinned manifest · `Authorizer` OIDC + SAML reference adapters.
 
 **Coming in v3.0 (async + multi-region + WASM):** Async-native pattern variants for high-throughput pipelines · multi-region audit-chain federation with quorum-anchored witness commits · WASM runtime for client-side guardrail evaluation.
 

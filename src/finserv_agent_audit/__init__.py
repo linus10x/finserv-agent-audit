@@ -43,4 +43,4 @@ scheduled for v2.1. Migrate to the canonical `finserv_agent_audit.*`
 paths to insulate from that follow-up bump.
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"

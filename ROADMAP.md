@@ -102,16 +102,31 @@ This roadmap reflects the current development priorities for `finserv-agent-audi
 
 ---
 
-## v2.1 — Ecosystem Completion _(planned)_
+## v2.1 — Tier-1 FSI-Buyer Hardening Release ✅ Released 2026-05-28
+
+The originally-scoped v2.1 was "Ecosystem Completion" (DSPy / LlamaIndex / GraphQL). The May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) surfaced 12 Critical findings that blocked Tier-1 FSI adoption. v2.1 reprioritized to close all 12 Criticals + ship CI/K8s hardening + ship author-action drafts for the Tier-2 items the author owns directly. The ecosystem-completion items moved to v2.2.
+
+- [x] **CR-1 through CR-12 — all 12 Critical security/correctness findings closed.** See CHANGELOG.md [2.1.0] for the per-CR description.
+- [x] **CI hardening (H1.A)** — SHA-pinned every GitHub Action; new CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner workflows; pre-commit adds gitleaks/actionlint/yamllint/shellcheck; least-privilege `permissions:` defaults; `concurrency:` blocks.
+- [x] **K8s hardening (H1.D)** — multi-stage digest-pinned operator Dockerfile; `/healthz` + `/readyz` + `/metrics` endpoints; least-privilege RBAC; PDB + topology spread + priority class; fail-closed Kyverno + OPA Gatekeeper policies; `servicemonitor.yaml` + `pvc-sample.yaml` + `networkpolicy.yaml`.
+- [x] **11 Tier-2 author-action drafts (H2.A)** — `MANUAL_REMEDIATION_AUTHOR.md` index, `LICENSE-APACHE-2.0` standby, `ETHICS_WALL.md`, `SOC2_ENGAGEMENT_RFP.md`, `TRADEMARK.md`, `CO_MAINTAINER_RECRUITMENT_DRAFT.md`, `LFAI_SANDBOX_APPLICATION_DRAFT.md`, `COHORT_ZERO_PRICING_PUBLIC.md`, `SIG_LITE_PREFILL.md` + `CAIQ_PREFILL.md` + `BITS_AUP_PREFILL.md`.
+- [x] **Test count 532 → 630** (+98 tests across the 12 CRs); **coverage 91.74% → 93.47%**; `mypy --strict` clean on 46 source files; all linters + drift tests pass.
+
+---
+
+## v2.2 — Ecosystem Completion (carried forward from the originally-scoped v2.1) _(planned)_
 
 - [ ] **DSPy adapter** — Stanford-originated framework with production usage at Moody's; prestige play for the FSI buyer conversation
 - [ ] **LlamaIndex Workflows adapter** — agentic-runtime adapter for the LlamaIndex Workflows event-driven orchestration surface
 - [ ] **GraphQL governance endpoint** — Strawberry-GraphQL alternative to the v2.0 REST surface for adopters standardized on GraphQL
-- [ ] **Remove v1.1 deprecation re-export shims** at `patterns/`, `schemas/`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.0 for one additional minor-bump grace window)
+- [ ] **Remove v1.1 deprecation re-export shims** at `patterns/`, `schemas/`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.1 for one additional minor-bump grace window)
 - [ ] **UK FCA mapping** (`docs/fca_mapping.md`)
 - [ ] **Singapore MAS mapping** (`docs/mas_mapping.md`)
 - [ ] **`ProtectedClassProxyDetector` SHAP / CDD arms** — per ADR-0019 v1.2 reconciliation deferral; v1.3 shipped the LDA arm via `LDASearchHarness`
 - [ ] **LDA-search continuous-feature quantile-binning helper** — per `ProtectedClassProxyDetector` v1.2 docstring deferral
+- [ ] **Sigstore cosign signature verification of `BaselineMIProxy` pinned manifest** — CR-11 follow-up; v2.1 shipped the deploy-time-pinned baseline scaffold, v2.2 adds Sigstore signature verification via a `[sigstore]` extra
+- [ ] **`Authorizer` reference implementations** — CR-12 follow-up; v2.1 shipped the `Authorizer` Protocol + self-clearing rule; v2.2 adds OIDC + SAML reference adapters
+- [ ] **Latent `AuditChain.verify()` interaction with deployer-keyed genesis chains** — called out during the CR-4 concurrency port; tracked as v2.2 hardening work
 
 ---
 

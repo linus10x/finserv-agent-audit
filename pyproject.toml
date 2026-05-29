@@ -15,7 +15,7 @@ exclude = ["tests*", "scripts*", "docs*"]
 
 [project]
 name = "finserv-agent-audit"
-version = "2.0.0"
+version = "2.1.0"
 description = "Governance patterns for autonomous AI agents in regulated financial services"
 readme = "README.md"
 license = { text = "MIT" }

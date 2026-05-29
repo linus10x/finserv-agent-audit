@@ -9,20 +9,77 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Planned (v2.1) — Ecosystem Completion
+### Planned (v2.2) — Ecosystem Completion (carried forward from the originally-scoped v2.1)
 - DSPy adapter — Stanford-originated framework with production usage at Moody's; prestige play for the FSI buyer conversation
 - LlamaIndex Workflows adapter — agentic-runtime adapter for the LlamaIndex Workflows event-driven orchestration surface
 - GraphQL governance endpoint — Strawberry-GraphQL alternative to the v2.0 REST surface for adopters standardized on GraphQL
-- Remove v1.1 deprecation re-export shims at `patterns/*`, `schemas/*`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.0 for one additional minor-bump grace window)
+- Remove v1.1 deprecation re-export shims at `patterns/*`, `schemas/*`, `examples/defcon_state_machine.py` (originally targeted for v1.2; carried forward through v2.1 for one additional minor-bump grace window)
 - `docs/fca_mapping.md` — UK FCA AI governance control mapping
 - `docs/mas_mapping.md` — Singapore MAS control mapping
 - `ProtectedClassProxyDetector` SHAP / CDD arms (per ADR-0019 v1.2 reconciliation; v1.3 shipped the LDA arm via `LDASearchHarness`)
 - LDA-search continuous-feature quantile-binning helper (per `ProtectedClassProxyDetector` v1.2 docstring deferral)
+- Sigstore cosign signature verification of the `BaselineMIProxy` pinned manifest (CR-11 follow-up; v2.1 shipped the deploy-time-pinned baseline scaffold, v2.2 adds Sigstore signature verification via a `[sigstore]` extra)
+- `Authorizer` reference implementations (CR-12 follow-up; v2.1 shipped the `Authorizer` Protocol + self-clearing rule; v2.2 adds OIDC + SAML reference adapters)
+- Defer-and-document for the latent `AuditChain.verify()` interaction with deployer-keyed genesis chains (called out during the CR-4 concurrency port; tracked as v2.2 hardening work)
 
 ### Planned (v3.0) — Async-Native + Multi-Region + WASM
 - Async-native pattern variants — `asyncio`-compatible versions of every governance pattern for high-throughput agent pipelines
 - Multi-region audit-chain federation — cross-region replication with quorum-anchored witness commits and a regional-failure de-conflict protocol
 - WASM runtime for client-side guardrail evaluation — compile the customer-facing chatbot guardrail and the autonomy-ladder runtime helper to WebAssembly for in-browser pre-flight enforcement
+
+---
+
+## [2.1.0] — 2026-05-28
+
+**Tier-1 FSI-buyer hardening release.** Closes all 12 Critical findings from the May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) targeting the questionnaire bar that JPMC Tech Risk, BoA AppSec, Schwab Compliance Tech, BNY Mellon Trust Architecture, Fidelity Risk, Citi Model Risk, UBS Group Information Security, Broadridge InfoSec, and First Data review boards apply to an OSS package before authorizing inbound supply-chain inclusion. Test count 532 → 630 (+98); coverage 91.74% → 93.47%; `mypy --strict` clean across 46 source files; ruff + format + banned-term + tamper-language drift lints clean; CI now SHA-pins every GitHub Action and runs CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner per push.
+
+### Security + correctness (CR-1 through CR-12)
+- **CR-1 — Consolidate duplicate `AuditChainTamperError`.** Both `governance.audit_chain` and `agents.base` defined the exception independently; adopter `except` clauses silently failed to catch the sibling. Single canonical class in `governance.audit_chain`; `agents.base` re-imports. New `tests/test_tamper_error_identity.py` asserts class identity across import paths.
+- **CR-2 — Make `AuditEvent` frozen + self-verifying on replay.** `AuditEvent` is now `@dataclass(frozen=True)` with `AuditEvent.create(...)` + `AuditEvent.from_jsonl(data)` classmethods; `from_jsonl` recomputes the hash on every replay and raises `AuditChainTamperError` on mismatch. Updated 5 replay sites (`audit_chain._load_existing`, JSONL/WORM/SQLite decoders, `cli._iter_jsonl`).
+- **CR-3 — Bind TSA pre-digest to event content.** `TimestampSource.stamp()` was being called with empty bytes — TSA signed nothing, didn't bind to the event content; the SEC 17a-4 + eIDAS Art. 42 trusted-timestamp story was structurally invalid. Fixed: compute a canonical pre-timestamp digest of `{event_id, event_type, autonomy_level, agent_id, payload, actor_id, prev_hash, schema_version}`; pass it to the TSA; embed the TSR token in `payload["_tsr_token_b64"]` so verifiers can re-check `messageImprint == pre_digest`.
+- **CR-4 — Thread- and process-safe `AuditChain.append`.** Added `threading.RLock` wrapping `append`/`verify`/`verify_strict`; `fcntl.flock(LOCK_EX)` added to `JsonlLedgerStore.append` for multi-process safety with a Windows fallback. `tests/test_concurrent_append.py` (5 tests: 16 threads × 50 events, 4 processes × 100 events) confirms no fork / no byte interleaving.
+- **CR-5 — Embed DEFCON `metrics_snapshot` in the canonical hash.** `DEFCONMachine` shipped its own duplicate `AuditEvent` class whose `_compute_hash` omitted `metrics_snapshot`; attacker rewriting metrics evaded chain verification. Deleted both duplicates; `DEFCONMachine` now uses the canonical `AuditEvent` with `metrics_snapshot` embedded in `payload` (covered by the canonical hash).
+- **CR-6 — Bounded structural ASN.1 walk in the RFC 3161 DER codec.** `parse_timestamp_response` byte-scanned for the first `0x18` (GeneralizedTime tag) — that byte appears in INTEGER bodies, OCTET STRINGs, signature blobs, and cert serial numbers, so an adversarial TSA could return an attacker-chosen timestamp. `_decode_length_at` lacked a bounds check (`0x84 FF FF FF FF` → 4GB length claim, CWE-190/-400). Fixed: bounded length decode (4-byte cap, 100KB field cap, past-buffer guard, indefinite-length rejection); replaced byte-scan with structural ASN.1 walk (`TimeStampResp → SignedData → eContent → TSTInfo → genTime`), validating OIDs at each level. Added `tests/test_rfc3161_codec_fuzz.py` Hypothesis harness — 2000 iterations, zero crashes.
+- **CR-7 — Domain-separated genesis hash.** Hard-coded `"0" * 64` genesis sentinel meant every chain in every deployment shared the same genesis → forgery via replacement was trivial. Genesis is now `SHA256("finserv-agent-audit/genesis/v1/{deployer_id}/{chain_creation_iso}")` and seeds chain entry #0 (`AGENT_STARTED`). Legacy chains without `deployer_id` keep the `"0"*64` sentinel with a `DeprecationWarning` on load.
+- **CR-8 — Hash PII before it enters the chain.** `customer_id` / `consumer_id` / `suspect_party_ids` were written cleartext into the hash-chained payload across 3 FSI gates — GLBA Safeguards violation; GDPR Art. 17 right-to-erasure collision (a tamper-detecting chain + PII = an unerasable chain). New `governance.subject_id` ships `HashedSubjectId` + `SubjectIdHasher` Protocol + `HMACSubjectIdHasher` reference (peppered, ≥32-byte key, rotatable `pepper_version` for GDPR effective erasure). Wired optional `subject_id_hasher` into `AdverseActionGate`, `SARWorkflowAudit`, `CustomerFacingChatbotGuardrail`; unwired gates log a WARNING naming GLBA + GDPR.
+- **CR-9 — Reject `--mi-proxy-key` on the CLI argv.** Argv-passed secrets leak via `ps aux`, `/proc/$pid/cmdline`, container labels, CI logs, and shell history (NIST SP 800-63 violation). Argv flag now hard-rejects with an explicit pointer to `FINSERV_AUDIT_MI_PROXY_KEY`; `action.yml` composite action injects the key via env var only.
+- **CR-10 — Honest WORM naming + filesystem-capability probe.** `WORMLedgerStore` was chmod 0o400 theatre (same-UID process reverses in one syscall; NFS/SMB/EFS/S3 ignore mode bits). Renamed `BestEffortWORMLedgerStore` with a docstring naming S3 Object Lock COMPLIANCE / AWS QLDB / Azure Confidential Ledger as the production path; alias retained with `DeprecationWarning`. Added filesystem-capability probe — logs a WARNING if chmod is not honored on the mount.
+- **CR-11 — Rename `LocalMIProxy` → `LocalMIProxyFreshnessCheck` + ship `BaselineMIProxy` scaffold.** `LocalMIProxy.enforce_attestation` was a self-loop (same key signed + verified in the same process; `_hash_component` read the live source file at both ends — no chain-of-custody). Renamed with a `⚠ NOT CHAIN-OF-CUSTODY ⚠` docstring; shipped `BaselineMIProxy` that loads a deploy-time-pinned manifest (signed out-of-process by the operator key) and raises `IntegrityVerificationError` on live-source/baseline mismatch. v2.2 will add Sigstore cosign signature verification of the baseline.
+- **CR-12 — `Authorizer` Protocol + self-clearing rule on Sovereign Veto + DEFCON override.** `SovereignVeto.clear()` + `DEFCONMachine.manual_override()` accepted any operator_id with no authentication. Added the `Authorizer` Protocol; `SovereignVeto.clear` hard-blocks `operator_id == self.agent_id` even when the authorizer would allow (the "no agent can clear its own veto" docstring claim is now enforced); when an authorizer is wired, `authorize(operator_id, action, context)` is consulted and raises `VetoBlockedError` / `DEFCONOverrideRejectedError` on deny.
+
+### CI + supply-chain (H1.A)
+- SHA-pinned every GitHub Action across `.github/workflows/{ci,publish,audit-chain-verify}.yml` and `action.yml` to immutable 40-char SHAs with `# version` comments. Closes the `tj-actions/changed-files`-2025-incident class of supply-chain risk.
+- New workflows: `codeql.yml` (Python SAST, weekly + PR; `security-extended` + `security-and-quality` queries), `bandit.yml` (Python SAST), `pip-audit.yml` (daily + PR), `gitleaks.yml` (full-history secret scan), `osv-scanner.yml` (multi-ecosystem vuln scan).
+- All workflows declare top-level `permissions: contents: read` (least-privilege default); security-event-writing workflows override per-job. `concurrency:` blocks added — `cancel-in-progress: true` on `ci`, `false` on `publish` (tag pushes must complete), `audit-chain-verify` keys on `inputs.audit-jsonl-path`.
+- pre-commit hooks added: `gitleaks`, `actionlint`, `yamllint`, `shellcheck`. New `.yamllint.yml`.
+- New `pyproject.toml` optional-dep groups: `test-property` (`hypothesis>=6.115` for the CR-6 fuzz harness) and `security-dev` (`bandit[toml]>=1.7` + `pip-audit>=2.7` for local SAST/SCA). `slow` pytest marker registered.
+
+### Kubernetes hardening (H1.D)
+- Operator `Dockerfile` is now multi-stage (`python:3.13-bookworm` builder + `python:3.13-slim-bookworm` runtime), digest-pinned, non-root UID 1000, read-only root filesystem, with a `HEALTHCHECK`. Image tag bumped 2.0.0 → 2.1.0.
+- `controller.py` adds an `http.server` thread for `/healthz`, `/readyz`, `/metrics` (Prometheus exposition); ServiceAccount token re-read per API call (was cached at startup — projected-volume token rotation would silently 401 the controller); watch-loop resync every 5 min to recover from edge-network partitions.
+- `rbac.yaml` drops list/watch on Pods + events.create (least-privilege); Deployment adds liveness/readiness probes, `PodDisruptionBudget(minAvailable: 1)`, `priorityClassName: system-cluster-critical`, `topologySpreadConstraints` across zones, explicit resource requests/limits, hardened `securityContext` (`runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`, `capabilities.drop=[ALL]`, `seccompProfile=RuntimeDefault`).
+- New manifests: `servicemonitor.yaml` (Prometheus Operator scraping), `pvc-sample.yaml` (reference PVC), `networkpolicy.yaml` (default-deny ingress; egress allowlist for kube-apiserver + DNS + optional TSA + optional Sigstore Rekor).
+- Kyverno policies: `verify-chain-sink.yaml` nested-condition syntax fixed (was silently passing on multi-sink configurations); `require-audit-chain.yaml` + `require-sovereign-veto-armed.yaml` get `failurePolicy: Fail` + `validationFailureAction: Enforce` (was the default `Ignore`/`Audit`, which let admission-controller outages let unaudited workloads in). `match` block constrains to `linus10x.io/v1alpha1/AutonomousAgent`; `background: true` flags existing resources on policy creation.
+- OPA Gatekeeper Rego policies rewritten to fail-closed; `default allow = false` at the top of each ConstraintTemplate.
+
+### Author-action drafts (H2.A — `MANUAL_REMEDIATION_AUTHOR.md` index)
+The following 11 documents land as DRAFTS for author review — they are not in-effect by virtue of landing in the repo. Each carries an "Author Action Required" preamble naming the decision, the recommendation, and the consequence of inaction.
+- `LICENSE-APACHE-2.0` — full Apache 2.0 text staged alongside MIT (does not replace). Tier-1 bank legal review at JPMC / BoA / Schwab / BNY routinely declines MIT projects for inbound supply-chain inclusion because MIT lacks an explicit patent grant; Apache 2.0 §3's express patent license is the standard they ask for. Author decision: keep MIT · dual-license · replace with Apache 2.0. Default recommendation: dual-license at adopter election.
+- `docs/ETHICS_WALL.md` — formalizes the information barrier between NTCI research lab (builder of APEX et al — buy-side surface) and NTCI Consulting LLC (advisory entity that delivers paid Diagnostics + Audits using this framework). Required disclosure for any Tier-1 buyer asking "do you trade against your clients."
+- `docs/SOC2_ENGAGEMENT_RFP.md` — RFP template for Schellman / A-LIGN / Coalfire engaging a SOC 2 Type I (point-in-time, 4-6 weeks, $25-40K) as the first attestation artifact, then a Type II (observation window, 6-12 months, $60-100K) gated on Cohort-Zero customers.
+- `docs/TRADEMARK.md` — "Autonomy Ladder" + "ALO" usage guidelines pending the USPTO classes 9/35/41/42 filing scheduled for 2026-06-15 per the AL v3 LOCKED plan.
+- `docs/CO_MAINTAINER_RECRUITMENT_DRAFT.md` — LinkedIn post draft (under 300 words, voice-rules compliant) recruiting 1-2 co-maintainers from the 8K-follower base.
+- `docs/LFAI_SANDBOX_APPLICATION_DRAFT.md` — LF AI & Data Foundation Sandbox-track application per the AL v3 LOCKED plan's neutrality-foundation move. Sandbox (not Incubation) is the right starting point — Incubation requires multi-org maintainership, which the co-maintainer recruitment item above is the path to.
+- `docs/COHORT_ZERO_PRICING_PUBLIC.md` — formal publication of the $1K pilot pricing for the first 5 logos (recruiting tool, not profit center). Standard $5K Diagnostic pricing remains out-of-repo at autonomy-ladder.io/services per the existing brand-asset strategy.
+- `docs/tier1_buyer_prefills/SIG_LITE_PREFILL.md` — pre-filled SIG Lite (Shared Assessment Group, 2025, ~125 questions; ~60% pre-fill rate).
+- `docs/tier1_buyer_prefills/CAIQ_PREFILL.md` — pre-filled CSA CAIQ v4.0.3 (~261 questions; ~45% pre-fill rate).
+- `docs/tier1_buyer_prefills/BITS_AUP_PREFILL.md` — pre-filled BITS Shared Assessments AUP (FS-ISAC member-bank deep-review questionnaire).
+
+### Breaking changes (semver-minor — `!` on commit, minor bump)
+- `AuditEvent` is now frozen — code that mutated `event.event_hash` post-construction now raises `FrozenInstanceError`. Replay code MUST use `AuditEvent.from_jsonl`.
+- DEFCON audit-event on-disk JSONL schema changed (`metrics_snapshot` now embedded in canonical `payload`, not a top-level field). v2.0 DEFCON JSONL replay requires one-time migration — see release notes.
+- CLI `--mi-proxy-key` flag is now hard-rejected; existing CI/CD using the argv form will fail with a clear error directing operators to the env var.
+- `LocalMIProxy` → `LocalMIProxyFreshnessCheck`; `WORMLedgerStore` → `BestEffortWORMLedgerStore`. Backward-compat aliases emit `DeprecationWarning`.
 
 ---
 
