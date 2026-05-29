@@ -51,9 +51,14 @@ jobs:
           # `detect` walks the git history; `--no-banner` keeps logs clean;
           # `--redact` masks any matched secrets in output so the run log
           # does not itself become a leak surface; `--report-format sarif`
-          # + `--report-path` lets future iterations upload to code-scanning.
+          # + `--report-path` lets future iterations upload to code-scanning;
+          # `--config .gitleaks.toml` loads the repo-local config that
+          # narrowly allowlists test fixtures + the maturity-questionnaire
+          # script as known false-positive surfaces (see .gitleaks.toml for
+          # the rationale).
           gitleaks detect \
             --source . \
+            --config .gitleaks.toml \
             --no-banner \
             --redact \
             --report-format sarif \

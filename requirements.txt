@@ -1,9 +1,0 @@
-# Runtime dependencies — Python 3.12+
-# This library has zero required runtime dependencies.
-# All patterns use only the Python standard library.
-
-# Development and testing
-pytest>=8.3
-pytest-cov>=6.0
-mypy>=1.14
-ruff>=0.8

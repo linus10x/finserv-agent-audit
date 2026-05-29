@@ -1,0 +1,31 @@
+# gitleaks configuration — extends the bundled default ruleset with a
+# narrowly-scoped allowlist for the framework's known false-positive surfaces.
+#
+# Two surfaces produce false-positives under the default `generic-api-key`
+# rule's high-entropy heuristic, and both are content the discipline EXPECTS
+# to be long alphanumeric strings:
+#
+#   1. tests/ — test fixtures use base64-encoded test tokens, fake HMAC keys
+#      (`secrets.token_bytes(32)` test-time generated, not embedded), and
+#      JSON-encoded sample-event hashes. These are universally false-positive
+#      territory in any audit-trail / cryptography codebase.
+#
+#   2. scripts/maturity_self_score.py — a maturity-questionnaire tool whose
+#      Question() dataclass instances contain long descriptive `text=` strings
+#      describing AI-governance maturity-level questions. The entropy of these
+#      strings (~40-80 chars of question prose) trips the generic-api-key
+#      heuristic. The file has zero secret content by design.
+#
+# Anything OUTSIDE these surfaces is still scanned with the default ruleset.
+# Real secrets in src/, .github/workflows/, docs/, or root configs would
+# still be detected and would fail CI.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures + maturity questionnaire — long strings are content, not secrets"
+paths = [
+  '''tests/.*\.py''',
+  '''scripts/maturity_self_score\.py''',
+]

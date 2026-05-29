@@ -15,7 +15,7 @@
 
 "Autonomy Ladder" is the framework's headline term and the brand under which the cross-vertical discipline (this repository `finserv-agent-audit`, the sibling repository `cre-agent-audit`, and future vertical-specific siblings) is published.
 
-**Filing status:** Application in preparation for USPTO classes 9 (downloadable software), 35 (business consulting services), 41 (educational services), 42 (technology consulting). Filing target: **June 15, 2026** via `tmsearch.uspto.gov` (the USPTO TESS system was retired in 2023). The mark is asserted as a common-law mark until registration completes.
+**Filing status:** Application in preparation for USPTO classes 9 (downloadable software) and 42 (Software-as-a-Service for AI-agent governance), both §1(a) use-based. Filing target: **June 5, 2026** via the USPTO Trademark Center (`trademarks.uspto.gov`). Classes 35 (business consulting services) and 41 (educational services) deferred 12-18 months until paying-client / cohort revenue supports a §1(a) basis or a §1(b) intent-to-use filing becomes economically justified. Clearance is conducted via `tmsearch.uspto.gov` (the legacy TESS interface was retired in 2023; `tmsearch.uspto.gov` is the post-TESS successor). The historical TEAS Plus / TEAS Standard bifurcated filing system was retired 2025-01-18 in favor of a single unified base application at $350/class. The mark is asserted as a common-law mark until registration completes. Full filing-prep package: `Applications-May-2026/v2-Refresh/Memos/USPTO_Autonomy_Ladder_Trademark_Filing_Package_2026-06-05.md`.
 
 **Designation:**
 
