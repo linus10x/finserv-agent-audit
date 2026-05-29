@@ -29,6 +29,27 @@ spec:
       rego: |
         package finserv.requireauditchain
 
+        # Defensive sync-check: if Gatekeeper Config has not synced the
+        # Namespace inventory, fail closed rather than silently allow.
+        # A missing sync is operator misconfiguration, not a green light.
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          not data.inventory.cluster["v1"]["Namespace"]
+          msg := "Gatekeeper Config sync is missing data.inventory.cluster.v1.Namespace; policy cannot validate AuditChain presence. Configure the Gatekeeper sync per deploy/k8s/README.md (Option B). Failing closed."
+        }
+
+        # Defensive sync-check: same for the namespaced AuditChain inventory.
+        # Without it, audit_chains_in_namespace() returns [] for every
+        # namespace, which would make the chain-presence rule below fire
+        # blindly — equally bad. We fail closed with a clear diagnostic.
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          ns := input.review.object.metadata.namespace
+          data.inventory.cluster["v1"]["Namespace"][ns].metadata.labels["finserv.io/agent-namespace"] == "true"
+          not data.inventory.namespace[ns]
+          msg := sprintf("Gatekeeper Config sync is missing data.inventory.namespace[%q]; policy cannot enumerate AuditChain CRDs. Configure the finserv.io/v1/AuditChain sync per deploy/k8s/README.md. Failing closed.", [ns])
+        }
+
         # Deny Pod admission when the namespace is labeled
         # finserv.io/agent-namespace=true and has zero AuditChain CRD
         # instances.
@@ -37,6 +58,7 @@ spec:
           ns := input.review.object.metadata.namespace
           namespace_obj := data.inventory.cluster["v1"]["Namespace"][ns]
           namespace_obj.metadata.labels["finserv.io/agent-namespace"] == "true"
+          data.inventory.namespace[ns]
           count(audit_chains_in_namespace(ns)) == 0
           msg := sprintf(
             "Namespace %q is labeled finserv.io/agent-namespace=true but has no AuditChain CRD instances. Create at least one AuditChain before deploying agent Pods. See ADR-0003.",

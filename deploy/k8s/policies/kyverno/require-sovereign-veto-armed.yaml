@@ -36,6 +36,8 @@ spec:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
               selector:
                 matchLabels:
                   app.kubernetes.io/component: agent
@@ -58,6 +60,8 @@ spec:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
               selector:
                 matchLabels:
                   app.kubernetes.io/component: agent

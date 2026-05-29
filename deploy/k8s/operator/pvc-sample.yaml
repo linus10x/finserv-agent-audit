@@ -1,0 +1,64 @@
+# Sample PersistentVolumeClaim for finserv-agent-audit ledger storage.
+#
+# This is a REFERENCE SAMPLE. It is NOT applied by the default install
+# walkthrough — production deployers MUST adapt the StorageClass +
+# capacity to their cluster's storage substrate, then add the matching
+# volume + volumeMount to the operator Deployment in rbac.yaml.
+#
+# When to apply:
+#   * AuditChain.spec.ledger_store_class is one of jsonl / sqlite / worm
+#     — i.e. anything other than the inmemory store, which loses state
+#     on Pod restart and is intended for dev / kind / minikube only.
+#   * The path AuditChain.spec.ledger_store_config.path references must
+#     live under the PVC's mount point in the operator Pod. Example:
+#     mount the PVC at /var/finserv/audit and set
+#     spec.ledger_store_config.path: /var/finserv/audit/zeus.jsonl.
+#
+# StorageClass choice — adapt to your cluster:
+#   * AWS EKS: gp3 with encryption=true is the baseline.
+#   * GKE: pd-balanced + Customer-Managed Encryption Key (CMEK) for
+#     regulated workloads.
+#   * Azure AKS: managed-csi with disk encryption set.
+#   * On-prem: any CSI driver that supports ReadWriteOnce + encryption
+#     at rest (longhorn, openebs-mayastor, ceph-rbd).
+#
+# Capacity sizing — adapt to your audit volume:
+#   * 100Gi is a starter — a 7-year retention chain (ADR-0017) at
+#     ~10 events/sec averages ~1.5 TB. Right-size against your
+#     measured AuditChain event rate + ChainSink offload cadence.
+#
+# Backup posture:
+#   * The PVC carries evidentiary record. Snapshot it per the deployer's
+#     incident-response runbook. WORMLedgerStore protects against
+#     in-cluster tamper; snapshot protects against availability loss.
+#
+# Mounting in the operator Deployment:
+#   spec.template.spec.volumes:
+#     - name: audit-ledger
+#       persistentVolumeClaim:
+#         claimName: finserv-audit-ledger
+#   spec.template.spec.containers[0].volumeMounts:
+#     - name: audit-ledger
+#       mountPath: /var/finserv/audit
+#       readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: finserv-audit-ledger
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/component: ledger-storage
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  # Adapt to your cluster. The gp3-encrypted name assumes an EKS
+  # StorageClass with provisioner ebs.csi.aws.com + parameters.encrypted=true.
+  # Replace with your cluster's encrypted-at-rest StorageClass name before
+  # applying.
+  storageClassName: gp3-encrypted

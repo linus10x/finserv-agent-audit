@@ -27,6 +27,21 @@ spec:
       rego: |
         package finserv.requiresovereignvetoarmed
 
+        # Defensive sync-check: if Gatekeeper Config has not synced the
+        # SovereignVeto inventory for the Pod's namespace, fail closed
+        # rather than silently allow a Pod whose veto reference cannot
+        # be validated. The annotation-presence check above already runs
+        # without needing the synced inventory, but the existence check
+        # below does — so the sync must be configured.
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          pod := input.review.object
+          pod.metadata.labels["app.kubernetes.io/component"] == "agent"
+          ns := pod.metadata.namespace
+          not data.inventory.namespace[ns]
+          msg := sprintf("Gatekeeper Config sync is missing data.inventory.namespace[%q]; policy cannot verify SovereignVeto CRD existence. Configure the finserv.io/v1/SovereignVeto sync per deploy/k8s/README.md. Failing closed.", [ns])
+        }
+
         # Deny agent Pod admission when the SovereignVeto annotation is
         # missing.
         violation[{"msg": msg}] {
@@ -49,6 +64,7 @@ spec:
           veto_name := pod.metadata.annotations["finserv.io/sovereign-veto-ref"]
           veto_name != ""
           ns := pod.metadata.namespace
+          data.inventory.namespace[ns]
           not data.inventory.namespace[ns]["finserv.io/v1"]["SovereignVeto"][veto_name]
           msg := sprintf(
             "Pod %q references SovereignVeto %q which does not exist in namespace %q.",

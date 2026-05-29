@@ -1,0 +1,50 @@
+# Prometheus Operator ServiceMonitor for the finserv-agent-audit operator.
+#
+# Apply this only if your cluster runs the Prometheus Operator
+# (https://github.com/prometheus-operator/prometheus-operator). Clusters
+# scraping via the older config-file pattern can ignore this file —
+# the Deployment template already carries the prometheus.io/scrape
+# annotation set the legacy config picks up.
+#
+# Pairs with the named 'metrics' port on the operator Service in
+# deploy/k8s/operator/rbac.yaml. The operator exposes a minimal
+# Prometheus-format metrics surface from controller.py:
+#
+#   * finserv_operator_up — gauge (always 1 when the process is alive)
+#   * finserv_operator_ready — gauge (1 after first reconcile completes)
+#   * finserv_operator_reconcile_total — counter
+#   * finserv_operator_reconcile_failed_total — counter
+#   * finserv_operator_last_reconcile_timestamp_seconds — gauge
+#
+# Production controllers SHOULD swap the stub's minimal exposition for
+# the prometheus_client library and emit the controller_runtime_*
+# histograms (reconcile latency p50/p90/p99, queue depth, work duration)
+# the operator-sdk reference image emits.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/version: "2.0.0"
+    # The 'release' label matches the kube-prometheus-stack Helm chart's
+    # default Prometheus selector. Adjust if your Prometheus Operator
+    # install uses a different selector (check
+    # `kubectl get prometheus -A -o jsonpath='{.items[*].spec.serviceMonitorSelector}'`).
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: finserv-agent-audit-operator
+  namespaceSelector:
+    matchNames:
+      - finserv-system
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: false

@@ -1,0 +1,80 @@
+# NetworkPolicy for the finserv-agent-audit operator.
+#
+# Default-deny egress with explicit allow-listed destinations:
+#
+#   1. kube-apiserver — the operator's primary outbound destination.
+#      Reaches the API server via the in-cluster Service
+#      kubernetes.default.svc (kube-system namespace, port 443).
+#   2. kube-dns / CoreDNS — name resolution for any sink webhook URL
+#      the operator must resolve.
+#   3. SovereignVeto webhook delivery + ChainSink emit — narrowed to
+#      egress on port 443 only. Production deployers SHOULD replace
+#      the `to: []` (any destination) clause with an explicit list
+#      of namespaceSelectors / ipBlocks matching their actual webhook
+#      and sink endpoints. The default permissive clause exists so the
+#      sample install walkthrough works without bespoke per-cluster
+#      tuning; it is NOT a production posture.
+#
+# Ingress policy: only the Prometheus scrape path (port 8080, named
+# 'metrics' on the Service) is allowed. Restrict the source ipBlock
+# / namespaceSelector to your Prometheus namespace in production.
+#
+# Pairs with deploy/k8s/operator/rbac.yaml. Apply AFTER the Deployment
+# is healthy — applying a default-deny egress before the operator's
+# first API-server call leaves the cold-start window blind.
+#
+# Requires a NetworkPolicy-capable CNI (Calico, Cilium, antrea-policy).
+# Vanilla flannel / aws-vpc-cni without policy enforcement silently
+# accepts the manifest but enforces nothing.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: finserv-agent-audit-operator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow Prometheus to scrape the /metrics endpoint. Tighten
+    # `from` to the Prometheus namespace in production.
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # kube-apiserver via the in-cluster Service.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+    # DNS resolution. kube-dns / CoreDNS live in kube-system.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # SovereignVeto webhook delivery + ChainSink emit destinations.
+    # Production deployers SHOULD narrow this with explicit
+    # namespaceSelectors / ipBlocks per the actual webhook + sink URLs.
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,4 +1,4 @@
-# RBAC for the finserv-agent-audit operator stub.
+# RBAC + Deployment + Service + PDB for the finserv-agent-audit operator stub.
 #
 # Grants the operator a ServiceAccount with the minimum permissions
 # required to reconcile AuditChain, SovereignVeto, and ChainSink CRDs:
@@ -6,6 +6,9 @@
 #   * get/list/watch on the three CRDs (read the desired state)
 #   * patch on the .status subresource (write the observed state)
 #   * create on Events (surface reconcile failures to kubectl describe)
+#   * leader election Lease coordination (forward-compat: the stub does
+#     not actually leader-elect, but the Role is shipped so a kopf /
+#     operator-sdk drop-in does not need an RBAC re-roll on day one).
 #
 # The operator does NOT need cluster-wide permissions on core resources
 # (Pods, Deployments, Secrets) in the stub. Production controllers that
@@ -21,6 +24,8 @@ metadata:
   labels:
     app.kubernetes.io/name: finserv-agent-audit-operator
     app.kubernetes.io/component: operator
+    app.kubernetes.io/version: "2.0.0"
+automountServiceAccountToken: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -28,6 +33,7 @@ metadata:
   name: finserv-agent-audit-operator
   labels:
     app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
 rules:
   - apiGroups: ["finserv.io"]
     resources:
@@ -51,6 +57,7 @@ metadata:
   name: finserv-agent-audit-operator
   labels:
     app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
 subjects:
   - kind: ServiceAccount
     name: finserv-agent-audit-operator
@@ -60,6 +67,81 @@ roleRef:
   name: finserv-agent-audit-operator
   apiGroup: rbac.authorization.k8s.io
 ---
+# Namespaced Role + Binding for leader-election Leases. The stub does
+# not currently leader-elect, but the Lease coordination Role is shipped
+# so the swap to a kopf / operator-sdk controller (which DO leader-elect
+# via coordination.k8s.io/Lease) requires zero RBAC churn.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: finserv-agent-audit-operator-leader-election
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
+rules:
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: finserv-agent-audit-operator-leader-election
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
+subjects:
+  - kind: ServiceAccount
+    name: finserv-agent-audit-operator
+    namespace: finserv-system
+roleRef:
+  kind: Role
+  name: finserv-agent-audit-operator-leader-election
+  apiGroup: rbac.authorization.k8s.io
+---
+# Service for the health + metrics surface. Named port 'metrics' is the
+# scrape target the accompanying ServiceMonitor expects.
+apiVersion: v1
+kind: Service
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+# PodDisruptionBudget — keep at least one operator Pod alive during
+# voluntary disruptions (node drain, cluster upgrade). With replicas=1
+# this evicts-but-reschedules rather than blocking the drain.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: finserv-agent-audit-operator
+  namespace: finserv-system
+  labels:
+    app.kubernetes.io/name: finserv-agent-audit-operator
+    app.kubernetes.io/version: "2.0.0"
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: finserv-agent-audit-operator
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,8 +150,14 @@ metadata:
   labels:
     app.kubernetes.io/name: finserv-agent-audit-operator
     app.kubernetes.io/component: operator
+    app.kubernetes.io/version: "2.0.0"
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: finserv-agent-audit-operator
@@ -78,22 +166,79 @@ spec:
       labels:
         app.kubernetes.io/name: finserv-agent-audit-operator
         app.kubernetes.io/component: operator
+        app.kubernetes.io/version: "2.0.0"
+      annotations:
+        # Prometheus scrape hints for environments not running the
+        # Prometheus Operator (ServiceMonitor is the preferred path; see
+        # deploy/k8s/operator/servicemonitor.yaml).
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: finserv-agent-audit-operator
+      # system-cluster-critical guarantees the operator survives node
+      # pressure-eviction the way kube-system control-plane components do.
+      # A regulated-operations audit substrate going dark mid-incident is
+      # the failure mode we are designing against.
+      priorityClassName: system-cluster-critical
+      terminationGracePeriodSeconds: 30
+      automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
         seccompProfile:
           type: RuntimeDefault
+      # Topology spread — at replicas>1 (post leader-election swap-in),
+      # ensure replicas land on different AZs. At replicas=1 this is
+      # a no-op but stays in the manifest so the scale-up is one-line.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: finserv-agent-audit-operator
       containers:
         - name: operator
-          image: ghcr.io/linus10x/finserv-agent-audit-operator:1.3.0
+          image: ghcr.io/linus10x/finserv-agent-audit-operator:2.0.0
           imagePullPolicy: IfNotPresent
           env:
             - name: FINSERV_OPERATOR_LOG_LEVEL
               value: "INFO"
             - name: FINSERV_OPERATOR_RECONCILE_INTERVAL
               value: "30"
+            - name: FINSERV_OPERATOR_HEALTH_PORT
+              value: "8080"
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+          # Startup probe gives the cold-start window (CRD list, first
+          # reconcile) up to 60s before liveness starts gating restarts.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           resources:
             requests:
               cpu: 50m
@@ -104,5 +249,24 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
             capabilities:
               drop: ["ALL"]
+          volumeMounts:
+            # tmp for any transient scratch the controller writes. The
+            # root filesystem is read-only; this is the one writable
+            # surface — keep it tight.
+            - name: tmp
+              mountPath: /tmp
+            # OPTIONAL: production deployers that wire one of the
+            # persistent ledger stores (jsonl / sqlite / worm) must mount
+            # a PVC at the path AuditChain.spec.ledger_store_config.path
+            # references. See deploy/k8s/operator/pvc-sample.yaml and the
+            # README § "Persistent ledger PVC". The mount is intentionally
+            # NOT in this manifest because the path is deployer-specific.
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

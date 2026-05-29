@@ -3,8 +3,10 @@
 This is a REFERENCE STUB. It demonstrates the reconciliation pattern using
 only the Python standard library and an in-cluster ServiceAccount token,
 calling the Kubernetes API via ``urllib.request``. It is intentionally
-minimal: no event-driven watch stream, no informer cache, no leader
-election, no metrics endpoint.
+minimal: no event-driven watch stream, no informer cache, no full leader
+election. A ``/healthz``, ``/readyz``, and ``/metrics`` HTTP surface is
+included so the Deployment's probes + Prometheus ServiceMonitor have
+something to scrape.
 
 Production deployers SHOULD rebuild this controller on top of a proper
 operator framework:
@@ -19,6 +21,9 @@ What the stub does demonstrate, end-to-end:
 
   1. Reads the in-cluster ServiceAccount token + CA bundle from the
      standard mount path (``/var/run/secrets/kubernetes.io/serviceaccount/``).
+     The token is RE-READ from disk on every API call so projected
+     ServiceAccount token rotation (kubelet refresh, default ~1h) takes
+     effect without a Pod restart.
   2. Polls the three CRD endpoints
      (``/apis/finserv.io/v1/{auditchains,sovereignvetoes,chainsinks}``)
      on a fixed interval.
@@ -27,6 +32,10 @@ What the stub does demonstrate, end-to-end:
      spec's ledger_store_class + timestamp_source_class.
   4. Runs ``chain.verify()`` and PATCHes the result back onto the CRD's
      ``.status`` subresource.
+  5. Serves ``/healthz``, ``/readyz``, and ``/metrics`` on
+     ``FINSERV_OPERATOR_HEALTH_PORT`` (default ``8080``) so the Deployment's
+     probes + Prometheus ServiceMonitor can scrape liveness + readiness
+     + a minimal operator-up gauge.
 
 The chain-verify cron pattern is intentionally surfaced here so a deployer
 reading this stub understands the moving parts before swapping in kopf or
@@ -41,11 +50,13 @@ import logging
 import os
 import ssl
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, cast
 from urllib.request import Request
 
@@ -66,6 +77,7 @@ RESOURCE_SOVEREIGN_VETO = "sovereignvetoes"
 RESOURCE_CHAIN_SINK = "chainsinks"
 
 DEFAULT_RECONCILE_INTERVAL_SECONDS = 30
+DEFAULT_HEALTH_PORT = 8080
 
 
 # --------------------------------------------------------------------------- #
@@ -75,10 +87,15 @@ DEFAULT_RECONCILE_INTERVAL_SECONDS = 30
 
 @dataclass(frozen=True)
 class ClusterConfig:
-    """In-cluster Kubernetes API connection settings."""
+    """In-cluster Kubernetes API connection settings.
+
+    The ServiceAccount token is intentionally NOT stored on this dataclass.
+    Projected SA tokens rotate (kubelet default ~1h); reading the token at
+    every API call keeps the controller from drifting onto a stale token
+    and a sudden burst of 401s post-rotation.
+    """
 
     api_server: str
-    token: str
     ca_bundle_path: str
     namespace: str
 
@@ -96,6 +113,27 @@ class ReconcileReport:
 
 
 # --------------------------------------------------------------------------- #
+# Operator state — readiness gate + reconcile counters surfaced by /metrics  #
+# --------------------------------------------------------------------------- #
+
+
+@dataclass
+class OperatorState:
+    """Mutable runtime state shared with the health-probe HTTP server.
+
+    The health server runs on a daemon thread and reads these fields
+    on every probe — no lock needed because all mutations are simple
+    scalar writes the GIL serializes per-bytecode-instruction, and
+    eventual consistency is fine for liveness + readiness checks.
+    """
+
+    ready: bool = False
+    last_reconcile_unix: float = 0.0
+    reconcile_total: int = 0
+    reconcile_failed_total: int = 0
+
+
+# --------------------------------------------------------------------------- #
 # In-cluster discovery                                                        #
 # --------------------------------------------------------------------------- #
 
@@ -105,12 +143,24 @@ def _read_text(path: str) -> str:
         return handle.read().strip()
 
 
+def _read_sa_token() -> str:
+    """Re-read the ServiceAccount token from disk on every API call.
+
+    Projected SA tokens (the default since Kubernetes 1.21) rotate roughly
+    hourly. Caching the token at startup means a long-running operator
+    holds a stale token forever after the first rotation and starts
+    issuing 401s. Read-per-call costs ~1 syscall; rotation is invisible.
+    """
+    return _read_text(SA_TOKEN_PATH)
+
+
 def load_cluster_config() -> ClusterConfig:
-    """Read the in-cluster ServiceAccount token + namespace.
+    """Read the in-cluster CA bundle + namespace.
 
     Falls back to ``$KUBERNETES_SERVICE_HOST``/``$KUBERNETES_SERVICE_PORT``
     for the API-server URL — the standard in-cluster envvars Kubernetes
-    sets on every Pod.
+    sets on every Pod. The SA token is NOT loaded here; see
+    ``_read_sa_token``.
     """
     host = os.environ.get("KUBERNETES_SERVICE_HOST")
     port = os.environ.get("KUBERNETES_SERVICE_PORT", "443")
@@ -121,7 +171,6 @@ def load_cluster_config() -> ClusterConfig:
         )
     return ClusterConfig(
         api_server=f"https://{host}:{port}",
-        token=_read_text(SA_TOKEN_PATH),
         ca_bundle_path=SA_CA_PATH,
         namespace=_read_text(SA_NAMESPACE_PATH),
     )
@@ -151,7 +200,8 @@ def _request(
     if body is not None:
         data = json.dumps(body).encode("utf-8")
     req = Request(url=url, method=method, data=data)
-    req.add_header("Authorization", f"Bearer {config.token}")
+    # Re-read the token per call — projected SA tokens rotate.
+    req.add_header("Authorization", f"Bearer {_read_sa_token()}")
     req.add_header("Accept", "application/json")
     if data is not None:
         req.add_header("Content-Type", content_type)
@@ -404,6 +454,109 @@ def reconcile_chain_sink(
 
 
 # --------------------------------------------------------------------------- #
+# Health probe + metrics HTTP server (stdlib http.server)                     #
+# --------------------------------------------------------------------------- #
+
+
+class _HealthHandler(BaseHTTPRequestHandler):
+    """Stdlib HTTP handler for /healthz, /readyz, and /metrics.
+
+    The handler reads from a module-level OperatorState injected by
+    :func:`start_health_server`. /healthz is always 200 once the server
+    is up (the process is by definition alive); /readyz is 200 only
+    after the first reconcile cycle completes (gates Service traffic
+    until the operator is genuinely usable); /metrics emits a minimal
+    Prometheus-format surface.
+    """
+
+    # Class-level state pointer wired by start_health_server.
+    state: OperatorState = OperatorState()
+
+    def do_GET(self) -> None:  # noqa: N802 — BaseHTTPRequestHandler API
+        if self.path == "/healthz":
+            self._respond(200, b"OK\n", "text/plain")
+            return
+        if self.path == "/readyz":
+            if self.state.ready:
+                self._respond(200, b"OK\n", "text/plain")
+            else:
+                self._respond(503, b"NOT READY\n", "text/plain")
+            return
+        if self.path == "/metrics":
+            self._respond(
+                200,
+                self._render_metrics(),
+                "text/plain; version=0.0.4",
+            )
+            return
+        self._respond(404, b"not found\n", "text/plain")
+
+    def _respond(self, status: int, body: bytes, content_type: str) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _render_metrics(self) -> bytes:
+        # Minimal Prometheus exposition. Production controllers should
+        # use prometheus_client and emit controller_runtime_*
+        # histograms; this stub keeps the dependency surface stdlib-only.
+        ready = 1 if self.state.ready else 0
+        failed_help = (
+            "# HELP finserv_operator_reconcile_failed_total "
+            "Total reconcile cycles with at least one failure."
+        )
+        last_help = (
+            "# HELP finserv_operator_last_reconcile_timestamp_seconds "
+            "Unix timestamp of the last reconcile cycle."
+        )
+        lines = [
+            "# HELP finserv_operator_up Operator is up.",
+            "# TYPE finserv_operator_up gauge",
+            "finserv_operator_up 1",
+            "# HELP finserv_operator_ready Operator has completed first reconcile.",
+            "# TYPE finserv_operator_ready gauge",
+            f"finserv_operator_ready {ready}",
+            "# HELP finserv_operator_reconcile_total Total reconcile cycles attempted.",
+            "# TYPE finserv_operator_reconcile_total counter",
+            f"finserv_operator_reconcile_total {self.state.reconcile_total}",
+            failed_help,
+            "# TYPE finserv_operator_reconcile_failed_total counter",
+            f"finserv_operator_reconcile_failed_total {self.state.reconcile_failed_total}",
+            last_help,
+            "# TYPE finserv_operator_last_reconcile_timestamp_seconds gauge",
+            f"finserv_operator_last_reconcile_timestamp_seconds {self.state.last_reconcile_unix}",
+            "",
+        ]
+        return "\n".join(lines).encode("utf-8")
+
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002 — stdlib name
+        # Silence the default access log — kubectl logs is already noisy
+        # with reconcile output. Production controllers should emit
+        # structured access logs to a dedicated stream.
+        return
+
+
+def start_health_server(state: OperatorState, port: int = DEFAULT_HEALTH_PORT) -> HTTPServer:
+    """Start the /healthz + /readyz + /metrics server on a daemon thread.
+
+    Returns the underlying HTTPServer so callers can call ``shutdown()``
+    on SIGTERM. The daemon thread dies with the process; we keep the
+    handle so a graceful path is available.
+    """
+    _HealthHandler.state = state
+    server = HTTPServer(("0.0.0.0", port), _HealthHandler)  # noqa: S104 — Pod-scoped binding
+    thread = threading.Thread(
+        target=server.serve_forever,
+        name="finserv-operator-health",
+        daemon=True,
+    )
+    thread.start()
+    return server
+
+
+# --------------------------------------------------------------------------- #
 # Reconcile loop                                                              #
 # --------------------------------------------------------------------------- #
 
@@ -427,9 +580,15 @@ def reconcile_once(config: ClusterConfig, logger: logging.Logger) -> list[Reconc
 def run_forever(
     config: ClusterConfig,
     logger: logging.Logger,
+    state: OperatorState,
     interval_seconds: int = DEFAULT_RECONCILE_INTERVAL_SECONDS,
 ) -> None:
-    """Reconcile every ``interval_seconds`` until SIGTERM."""
+    """Reconcile every ``interval_seconds`` until SIGTERM.
+
+    Flips ``state.ready`` to True after the first cycle completes so the
+    readiness probe gates Service traffic until the operator is genuinely
+    usable.
+    """
     logger.info(
         "finserv-agent-audit operator stub starting; namespace=%s interval=%ds",
         config.namespace,
@@ -440,8 +599,16 @@ def run_forever(
             reports = reconcile_once(config, logger)
             ok_count = sum(1 for r in reports if r.ok)
             failed_count = sum(1 for r in reports if not r.ok)
+            state.reconcile_total += 1
+            if failed_count > 0:
+                state.reconcile_failed_total += 1
+            state.last_reconcile_unix = time.time()
+            state.ready = True
             logger.info("reconcile cycle complete: ok=%d failed=%d", ok_count, failed_count)
         except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
+            state.reconcile_total += 1
+            state.reconcile_failed_total += 1
+            state.last_reconcile_unix = time.time()
             logger.error("reconcile cycle errored: %s", exc)
         time.sleep(interval_seconds)
 
@@ -469,6 +636,14 @@ def main() -> int:
     except (RuntimeError, OSError) as exc:
         logger.error("failed to load in-cluster config: %s", exc)
         return 2
+
+    # Start the health/metrics surface BEFORE the first reconcile so the
+    # liveness probe has something to hit during the cold-start window.
+    health_port = int(os.environ.get("FINSERV_OPERATOR_HEALTH_PORT", str(DEFAULT_HEALTH_PORT)))
+    state = OperatorState()
+    health_server = start_health_server(state, port=health_port)
+    logger.info("health/metrics server listening on :%d", health_port)
+
     interval = int(
         os.environ.get(
             "FINSERV_OPERATOR_RECONCILE_INTERVAL",
@@ -476,10 +651,12 @@ def main() -> int:
         )
     )
     try:
-        run_forever(config, logger, interval_seconds=interval)
+        run_forever(config, logger, state, interval_seconds=interval)
     except KeyboardInterrupt:
         logger.info("SIGINT received; shutting down")
         return 0
+    finally:
+        health_server.shutdown()
     return 0
 
 

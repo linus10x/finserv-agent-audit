@@ -32,6 +32,8 @@ spec:
           - resources:
               kinds:
                 - Pod
+              operations:
+                - CREATE
               namespaceSelector:
                 matchLabels:
                   finserv.io/agent-namespace: "true"

@@ -10,10 +10,13 @@ full decision record. This README is the operator-facing walkthrough.
 
 > The operator stub in `operator/controller.py` is **reference-only**.
 > It uses only the Python standard library, polls CRD endpoints on a
-> fixed interval, and lacks the watch stream, informer cache, leader
-> election, and metrics endpoint that any production controller needs.
-> Production deployers MUST replace it with `kopf`, `operator-sdk`, or
-> the Kubernetes Agent Sandbox runtime before going live. The
+> fixed interval, and lacks the watch stream, informer cache, and
+> leader election any production controller needs. It DOES ship a
+> minimal `/healthz` + `/readyz` + `/metrics` HTTP surface (port 8080)
+> so the Deployment's probes and Prometheus scrape have something
+> useful to hit, but the metrics set is starter-only. Production
+> deployers MUST replace it with `kopf`, `operator-sdk`, or the
+> Kubernetes Agent Sandbox runtime before going live. The
 > production-hardening section below is the first thing to read after
 > the install walkthrough.
 
@@ -28,9 +31,12 @@ deploy/k8s/
 │   ├── sovereignveto.yaml       # SovereignVeto CRD (finserv.io/v1)
 │   └── chainsink.yaml           # ChainSink CRD (finserv.io/v1)
 ├── operator/
-│   ├── Dockerfile               # Reference image, python:3.12-slim base
-│   ├── controller.py            # Stdlib-only reconciler stub
-│   └── rbac.yaml                # ServiceAccount + ClusterRole + Deployment
+│   ├── Dockerfile               # Multi-stage, digest-pinned, non-root UID 65532
+│   ├── controller.py            # Stdlib reconciler + /healthz + /readyz + /metrics
+│   ├── rbac.yaml                # SA + ClusterRole + Role (leader-election) + Service + PDB + Deployment
+│   ├── servicemonitor.yaml      # Prometheus Operator ServiceMonitor (optional)
+│   ├── pvc-sample.yaml          # Sample PVC for persistent ledger backends
+│   └── networkpolicy.yaml       # Default-deny egress with explicit allow-list
 └── policies/
     ├── kyverno/
     │   ├── require-audit-chain.yaml
@@ -69,12 +75,16 @@ reconciles them per namespace.
 ## Step 2 — Deploy the operator
 
 The reference operator stub is published as a container image at
-`ghcr.io/linus10x/finserv-agent-audit-operator:1.3.0` (the framework
+`ghcr.io/linus10x/finserv-agent-audit-operator:2.0.0` (the framework
 release tag). To build locally:
 
 ```bash
-cd deploy/k8s/operator
-docker build -t finserv-agent-audit-operator:dev .
+# From repository root — the Dockerfile is multi-stage and needs
+# pyproject.toml + src/ from the repo root to build the wheel.
+docker build \
+    -f deploy/k8s/operator/Dockerfile \
+    -t finserv-agent-audit-operator:2.0.0 \
+    .
 # Push to your registry, then edit rbac.yaml's image: field if you
 # changed the registry path.
 ```
@@ -247,9 +257,90 @@ ships `replicas: 1` for this reason.
 
 ### 3. Metrics endpoint
 
-The stub emits no Prometheus metrics. Production controllers SHOULD
-expose `controller_runtime_reconcile_total`, `controller_runtime_reconcile_errors_total`,
-and `controller_runtime_reconcile_time_seconds` at minimum.
+The stub exposes a minimal Prometheus-format surface on port 8080:
+
+```
+finserv_operator_up                                 # 1 if alive
+finserv_operator_ready                              # 1 after first reconcile
+finserv_operator_reconcile_total                    # cycles attempted
+finserv_operator_reconcile_failed_total             # cycles with failures
+finserv_operator_last_reconcile_timestamp_seconds   # last cycle wall-clock
+```
+
+Scrape via the Prometheus Operator ServiceMonitor at
+`deploy/k8s/operator/servicemonitor.yaml`, or via the
+`prometheus.io/scrape: "true"` annotation on the Deployment template
+for clusters not running the Prometheus Operator. The accompanying
+Service (named port `metrics`, 8080) is shipped in `rbac.yaml`.
+
+Production controllers SHOULD swap the stub's stdlib exposition for
+the `prometheus_client` library and emit the full
+`controller_runtime_reconcile_total`,
+`controller_runtime_reconcile_errors_total`, and
+`controller_runtime_reconcile_time_seconds` histograms the
+operator-sdk reference image emits.
+
+### 3a. Health probes
+
+The stub serves `/healthz`, `/readyz`, and `/metrics` on
+`FINSERV_OPERATOR_HEALTH_PORT` (default 8080). The Deployment in
+`rbac.yaml` wires all three probe types:
+
+- **startupProbe** — `/healthz`, 60s window before liveness takes over.
+- **livenessProbe** — `/healthz`, restarts the container if the HTTP
+  server thread dies.
+- **readinessProbe** — `/readyz`, returns 503 until the first reconcile
+  cycle completes (gates Service traffic until the operator is genuinely
+  usable, not just process-alive).
+
+### 3b. NetworkPolicy
+
+`deploy/k8s/operator/networkpolicy.yaml` ships a default-deny egress
+posture with explicit allow-lists for the kube-apiserver, DNS, and a
+TCP/443 sink-and-webhook clause. Production deployers SHOULD narrow
+the sink/webhook clause to explicit namespaceSelectors or ipBlocks
+matching their actual ChainSink and SovereignVeto-webhook endpoints.
+Requires a NetworkPolicy-capable CNI (Calico, Cilium, antrea-policy).
+
+### 3c. Persistent ledger storage (PVC)
+
+The `inmemory` ledger store is for dev / kind / minikube only — it
+loses state on every Pod restart. Production AuditChain CRDs with
+`spec.ledger_store_class` set to `jsonl`, `sqlite`, or `worm` MUST
+have a PersistentVolumeClaim mounted into the operator Pod at the
+path referenced by `spec.ledger_store_config.path`.
+
+`deploy/k8s/operator/pvc-sample.yaml` is a starter template — 100Gi
+on a `gp3-encrypted` StorageClass (EKS convention). Adapt the
+StorageClass + capacity to your cluster's encrypted-at-rest storage
+substrate, then add the matching `volumes` + `volumeMounts` block to
+the operator Deployment in `rbac.yaml`. The Deployment ships the
+volume mount commented out because the mount path is deployer-specific
+to whatever path each AuditChain CRD declares.
+
+### 3d. Image distroless conversion path
+
+The reference `Dockerfile` uses a multi-stage build with
+`python:3.13-slim-bookworm` pinned by digest in both stages and runs
+as UID 65532 (the distroless `nonroot` convention). It is NOT yet
+distroless because the final stage needs `pip install` to populate
+site-packages with the framework wheel, and `gcr.io/distroless/python3-debian12`
+ships no pip.
+
+Production deployers SHOULD complete the distroless swap by:
+
+1. In the builder stage, install the wheel into a target directory
+   with `pip install --no-deps --target=/wheelout /dist/*.whl`.
+2. Change the final stage to
+   `FROM gcr.io/distroless/python3-debian12:nonroot@sha256:<digest>`.
+3. Copy `/wheelout` from the builder into `/app/site-packages` and
+   set `PYTHONPATH=/app/site-packages`.
+4. Drop the `pip install` line from the runtime stage; entrypoint
+   stays `["python", "-u", "/app/controller.py"]`.
+
+The UID (65532) matches the distroless `nonroot` user, so the
+Deployment `securityContext` block needs no changes when the base
+image swaps.
 
 ### 4. Chain-verify cron
 
@@ -278,7 +369,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: verify
-              image: ghcr.io/linus10x/finserv-agent-audit:1.3.0
+              image: ghcr.io/linus10x/finserv-agent-audit:2.0.0
               command:
                 - finserv-audit
                 - verify

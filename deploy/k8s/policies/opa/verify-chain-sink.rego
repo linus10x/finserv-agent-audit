@@ -28,11 +28,25 @@ spec:
       rego: |
         package finserv.verifychainsink
 
+        # Defensive sync-check: if Gatekeeper Config has not synced the
+        # namespaced ChainSink inventory, fail closed. Without the sync
+        # chain_sinks_in_namespace() always returns [] and the deny
+        # rule below would fire on every AuditChain — but only because
+        # the policy is blind, not because the sink is actually absent.
+        # Make the misconfiguration explicit in the deny message.
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "AuditChain"
+          ns := input.review.object.metadata.namespace
+          not data.inventory.namespace[ns]
+          msg := sprintf("Gatekeeper Config sync is missing data.inventory.namespace[%q]; policy cannot enumerate ChainSink CRDs. Configure the finserv.io/v1/ChainSink sync per deploy/k8s/README.md. Failing closed.", [ns])
+        }
+
         # Deny AuditChain creation when the target namespace has no
         # ChainSink CRD instances.
         violation[{"msg": msg}] {
           input.review.kind.kind == "AuditChain"
           ns := input.review.object.metadata.namespace
+          data.inventory.namespace[ns]
           count(chain_sinks_in_namespace(ns)) == 0
           msg := sprintf(
             "Namespace %q is being assigned an AuditChain %q but has no ChainSink CRD instances. Create at least one ChainSink so chain events are emitted to a long-term retention substrate. See ADR-0017.",

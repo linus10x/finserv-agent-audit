@@ -33,7 +33,10 @@ spec:
         any:
           - resources:
               kinds:
-                - finserv.io/v1/AuditChain
+                - AuditChain
+              operations:
+                - CREATE
+                - UPDATE
       context:
         - name: namespaceChainSinks
           apiCall:
