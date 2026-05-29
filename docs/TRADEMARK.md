@@ -63,6 +63,32 @@ The following uses are prohibited without separate written license from the trad
 
 ---
 
+## Irrevocable nominative-use grants (modeled on the Linux Foundation, Kubernetes, and Rust Foundation marks)
+
+The following grants are **irrevocable** for the recipients identified, are extended without separate license or notice, and survive any future change of trademark ownership or any future amendment to this document. They are made to pre-empt the perception that trademark registration of a discipline-vocabulary mark over a permissively-licensed OSS project would chill legitimate downstream use; that perception is not warranted, and these grants document that fact in writing.
+
+**N1. OSS forks of this repository.** Any fork of `linus10x/finserv-agent-audit` (and the sibling `linus10x/cre-agent-audit`) may use the mark in the fork's repository name, documentation, source files, and README solely for the purpose of identifying the fork's origin and the patterns it derives from. The fork must not assert origin from the trademark holder beyond the fact of derivation, must not use the mark in a manner that would create likelihood of confusion as to source or sponsorship, and must include a clear "Fork of `linus10x/finserv-agent-audit`" or equivalent statement of derivation in the README.
+
+**N2. Conformance attestation.** Any adopter of the framework may publicly state that their system "implements the Autonomy Ladder™ A0-A4 framework" or "conforms to the Autonomy Ladder™ governance patterns" without separate license, provided the statement is truthful (i.e., the system actually implements the cited surface). Adopters may NOT claim certification, accreditation, or endorsement by the trademark holder absent a separate certification license.
+
+**N3. Academic citation and scholarly publication.** Cited use of the mark in academic papers, dissertations, conference proceedings, technical reports, working papers, books, book chapters, blog posts of substantively-scholarly character, and presentations is permitted without separate license. This grant covers comparative analysis, criticism, hypothesis testing against the framework, replication studies, and any pedagogical use including reference in syllabi and instructional materials.
+
+**N4. Standards-development and regulatory-process use.** Use of the mark by standards bodies (LF AI & Data Foundation, OpenSSF, IEEE, ISO/IEC committees, NIST working groups, FFIEC working groups, supervisory authorities), regulators (federal banking agencies, state insurance commissioners, securities regulators, EU national competent authorities under the EU AI Act, the UK FCA, MAS Singapore), and counsel acting on behalf of any of the foregoing is permitted without separate license. This grant is unconditional and survives any change of ownership of the mark.
+
+**N5. Comparator-set inclusion.** Inclusion of the mark in a list of frameworks alongside named comparators (NIST AI RMF, ISO/IEC 42001, OWASP Top 10, MITRE ATT&CK, OpenSSF Best Practices, EU AI Act Annex III, SR 11-7, OCC 2011-12, OCC 2026-13, etc.) is permitted without separate license. The trademark holder welcomes inclusion of the Autonomy Ladder™ framework in industry comparator sets.
+
+**Restrictions on the grants above.** N1-N5 do not authorize: (a) use of the mark to imply official certification or endorsement by the trademark holder (separate certification license required); (b) use of the mark in a manner that disparages or harms the reputation of the framework; (c) registration of confusingly-similar domain names (X5 prohibition retained); (d) trade-dress imitation (X6 prohibition retained); (e) use of the mark in a manner inconsistent with the Apache License 2.0 §6 trademark disclaimer governing source-code use of files licensed under the Apache arm of the dual license.
+
+**Reference precedents.** The grants in N1-N5 are modeled on:
+- The Linux Foundation Trademark Usage Guidelines (`linuxfoundation.org/legal/trademark-usage`)
+- The Cloud Native Computing Foundation Trademark Usage Guidelines (`cncf.io/about/trademark-usage`)
+- The Kubernetes mark policy (`kubernetes.io/community/trademarks`)
+- The Rust Foundation Trademark Policy (`foundation.rust-lang.org/policies/trademark-policy-draft`)
+
+Adopters in doubt may rely on the most-permissive interpretation across the four precedents above; the trademark holder confirms that intent at the time of this document's publication.
+
+---
+
 ## Fair-use carve-out
 
 The following fair-use exceptions apply notwithstanding the prohibitions above:

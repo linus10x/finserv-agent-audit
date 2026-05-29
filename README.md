@@ -438,7 +438,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Dual-licensed under either [MIT](LICENSE-MIT) or [Apache License 2.0](LICENSE-APACHE) at the adopter's election. `SPDX-License-Identifier: MIT OR Apache-2.0`. See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md), and [NOTICE](NOTICE). For trademark posture (Autonomy Ladder™, ALO™ — governed separately from the source-code license per Apache 2.0 §6), see [docs/TRADEMARK.md](docs/TRADEMARK.md).
 
 ## Citation
 

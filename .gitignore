@@ -41,3 +41,12 @@ output/
 
 # Voice-discipline opt-in lint inputs (provided per-environment; not committed)
 .banned-names.txt
+
+# Sales / brand artifacts — public OSS repos do not host pitch decks.
+# Per May 2026 council vote (unanimous), the Autonomy Ladder pitch deck and
+# sibling sales assets live at autonomy-ladder.io behind a soft gate, not in
+# this tree. Finding D6.4 of the v1.0.1 audit flagged PDFs in source control
+# as anti-pattern.
+docs/Autonomy_Ladder_Pitch_Deck_v1.pdf
+docs/*.pptx
+docs/*.key

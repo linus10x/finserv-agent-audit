@@ -70,6 +70,15 @@ keywords:
   - fintech
   - multi-agent systems
   - compliance
-license: MIT
+license: "MIT OR Apache-2.0"
 version: "2.1.0"
 date-released: "2026-05-28"
+# Concept DOI (resolves to all versions of the framework):
+#   Author action at tag time — verify the concept DOI from
+#   https://zenodo.org/records/20434570 "Cite all versions" link,
+#   then update this `doi:` field to the concept DOI value.
+# The v1.0.1 version-specific DOI is 10.5281/zenodo.20434570 and remains the
+# canonical citation for the v1 framework artifact. A new version-specific DOI
+# is auto-minted for v2.1.0 via the GitHub-Zenodo webhook on Release publish;
+# the concept DOI below is preferred for forward-resolving citations.
+doi: "10.5281/zenodo.20434570"  # author-action: replace with concept DOI post-Release

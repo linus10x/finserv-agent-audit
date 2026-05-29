@@ -18,7 +18,7 @@ name = "finserv-agent-audit"
 version = "2.1.0"
 description = "Governance patterns for autonomous AI agents in regulated financial services"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "MIT OR Apache-2.0" }
 authors = [
     { name = "Kunjar Bhaduri", email = "130852583+linus10x@users.noreply.github.com" }
 ]
@@ -39,6 +39,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
     "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

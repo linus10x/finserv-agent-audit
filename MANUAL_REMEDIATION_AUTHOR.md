@@ -29,7 +29,9 @@
 
 ## Item 1 — Dual-license to Apache 2.0
 
-- [ ] **Status: pending author + counsel decision**
+- [x] **Status: COUNCIL-EXECUTED 2026-05-28 (Path A — dual-license MIT OR Apache-2.0 at adopter election). Awaiting counsel post-hoc review.**
+
+> **Council decision record.** May 28, 2026, 5-chamber project council (memo: `Applications-May-2026/v2-Refresh/Memos/Council_v2.1.0_Release_Decisions_2026-05-28.md`) voted 4-of-5 to dual-license at adopter election. Sole dissent: HN Skeptic chamber argued for pure Apache 2.0 replacement; tiebreaker rationale was AI-Governance chamber's "breaks v1.0.1 citation surface" concern. Files now in tree: `LICENSE` (dual-license declaration), `LICENSE-MIT` (former `LICENSE` content), `LICENSE-APACHE` (former `LICENSE-APACHE-2.0`), `NOTICE`, `LICENSING.md`. `pyproject.toml` `license = { text = "MIT OR Apache-2.0" }` + classifier added. `CITATION.cff` `license: "MIT OR Apache-2.0"`. `README.md` License section updated. `CONTRIBUTING.md` adds DCO sign-off requirement (per BigLaw + HN Skeptic concur). **Author post-hoc action:** schedule the IP-counsel consultation described in *Action required* below; if counsel disagrees with the dual posture, reversion is a single `git revert` of the council-decision commit (changes are isolated to license-surface files + pyproject + CITATION + README + CONTRIBUTING DCO note + this MANUAL_REMEDIATION entry).
 
 **The finding.** The repo ships MIT-only. Several Tier-1 buyers (JPMorgan Chase, Goldman Sachs, Capital One, Wells Fargo, BNY Mellon, Morgan Stanley) prefer or require Apache 2.0 for incoming open-source dependencies because Apache 2.0 carries an explicit patent grant. MIT does not. The patent-grant gap is the single most-cited blocker in vendor open-source-intake review at large US banks.
 

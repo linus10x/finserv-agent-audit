@@ -116,6 +116,26 @@ test(defcon): add hysteresis edge case for rapid oscillation
 
 Keep the subject line under 72 characters. Use the body to explain *why*, not *what*.
 
+### Developer Certificate of Origin (DCO) — required on every commit
+
+Every commit must include a `Signed-off-by:` line in the commit trailer attesting to the [Developer Certificate of Origin v1.1](https://developercertificate.org/). This is the same lightweight inbound-IP hygiene mechanism used by the Linux kernel, the Cloud Native Computing Foundation, and the Linux Foundation AI & Data Foundation. It does not require a CLA.
+
+To sign off, append the `-s` flag to your commit:
+
+```bash
+git commit -s -m "feat(patterns): add circuit breaker for model drift (SR 11-7)"
+```
+
+This appends a line of the form:
+
+```
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+By signing off, you certify that you wrote the contribution or otherwise have the right to submit it under the dual MIT OR Apache-2.0 license. The full DCO text is at `https://developercertificate.org/`.
+
+CI rejects pull requests whose commits are missing the sign-off line. Adopters using `commit-msg` hooks can pre-empt CI rejection locally; see `pre-commit` configuration in `.pre-commit-config.yaml` for the local check.
+
 ---
 
 ## Pull Request Process
