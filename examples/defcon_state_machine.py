@@ -42,13 +42,19 @@ Usage::
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
+
+from finserv_agent_audit.schemas.audit_event import (
+    AuditEvent,
+    AuditEventType,
+    AutonomyLevel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -118,32 +124,15 @@ class RiskMetrics:
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
-@dataclass
-class AuditEvent:
-    """Immutable audit record for every state transition."""
-
-    event_id: str
-    timestamp: str
-    from_level: str
-    to_level: str
-    trigger: str
-    metrics_snapshot: dict
-    prev_hash: str
-    event_hash: str = ""
-
-    def __post_init__(self) -> None:
-        payload = json.dumps(
-            {
-                "event_id": self.event_id,
-                "timestamp": self.timestamp,
-                "from_level": self.from_level,
-                "to_level": self.to_level,
-                "trigger": self.trigger,
-                "prev_hash": self.prev_hash,
-            },
-            sort_keys=True,
-        )
-        self.event_hash = hashlib.sha256(payload.encode()).hexdigest()
+# CR-5 — the example previously shipped a *local* ``AuditEvent``
+# dataclass whose ``_compute_hash`` payload OMITTED
+# ``metrics_snapshot``, leaving the metric freely rewritable
+# on-disk without breaking ``verify``. We now consume the canonical
+# ``finserv_agent_audit.schemas.audit_event.AuditEvent``, which
+# folds the entire ``payload`` (including the metrics snapshot
+# embedded in it) into the hash. Any post-hoc rewrite of
+# metrics_snapshot is detected on ``from_jsonl`` replay — same
+# contract the rest of the chain enforces.
 
 
 # ---------------------------------------------------------------------------
@@ -276,25 +265,47 @@ class DEFCONMachine:
         return DEFCON.NORMAL
 
     def _confirm_transition(self, target: DEFCON, metrics: RiskMetrics, trigger: str) -> None:
-        """Confirm a state transition, write audit record, persist state."""
+        """Confirm a state transition, write audit record, persist state.
+
+        CR-5 — the transition event is constructed via the canonical
+        ``AuditEvent.create`` so the ``metrics_snapshot`` (carried in
+        ``payload``) is folded into ``_compute_hash``.
+        """
         from_level = self._current_level
         self._current_level = target
         self._pending_target = None
         self._confirmation_count = 0
         self._transition_count += 1
 
-        event = AuditEvent(
-            event_id=f"defcon-{self._transition_count:06d}",
-            timestamp=metrics.timestamp.isoformat(),
-            from_level=from_level.name,
-            to_level=target.name,
-            trigger=trigger,
-            metrics_snapshot={
+        # Classify the transition as risk escalation, de-escalation,
+        # or HALT trigger so the canonical event_type stream stays
+        # honest.
+        if target == DEFCON.HALT:
+            event_type = AuditEventType.HALT_TRIGGERED
+        elif target.value > from_level.value:
+            event_type = AuditEventType.RISK_ESCALATION
+        else:
+            event_type = AuditEventType.RISK_DEESCALATION
+
+        payload: dict[str, Any] = {
+            "from_level": from_level.name,
+            "to_level": target.name,
+            "trigger": trigger,
+            "metrics_snapshot": {
                 "portfolio_drawdown": metrics.portfolio_drawdown,
                 "daily_loss": metrics.daily_loss,
                 "consecutive_losses": metrics.consecutive_losses,
             },
+        }
+
+        event = AuditEvent.create(
+            event_type=event_type,
+            autonomy_level=AutonomyLevel.A2,
+            agent_id="defcon-state-machine",
+            payload=payload,
             prev_hash=self._prev_hash,
+            event_id=f"defcon-{self._transition_count:06d}",
+            timestamp=metrics.timestamp.isoformat(),
         )
         self._prev_hash = event.event_hash
 
@@ -335,8 +346,11 @@ class DEFCONMachine:
                 logger.warning("Could not load state file (%s) — defaulting to NORMAL", exc)
 
     def _append_audit(self, event: AuditEvent) -> None:
+        # CR-5 — write via the canonical ``to_jsonl`` so the on-disk
+        # line matches the format the canonical ``from_jsonl`` gate
+        # replays through (including the hash-covered payload).
         with self.audit_file.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(vars(event)) + "\n")
+            fh.write(event.to_jsonl() + "\n")
 
 
 # ---------------------------------------------------------------------------

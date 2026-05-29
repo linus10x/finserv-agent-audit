@@ -158,8 +158,11 @@ def test_verify_integrity_raises_on_chain_tamper(tmp_path: Path) -> None:
         agent_id="test",
         payload={"k": "v"},
     )
-    # Tamper: mutate the event_hash so verify() returns False.
-    chain._events[0].event_hash = "deadbeef" * 8
+    # Tamper: mutate the dict-typed payload so verify() returns False.
+    # CR-2 — ``AuditEvent`` is frozen, but the ``payload`` dict
+    # contents remain mutable. Editing them invalidates the stored
+    # event_hash without raising ``FrozenInstanceError``.
+    chain._events[0].payload["k"] = "tampered"
     agent = AuditAgent(audit_chain=chain)
     with pytest.raises(AuditChainTamperError):
         agent.verify_integrity()

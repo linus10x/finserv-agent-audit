@@ -102,20 +102,40 @@ class TestVerify:
         # depending on which check fires first.
         assert "TAMPERED" in captured.err or "VERIFY FAILED" in captured.err
 
-    def test_verify_short_mi_proxy_key_returns_bad_input(
+    def test_verify_rejects_mi_proxy_key_on_argv(
         self, populated_jsonl: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
+        """CR-9: --mi-proxy-key on argv must be hard-rejected (leaks via ps)."""
         rc = main(
             [
                 "verify",
                 "--jsonl",
                 str(populated_jsonl),
                 "--mi-proxy-key",
-                "too_short",
+                "anything-at-all",
             ]
         )
         assert rc == 2
-        assert "decode to >=" in capsys.readouterr().err
+        err = capsys.readouterr().err
+        assert "--mi-proxy-key is not accepted on the command line" in err
+        assert "FINSERV_AUDIT_MI_PROXY_KEY" in err
+
+    def test_verify_reads_mi_proxy_key_from_env(
+        self,
+        populated_jsonl: Path,
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """CR-9: MI Proxy key comes ONLY from FINSERV_AUDIT_MI_PROXY_KEY env var."""
+        import base64
+        import secrets
+
+        key_b64 = base64.b64encode(secrets.token_bytes(32)).decode()
+        monkeypatch.setenv("FINSERV_AUDIT_MI_PROXY_KEY", key_b64)
+        rc = main(["verify", "--jsonl", str(populated_jsonl)])
+        # Verify should succeed when chain is clean and key is in env.
+        assert rc == 0
+        assert "OK: chain verified" in capsys.readouterr().out
 
 
 # --------------------------------------------------------------------------- #

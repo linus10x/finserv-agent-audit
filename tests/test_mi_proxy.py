@@ -326,3 +326,104 @@ def test_fresh_key_helper_produces_decodable_key() -> None:
     raw = _fresh_key_b64()
     decoded = base64.b64decode(raw)
     assert len(decoded) >= 32
+
+
+# --------------------------------------------------------------------------- #
+# 10. CR-11 — LocalMIProxy renamed; BaselineMIProxy stub                       #
+# --------------------------------------------------------------------------- #
+
+
+def test_local_mi_proxy_freshness_check_round_trip() -> None:
+    """The renamed class works identically to the deprecated alias."""
+    from finserv_agent_audit.governance.mi_proxy import LocalMIProxyFreshnessCheck
+
+    proxy = LocalMIProxyFreshnessCheck(signing_key=secrets.token_bytes(32))
+    attestation = proxy.attest(component_id=VERIFIER_COMPONENT)
+    assert proxy.verify_attestation(attestation) is True
+
+
+def test_local_mi_proxy_alias_emits_deprecation_warning() -> None:
+    """LocalMIProxy is a deprecation alias for LocalMIProxyFreshnessCheck."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        LocalMIProxy(signing_key=secrets.token_bytes(32))
+    dep = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+    assert dep, "Expected DeprecationWarning on LocalMIProxy construction"
+    assert any("LocalMIProxyFreshnessCheck" in str(w.message) for w in dep)
+
+
+def test_local_mi_proxy_is_subclass_of_freshness_check() -> None:
+    """The alias inherits from the new class so isinstance() keeps working."""
+    from finserv_agent_audit.governance.mi_proxy import LocalMIProxyFreshnessCheck
+
+    assert issubclass(LocalMIProxy, LocalMIProxyFreshnessCheck)
+
+
+def test_baseline_mi_proxy_loads_baseline_and_verifies(tmp_path: object) -> None:
+    """BaselineMIProxy verifies a live SHA-256 against a deploy-time-pinned baseline."""
+    import json
+    from pathlib import Path
+
+    from finserv_agent_audit.governance.mi_proxy import BaselineMIProxy
+
+    assert isinstance(tmp_path, Path)
+    baseline = tmp_path / "baseline.json"
+    baseline.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "component_id": "finserv_agent_audit.governance.defcon",
+                        "expected_sha256": "a" * 64,
+                        "signed_by": "operator-pgp-2026-Q2",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    proxy = BaselineMIProxy(baseline_path=baseline)
+    assert proxy.verify("finserv_agent_audit.governance.defcon", "a" * 64) is True
+
+
+def test_baseline_mi_proxy_rejects_mismatched_sha(tmp_path: object) -> None:
+    """A live SHA-256 mismatch raises IntegrityVerificationError."""
+    import json
+    from pathlib import Path
+
+    from finserv_agent_audit.governance.mi_proxy import BaselineMIProxy
+
+    assert isinstance(tmp_path, Path)
+    baseline = tmp_path / "baseline.json"
+    baseline.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "component_id": "finserv_agent_audit.governance.defcon",
+                        "expected_sha256": "a" * 64,
+                        "signed_by": "operator-pgp-2026-Q2",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    proxy = BaselineMIProxy(baseline_path=baseline)
+    with pytest.raises(IntegrityVerificationError, match="SHA-256 mismatch"):
+        proxy.verify("finserv_agent_audit.governance.defcon", "b" * 64)
+
+
+def test_baseline_mi_proxy_rejects_unknown_component(tmp_path: object) -> None:
+    """A component absent from the baseline raises IntegrityVerificationError."""
+    import json
+    from pathlib import Path
+
+    from finserv_agent_audit.governance.mi_proxy import BaselineMIProxy
+
+    assert isinstance(tmp_path, Path)
+    baseline = tmp_path / "baseline.json"
+    baseline.write_text(json.dumps({"entries": []}), encoding="utf-8")
+    proxy = BaselineMIProxy(baseline_path=baseline)
+    with pytest.raises(IntegrityVerificationError, match="not in baseline"):
+        proxy.verify("finserv_agent_audit.governance.does_not_exist", "a" * 64)

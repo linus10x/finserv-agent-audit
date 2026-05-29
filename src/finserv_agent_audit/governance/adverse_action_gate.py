@@ -34,6 +34,7 @@ Regulatory anchors:
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -41,11 +42,14 @@ from enum import Enum
 from types import MappingProxyType
 
 from finserv_agent_audit.governance.ledger_store import LedgerStore
+from finserv_agent_audit.governance.subject_id import SubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import (
     AuditEvent,
     AuditEventType,
     AutonomyLevel,
 )
+
+logger = logging.getLogger(__name__)
 
 MAX_PRINCIPAL_REASONS = 4
 """Reg B convention: notices carry up to four principal reasons."""
@@ -121,10 +125,18 @@ class AdverseActionGate:
     gate evaluation (pass or block). The audit chain entry carries the full
     violation list so a downstream supervisory inquiry returns a defensible
     answer from the chain itself.
+
+    When ``subject_id_hasher`` is supplied, raw ``consumer_id`` values are
+    hashed before being written to the chain payload — required for GLBA /
+    GDPR-safe operation (see ``governance.subject_id``). When ``None`` (the
+    default), the gate emits a ``WARNING``-level log on every emit naming
+    the GLBA Safeguards Rule / GDPR Art. 17 risk; operators wiring the gate
+    in production MUST pass a hasher.
     """
 
     ledger_store: LedgerStore | None = None
     agent_id: str = "system:adverse_action_gate"
+    subject_id_hasher: SubjectIdHasher | None = None
     _generic_fragments: tuple[str, ...] = field(
         default=_GENERIC_REASON_FRAGMENTS, init=False, repr=False
     )
@@ -193,23 +205,37 @@ class AdverseActionGate:
         if self.ledger_store is None:
             return
         prev_hash = self.ledger_store.head_event_hash()
+        payload: dict[str, object] = {
+            "decision_id": packet.decision_id,
+            "action_kind": packet.action_kind.value,
+            "model_id": packet.model_id,
+            "model_version": packet.model_version,
+            "model_validation_id": packet.model_validation_id,
+            "cra_used": packet.cra_used,
+            "decision_timestamp": packet.decision_timestamp.isoformat(),
+            "reason_codes": [r.code for r in packet.primary_reasons],
+            "outcome": outcome,
+            "violations": list(violations),
+        }
+        if self.subject_id_hasher is not None:
+            hashed = self.subject_id_hasher.hash_subject(packet.consumer_id)
+            payload["consumer_id_hash_b64"] = hashed.hash_b64
+            payload["consumer_id_pepper_version"] = hashed.pepper_version
+            payload["consumer_id_algorithm"] = hashed.algorithm
+        else:
+            logger.warning(
+                "AdverseActionGate emitting ADVERSE_ACTION_TAKEN with cleartext "
+                "consumer_id=%r — GLBA Safeguards Rule (NPI at rest) and "
+                "GDPR Art. 17 (right to erasure) risk. Inject a "
+                "SubjectIdHasher to hash the consumer_id before payload write.",
+                packet.consumer_id,
+            )
+            payload["consumer_id"] = packet.consumer_id
         event = AuditEvent(
             event_type=AuditEventType.ADVERSE_ACTION_TAKEN,
             autonomy_level=AutonomyLevel.A2,
             agent_id=self.agent_id,
-            payload={
-                "decision_id": packet.decision_id,
-                "consumer_id": packet.consumer_id,
-                "action_kind": packet.action_kind.value,
-                "model_id": packet.model_id,
-                "model_version": packet.model_version,
-                "model_validation_id": packet.model_validation_id,
-                "cra_used": packet.cra_used,
-                "decision_timestamp": packet.decision_timestamp.isoformat(),
-                "reason_codes": [r.code for r in packet.primary_reasons],
-                "outcome": outcome,
-                "violations": list(violations),
-            },
+            payload=payload,
             prev_hash=prev_hash,
         )
         self.ledger_store.append(event)

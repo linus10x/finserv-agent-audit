@@ -34,6 +34,14 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+# CR-1 — single canonical home for ``AuditChainTamperError``. Re-exported
+# here so existing imports from ``agents.base`` continue to resolve, but
+# the *class object* is the one defined in ``governance.audit_chain``.
+# Adopter ``except AuditChainTamperError`` blocks now catch raises from
+# either the governance or agents codepaths (previously two distinct
+# classes silently bypassed adopter handlers).
+from finserv_agent_audit.governance.audit_chain import AuditChainTamperError
+
 if TYPE_CHECKING:
     from finserv_agent_audit.governance.ledger_store import LedgerStore
     from finserv_agent_audit.governance.mi_proxy import MIProxy
@@ -154,16 +162,6 @@ class AuditConsumer:
             score=score,
             model_version=model_version,
         )
-
-
-class AuditChainTamperError(RuntimeError):
-    """Raised by ``AuditConsumer.verify_integrity`` on chain-tamper detection.
-
-    ``AuditChain.verify()`` returns False when the hash-chain replay finds
-    a mismatched event_hash or prev_hash. The AuditConsumer converts that
-    bool into a fail-closed exception so callers cannot accidentally
-    proceed against a compromised chain.
-    """
 
 
 __all__ = [

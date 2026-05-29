@@ -40,6 +40,7 @@ from finserv_agent_audit.governance.customer_facing_chatbot_guardrail import (
     RAGSourceCheck,
     RequiresHumanHandoff,
 )
+from finserv_agent_audit.governance.subject_id import HMACSubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import (
     AuditChain,
     AuditEventType,
@@ -776,3 +777,56 @@ class TestInputValidation:
                 agent_id="chatbot-v3",
                 session_id="",
             )
+
+
+# --------------------------------------------------------------------------- #
+# Subject-ID hashing (CR-8)                                                   #
+# --------------------------------------------------------------------------- #
+
+
+class TestSubjectIdHashing:
+    def test_no_hasher_writes_cleartext_and_logs_warning(
+        self,
+        chain: AuditChain,
+        policy_corpus: PolicyCorpus,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        guardrail = CustomerFacingChatbotGuardrail(
+            policy_corpus=policy_corpus,
+            audit_chain=chain,
+        )
+        with caplog.at_level("WARNING"):
+            guardrail.evaluate(
+                agent_response="Branch hours are 9 AM to 5 PM Monday through Friday.",
+                cited_source_ids=["POL-HOURS-002"],
+                customer_id="cust-PII-001",
+                agent_id="chatbot-v3",
+                session_id="sess-pii-1",
+            )
+        event = chain._events[0]
+        assert event.payload["customer_id"] == "cust-PII-001"
+        assert "customer_id_hash_b64" not in event.payload
+        assert any("GLBA" in rec.message for rec in caplog.records)
+
+    def test_hasher_replaces_cleartext_with_hash(
+        self, chain: AuditChain, policy_corpus: PolicyCorpus
+    ) -> None:
+        hasher = HMACSubjectIdHasher(pepper=b"q" * 32, pepper_version="v2")
+        guardrail = CustomerFacingChatbotGuardrail(
+            policy_corpus=policy_corpus,
+            audit_chain=chain,
+            subject_id_hasher=hasher,
+        )
+        guardrail.evaluate(
+            agent_response="Branch hours are 9 AM to 5 PM Monday through Friday.",
+            cited_source_ids=["POL-HOURS-002"],
+            customer_id="cust-PII-002",
+            agent_id="chatbot-v3",
+            session_id="sess-pii-2",
+        )
+        event = chain._events[0]
+        assert "customer_id" not in event.payload
+        assert "cust-PII-002" not in str(event.payload)
+        assert event.payload["customer_id_hash_b64"]
+        assert event.payload["customer_id_pepper_version"] == "v2"
+        assert event.payload["customer_id_algorithm"] == "HMAC-SHA256"

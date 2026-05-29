@@ -110,8 +110,19 @@ class MIProxy(Protocol):
     def verify_attestation(self, attestation: Attestation) -> bool: ...
 
 
-class LocalMIProxy:
-    """Stdlib-only HMAC-SHA256 default backend.
+class LocalMIProxyFreshnessCheck:
+    """Stdlib-only HMAC-SHA256 freshness check / tamper-detection-within-trust-boundary.
+
+    ⚠ NOT CHAIN-OF-CUSTODY ⚠
+
+    This proxy is a freshness check / tamper-detection-within-trust-boundary
+    only. Same key signs and verifies. A compromised process can mint
+    forged attestations.
+
+    For real chain-of-custody, use :class:`BaselineMIProxy` (this module)
+    or a deployer-implemented SigstoreMIProxy / SLSA-backed proxy that
+    holds an asymmetric key on a separate principal. See ADR-0015 for the
+    recursive-verifier problem and the chain-of-custody pattern.
 
     Hashes ``(source_bytes + canonical_config_bytes)`` of the named
     component, signs ``(component_id, sha256_hex, timestamp_iso, backend_id)``
@@ -146,7 +157,7 @@ class LocalMIProxy:
         *,
         config: Mapping[str, str] | None = None,
         max_age_seconds: int = DEFAULT_MAX_AGE_SECONDS,
-    ) -> LocalMIProxy:
+    ) -> LocalMIProxyFreshnessCheck:
         """Construct from the ``FINSERV_AUDIT_MI_PROXY_KEY`` env var.
 
         Key is base64- or hex-encoded; auto-detected. When the env var is
@@ -302,6 +313,114 @@ class LocalMIProxy:
         )
 
 
+class LocalMIProxy(LocalMIProxyFreshnessCheck):
+    """DEPRECATED in CR-11: prefer ``LocalMIProxyFreshnessCheck`` for honesty.
+
+    The legacy class name implied chain-of-custody, which the symmetric
+    same-key sign + verify path does not deliver. The honest name is
+    ``LocalMIProxyFreshnessCheck``; the semantics are identical.
+    For real chain-of-custody use :class:`BaselineMIProxy` (this module).
+    """
+
+    def __init__(
+        self,
+        signing_key: bytes,
+        *,
+        config: Mapping[str, str] | None = None,
+        max_age_seconds: int = DEFAULT_MAX_AGE_SECONDS,
+    ) -> None:
+        warnings.warn(
+            "LocalMIProxy is a freshness check / within-trust-boundary "
+            "tamper-detection mechanism, not chain-of-custody. Use "
+            "LocalMIProxyFreshnessCheck for the same semantics with an "
+            "honest name, or BaselineMIProxy for deploy-time-pinned "
+            "verifier-integrity checks (ADR-0015).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            signing_key,
+            config=config,
+            max_age_seconds=max_age_seconds,
+        )
+
+
+# --------------------------------------------------------------------------- #
+# CR-11 Part B — BaselineMIProxy (stub: deploy-time-pinned baseline)          #
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class BaselineEntry:
+    """One row in the deploy-time-pinned baseline manifest.
+
+    Fields:
+        component_id: importable Python module path the verifier covers.
+        expected_sha256: hex-encoded SHA-256 of the canonical source.
+        signed_by: operator-key identity that signed the baseline entry.
+    """
+
+    component_id: str
+    expected_sha256: str
+    signed_by: str
+
+
+class BaselineMIProxy:
+    """Verifier-integrity check against a deploy-time-pinned baseline.
+
+    The baseline manifest is loaded at deployer time from a path signed
+    by an OUT-OF-PROCESS key (not the env var the verifier reads). At
+    verify time, the proxy compares the live source SHA-256 against the
+    pinned baseline and raises :class:`IntegrityVerificationError` on
+    mismatch.
+
+    v2.1 stub: signature verification of the baseline itself is deferred
+    to v2.2 (requires Sigstore cosign integration via an optional
+    ``[sigstore]`` extra so the zero-runtime-dep contract is preserved
+    in the base wheel).
+
+    Construct with a path to a JSON file shaped::
+
+        {
+            "entries": [
+                {
+                    "component_id": "finserv_agent_audit.governance.defcon",
+                    "expected_sha256": "<64-hex-char SHA-256>",
+                    "signed_by": "operator-pgp-2026-Q2"
+                }
+            ]
+        }
+    """
+
+    def __init__(self, baseline_path: object) -> None:
+        import json
+        from pathlib import Path
+
+        path = baseline_path if isinstance(baseline_path, Path) else Path(str(baseline_path))
+        data = json.loads(path.read_text(encoding="utf-8"))
+        entries_raw = data.get("entries", [])
+        self._entries: dict[str, BaselineEntry] = {
+            e["component_id"]: BaselineEntry(
+                component_id=e["component_id"],
+                expected_sha256=e["expected_sha256"],
+                signed_by=e["signed_by"],
+            )
+            for e in entries_raw
+        }
+
+    def verify(self, component_id: str, live_sha256: str) -> bool:
+        """Compare the live SHA-256 against the pinned baseline. Raise on mismatch."""
+        entry = self._entries.get(component_id)
+        if entry is None:
+            raise IntegrityVerificationError(f"component {component_id} not in baseline")
+        if not hmac.compare_digest(entry.expected_sha256, live_sha256):
+            raise IntegrityVerificationError(
+                f"component {component_id} SHA-256 mismatch: "
+                f"expected {entry.expected_sha256}, got {live_sha256}"
+            )
+        return True
+
+
 def enforce_attestation(proxy: MIProxy, component_id: str) -> None:
     """Verifier-hook helper: attest + re-verify, raise on failure.
 
@@ -391,8 +510,11 @@ def _sign(
 __all__ = [
     "DEFAULT_MAX_AGE_SECONDS",
     "Attestation",
+    "BaselineEntry",
+    "BaselineMIProxy",
     "IntegrityVerificationError",
     "LocalMIProxy",
+    "LocalMIProxyFreshnessCheck",
     "MIProxy",
     "MIProxyKeyMissingWarning",
     "enforce_attestation",

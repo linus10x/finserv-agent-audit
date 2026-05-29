@@ -85,3 +85,71 @@ class TestVetoGate:
         with pytest.raises(VetoBlockedError):
             if not veto.allow_execution():
                 raise VetoBlockedError("Execution blocked by sovereign veto")
+
+
+# --------------------------------------------------------------------------- #
+# CR-12 — Authorizer protocol gates clear() + self-clear rule                 #
+# --------------------------------------------------------------------------- #
+
+
+class TestAuthorizer:
+    def test_no_authorizer_logs_warning_on_construction(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import SovereignVeto
+
+        with caplog.at_level("WARNING"):
+            SovereignVeto(agent_id="zeus")
+        assert any("Authorizer" in rec.message for rec in caplog.records)
+
+    def test_authorizer_can_block_clear(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import (
+            SovereignVeto,
+            VetoBlockedError,
+            VetoReason,
+        )
+
+        class DenyAll:
+            def authorize(self, operator_id: str, action: str, context: dict[str, object]) -> bool:
+                return False
+
+        veto = SovereignVeto(agent_id="zeus", authorizer=DenyAll())
+        veto.trigger(VetoReason.RISK_LIMIT_BREACH, "risk_monitor", "drawdown")
+        with pytest.raises(VetoBlockedError, match="Authorizer rejected"):
+            veto.clear(operator_id="operator-001", reason="reviewed")
+        # Still vetoed since clear was rejected.
+        assert veto.is_vetoed is True
+
+    def test_authorizer_allows_clear(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import (
+            SovereignVeto,
+            VetoReason,
+        )
+
+        class AllowAll:
+            def authorize(self, operator_id: str, action: str, context: dict[str, object]) -> bool:
+                return True
+
+        veto = SovereignVeto(agent_id="zeus", authorizer=AllowAll())
+        veto.trigger(VetoReason.RISK_LIMIT_BREACH, "risk_monitor", "drawdown")
+        veto.clear(operator_id="operator-001", reason="reviewed")
+        assert veto.is_vetoed is False
+
+    def test_self_clearing_rule_blocks_agent_clearing_own_veto(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import (
+            SovereignVeto,
+            VetoBlockedError,
+            VetoReason,
+        )
+
+        class AllowAll:
+            def authorize(self, operator_id: str, action: str, context: dict[str, object]) -> bool:
+                return True
+
+        veto = SovereignVeto(agent_id="zeus", authorizer=AllowAll())
+        veto.trigger(VetoReason.RISK_LIMIT_BREACH, "risk_monitor", "drawdown")
+        # Even though the Authorizer would allow, operator_id == agent_id is
+        # blocked by the self-clearing rule.
+        with pytest.raises(VetoBlockedError, match="self-clearing"):
+            veto.clear(operator_id="zeus", reason="self-clear attempt")
+        assert veto.is_vetoed is True

@@ -410,11 +410,14 @@ class TestSovereignVetoBypassAttempt:
         assert veto.active_vetos() == [record]
 
     def test_agent_cannot_clear_its_own_veto(self) -> None:
-        # The SovereignVeto contract: only an explicitly named human
-        # operator can clear. The harness asserts that a self-clear
-        # by the agent_id leaves the veto active because the framework
-        # records the cleared_by as the supplied operator_id but the
-        # ``allow_execution`` gate still requires no active veto.
+        # CR-12: the SovereignVeto contract is now enforced at the
+        # primitive layer. ``operator_id == agent_id`` is a HARD-blocked
+        # self-clear attempt that raises ``VetoBlockedError`` and leaves
+        # the veto active, regardless of whether an Authorizer was wired.
+        from finserv_agent_audit.governance.sovereign_veto import (
+            VetoBlockedError,
+        )
+
         veto = SovereignVeto(agent_id="zeus")
         veto.trigger(
             VetoReason.MANUAL_OPERATOR,
@@ -423,19 +426,12 @@ class TestSovereignVetoBypassAttempt:
         )
         assert veto.is_vetoed is True
 
-        # The framework does not technically reject the agent calling
-        # ``clear`` (the policy of "only humans clear" is enforced by
-        # the operator-id authentication layer above this primitive).
-        # The harness records that a self-clear is forensically visible
-        # via the cleared_by field, which an audit reviewer compares
-        # to the agent_id.
-        cleared = veto.clear(operator_id="zeus", reason="self-clear attempt")
-        assert len(cleared) == 1
-        self_clear = cleared[0]
-        assert self_clear.cleared_by == "zeus"
-        # The audit record now shows the agent_id and the cleared_by
-        # are the same — the forensic signal the review catches.
-        assert self_clear.cleared_by == veto.agent_id
+        # CR-12: self-clearing is forbidden; the primitive raises.
+        with pytest.raises(VetoBlockedError, match="self-clearing"):
+            veto.clear(operator_id="zeus", reason="self-clear attempt")
+        # The veto remains active — the underlying invariant the
+        # adversarial harness needs.
+        assert veto.is_vetoed is True
 
 
 # --------------------------------------------------------------------------- #

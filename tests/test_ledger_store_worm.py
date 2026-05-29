@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import os
 import stat
+import warnings
 from pathlib import Path
 
 import pytest
 
 from finserv_agent_audit.governance.ledger_store import GENESIS_PREV_HASH
 from finserv_agent_audit.governance.ledger_store_worm import (
+    BestEffortWORMLedgerStore,
     WORMLedgerStore,
     WORMViolationError,
 )
@@ -119,3 +121,82 @@ def test_get_out_of_range_raises(tmp_path: Path) -> None:
 def test_worm_violation_error_is_runtime_error() -> None:
     """Tooling that catches RuntimeError should also catch WORM violations."""
     assert issubclass(WORMViolationError, RuntimeError)
+
+
+# --------------------------------------------------------------------------- #
+# CR-10 — Honest naming + filesystem-capability detection                     #
+# --------------------------------------------------------------------------- #
+
+
+def _besteffort_event(prev: str = GENESIS_PREV_HASH) -> AuditEvent:
+    return AuditEvent(
+        event_type=AuditEventType.SAR_FILED,
+        agent_id="bsa-aml-bot",
+        autonomy_level=AutonomyLevel.A1,
+        payload={"sar_id": "SAR-2026-002", "amount_usd": 9_999},
+        prev_hash=prev,
+    )
+
+
+def test_best_effort_worm_ledger_store_round_trip(tmp_path: Path) -> None:
+    """Renamed class works identically to the old WORMLedgerStore."""
+    store = BestEffortWORMLedgerStore(tmp_path / "be_worm.jsonl")
+    e = _besteffort_event()
+    store.append(e)
+    assert len(store) == 1
+    assert store.get(0).event_id == e.event_id
+
+
+def test_worm_ledger_store_alias_emits_deprecation_warning(tmp_path: Path) -> None:
+    """The legacy name is kept as an alias but emits a DeprecationWarning."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        WORMLedgerStore(tmp_path / "alias.jsonl")
+    dep = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+    assert dep, "Expected DeprecationWarning on WORMLedgerStore construction"
+    # The warning must mention the honest alternative.
+    assert any("BestEffortWORMLedgerStore" in str(w.message) for w in dep)
+
+
+def test_worm_ledger_store_alias_is_subclass_of_besteffort() -> None:
+    """The deprecated alias is the same class, semantically."""
+    assert issubclass(WORMLedgerStore, BestEffortWORMLedgerStore)
+
+
+def test_chmod_detection_logs_warning_on_unsupported_fs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """When chmod 0o400 is not honored, construction logs a WARNING."""
+    from finserv_agent_audit.governance import ledger_store_worm
+
+    # Force the probe to report not-honored.
+    monkeypatch.setattr(ledger_store_worm, "_detect_chmod_honored", lambda _p: False)
+    with caplog.at_level("WARNING"):
+        BestEffortWORMLedgerStore(tmp_path / "no_chmod.jsonl")
+    assert any(
+        "S3 Object Lock" in rec.message and "not honored" in rec.message for rec in caplog.records
+    )
+
+
+def test_chmod_detection_quiet_on_supported_fs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """When chmod 0o400 IS honored (POSIX local FS), no WARNING fires."""
+    from finserv_agent_audit.governance import ledger_store_worm
+
+    monkeypatch.setattr(ledger_store_worm, "_detect_chmod_honored", lambda _p: True)
+    with caplog.at_level("WARNING"):
+        BestEffortWORMLedgerStore(tmp_path / "chmod_ok.jsonl")
+    capability_warnings = [rec for rec in caplog.records if "S3 Object Lock" in rec.message]
+    assert not capability_warnings
+
+
+def test_detect_chmod_honored_real_local_filesystem(tmp_path: Path) -> None:
+    """On a normal POSIX local filesystem (tmpfs / APFS / ext4), chmod is honored."""
+    from finserv_agent_audit.governance.ledger_store_worm import (
+        _detect_chmod_honored,
+    )
+
+    # Touch a probe-target path so the function has a parent directory.
+    target = tmp_path / "probe_target"
+    assert _detect_chmod_honored(target) is True

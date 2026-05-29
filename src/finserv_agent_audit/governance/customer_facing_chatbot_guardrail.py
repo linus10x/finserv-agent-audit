@@ -86,17 +86,21 @@ Regulatory + precedent anchors:
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
+from finserv_agent_audit.governance.subject_id import SubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import (
     AuditChain,
     AuditEventType,
     AutonomyLevel,
 )
+
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Exceptions                                                                  #
@@ -465,6 +469,7 @@ class CustomerFacingChatbotGuardrail:
         known_good_responses: frozenset[str] = frozenset(),
         autonomy_level: AutonomyLevel = AutonomyLevel.A2,
         default_handoff_path: str = "human-agent-queue",
+        subject_id_hasher: SubjectIdHasher | None = None,
     ) -> None:
         self._corpus = policy_corpus
         self._chain = audit_chain
@@ -473,6 +478,7 @@ class CustomerFacingChatbotGuardrail:
         self._known_good = known_good_responses
         self._autonomy_level = autonomy_level
         self._default_handoff_path = default_handoff_path
+        self._subject_id_hasher = subject_id_hasher
 
     # ------------------------------------------------------------------ #
     # Public entry point                                                 #
@@ -800,8 +806,21 @@ class CustomerFacingChatbotGuardrail:
             "reason_code": response.reason_code,
             "cited_source_ids": list(response.cited_source_ids),
             "session_id": session_id,
-            "customer_id": customer_id,
         }
+        if self._subject_id_hasher is not None:
+            hashed = self._subject_id_hasher.hash_subject(customer_id)
+            payload["customer_id_hash_b64"] = hashed.hash_b64
+            payload["customer_id_pepper_version"] = hashed.pepper_version
+            payload["customer_id_algorithm"] = hashed.algorithm
+        else:
+            logger.warning(
+                "CustomerFacingChatbotGuardrail emitting COMPLIANCE_CHECK with "
+                "cleartext customer_id=%r — GLBA Safeguards Rule (NPI at rest) "
+                "and GDPR Art. 17 (right to erasure) risk. Inject a "
+                "SubjectIdHasher to hash customer_id before payload write.",
+                customer_id,
+            )
+            payload["customer_id"] = customer_id
         if action_class is not None:
             payload["action_class"] = action_class.value
         if action_payload is not None:

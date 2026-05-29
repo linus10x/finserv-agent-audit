@@ -19,11 +19,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from finserv_agent_audit.governance.ledger_store import GENESIS_PREV_HASH
-from finserv_agent_audit.schemas.audit_event import (
-    AuditEvent,
-    AuditEventType,
-    AutonomyLevel,
-)
+from finserv_agent_audit.schemas.audit_event import AuditEvent
 
 
 class SqliteLedgerStore:
@@ -115,18 +111,21 @@ class SqliteLedgerStore:
 
     @staticmethod
     def _row_to_event(row: tuple[object, ...]) -> AuditEvent:
-        event = AuditEvent(
-            event_type=AuditEventType(str(row[1])),
-            autonomy_level=AutonomyLevel(str(row[2])),
-            agent_id=str(row[3]),
-            payload=json.loads(str(row[5])),
-            prev_hash=str(row[7]),
-            event_id=str(row[0]),
-            timestamp=str(row[4]),
-            actor_id=None if row[6] is None else str(row[6]),
-            schema_version=str(row[9]),
-        )
-        # Preserve the original stored hash (the dataclass recomputes on init,
-        # which yields the same value when fields round-trip correctly).
-        event.event_hash = str(row[8])
-        return event
+        # CR-2 — replay through ``from_jsonl`` so the SQLite read path
+        # is gated by the same hash-recomputation check as the JSONL
+        # and WORM read paths. A row whose stored ``event_hash``
+        # disagrees with its other columns raises
+        # ``AuditChainTamperError``.
+        data: dict[str, object] = {
+            "event_id": str(row[0]),
+            "event_type": str(row[1]),
+            "autonomy_level": str(row[2]),
+            "agent_id": str(row[3]),
+            "timestamp": str(row[4]),
+            "payload": json.loads(str(row[5])),
+            "actor_id": None if row[6] is None else str(row[6]),
+            "prev_hash": str(row[7]),
+            "event_hash": str(row[8]),
+            "schema_version": str(row[9]),
+        }
+        return AuditEvent.from_jsonl(data)

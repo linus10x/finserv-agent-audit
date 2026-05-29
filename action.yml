@@ -34,6 +34,10 @@ inputs:
       Optional HMAC signing key for the MI Proxy verifier attestation
       (ADR-0015). When set, the verify step runs verify_strict with
       the proxy wired. Treat this as a SECRET — pass via secrets.X.
+      CR-9: the value is injected as the FINSERV_AUDIT_MI_PROXY_KEY
+      environment variable on the verify step and is never placed on
+      the CLI argv (would leak via `ps`, /proc/$pid/cmdline, container
+      labels, CI step-summaries, or shell history).
     required: false
     default: ""
   python-version:
@@ -41,11 +45,23 @@ inputs:
     required: false
     default: "3.12"
 
+# ----------------------------------------------------------------------------
+# Supply-Chain Note (CWE-1357)
+#
+# This composite action SHA-pins every third-party action it invokes. Adopters
+# who consume the audit-chain-verify reusable workflow (or this action) from
+# `linus10x/finserv-agent-audit@v1` SHOULD repin to a specific SHA inside
+# their org ruleset rather than tracking the floating `v1` tag — the v1 tag
+# is a moving pointer maintained at release time, not an immutable reference.
+# Example (caller workflow):
+#   uses: linus10x/finserv-agent-audit/.github/workflows/audit-chain-verify.yml@<40-char-SHA>
+# ----------------------------------------------------------------------------
+
 runs:
   using: composite
   steps:
     - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
       with:
         python-version: ${{ inputs.python-version }}
         cache: pip
@@ -66,20 +82,18 @@ runs:
     - name: Verify audit chain integrity
       id: verify
       shell: bash
+      # CR-9: inject the HMAC key as FINSERV_AUDIT_MI_PROXY_KEY env var on
+      # this step only. The CLI reads it from the environment; passing it
+      # on argv (e.g. --mi-proxy-key "${KEY}") would leak the secret via
+      # `ps`, /proc/$pid/cmdline, container labels, and the GitHub Actions
+      # job-log render of the command line.
       env:
-        MI_PROXY_KEY: ${{ inputs.mi-proxy-key }}
+        FINSERV_AUDIT_MI_PROXY_KEY: ${{ inputs.mi-proxy-key }}
       run: |
         set -euo pipefail
-        if [ -n "${MI_PROXY_KEY}" ]; then
-          python -m finserv_agent_audit.cli verify \
-            --jsonl "${{ inputs.audit-jsonl-path }}" \
-            --mi-proxy-key "${MI_PROXY_KEY}" \
-            | tee verify.out
-        else
-          python -m finserv_agent_audit.cli verify \
-            --jsonl "${{ inputs.audit-jsonl-path }}" \
-            | tee verify.out
-        fi
+        python -m finserv_agent_audit.cli verify \
+          --jsonl "${{ inputs.audit-jsonl-path }}" \
+          | tee verify.out
 
     - name: Inspect chain
       id: info

@@ -35,16 +35,20 @@ Regulatory anchors:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
 from finserv_agent_audit.governance.ledger_store import LedgerStore
+from finserv_agent_audit.governance.subject_id import SubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import (
     AuditEvent,
     AuditEventType,
     AutonomyLevel,
 )
+
+logger = logging.getLogger(__name__)
 
 SAFE_HARBOR_CITATION = "31 U.S.C. 5318(g)(2)"
 
@@ -134,10 +138,18 @@ class SARWorkflowAudit:
     then writes one `SAR_FILED` event to the chain. A store-side write
     failure surfaces as `BSA-AUDIT-WRITE-FAILED` so the calling agent
     can block the underlying decision under the sovereign veto.
+
+    When ``subject_id_hasher`` is supplied, raw ``suspect_party_ids`` are
+    hashed before being written to the chain payload — required for
+    GLBA / GDPR-safe operation (see ``governance.subject_id``). When
+    ``None`` (the default), the audit emits a ``WARNING``-level log on
+    every record naming the GLBA Safeguards Rule / GDPR Art. 17 risk;
+    operators wiring the audit in production MUST pass a hasher.
     """
 
     ledger_store: LedgerStore
     agent_id: str = "system:sar_workflow_audit"
+    subject_id_hasher: SubjectIdHasher | None = None
     _vague_fragments: tuple[str, ...] = field(
         default=_VAGUE_RATIONALE_FRAGMENTS, init=False, repr=False
     )
@@ -209,13 +221,12 @@ class SARWorkflowAudit:
         return any(token in text for token in _EXTENSION_PREDICATE_TOKENS)
 
     def _build_payload(self, entry: SARWorkflowEntry) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "entry_id": entry.entry_id,
             "surface": entry.surface.value,
             "action": entry.action.value,
             "case_id": entry.case_id,
             "alert_ids": list(entry.alert_ids),
-            "suspect_party_ids": list(entry.suspect_party_ids),
             "model_id": entry.model_id,
             "model_version": entry.model_version,
             "model_validation_id": entry.model_validation_id,
@@ -230,6 +241,21 @@ class SARWorkflowAudit:
             "safe_harbor_claimed": entry.safe_harbor_claimed,
             "safe_harbor_citation": SAFE_HARBOR_CITATION,
         }
+        if self.subject_id_hasher is not None:
+            hashed = [self.subject_id_hasher.hash_subject(pid) for pid in entry.suspect_party_ids]
+            payload["suspect_party_id_hashes_b64"] = [h.hash_b64 for h in hashed]
+            payload["suspect_party_id_pepper_version"] = hashed[0].pepper_version if hashed else ""
+            payload["suspect_party_id_algorithm"] = hashed[0].algorithm if hashed else "HMAC-SHA256"
+        else:
+            logger.warning(
+                "SARWorkflowAudit emitting SAR_FILED with cleartext "
+                "suspect_party_ids=%s — GLBA Safeguards Rule (NPI at rest) "
+                "and GDPR Art. 17 (right to erasure) risk. Inject a "
+                "SubjectIdHasher to hash suspect party IDs before payload write.",
+                list(entry.suspect_party_ids),
+            )
+            payload["suspect_party_ids"] = list(entry.suspect_party_ids)
+        return payload
 
 
 __all__ = [

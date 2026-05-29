@@ -29,8 +29,47 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
+
+
+@runtime_checkable
+class Authorizer(Protocol):
+    """Protocol for authorizing privileged operations.
+
+    Wired into :class:`SovereignVeto.clear` and
+    :class:`DEFCONMachine.manual_override` (CR-12). The audit chain
+    records the asserted ``operator_id``, but it can only be TRUSTED
+    if the Authorizer.authorize() check passed. Without an Authorizer,
+    operator identity on the chain is an unauthenticated assertion the
+    deployer must reconcile out-of-band.
+    """
+
+    def authorize(
+        self,
+        operator_id: str,
+        action: str,
+        context: dict[str, Any],
+    ) -> bool: ...
+
+
+class _RejectAllAuthorizer:
+    """Default Authorizer: rejects every authorization request.
+
+    Used internally as the fail-closed sentinel when the deployer wires
+    an Authorizer on the constructor. Operators MUST inject a real
+    Authorizer for privileged-operation gating to work; the no-Authorizer
+    construction path logs a WARNING in lieu of installing this rejector.
+    """
+
+    def authorize(
+        self,
+        operator_id: str,
+        action: str,
+        context: dict[str, Any],
+    ) -> bool:
+        return False
 
 
 class VetoReason(Enum):
@@ -83,11 +122,21 @@ class SovereignVeto:
         agent_id: str,
         on_veto: Callable[[VetoRecord], None] | None = None,
         on_clear: Callable[[VetoRecord], None] | None = None,
+        authorizer: Authorizer | None = None,
     ) -> None:
         self.agent_id = agent_id
         self._vetos: list[VetoRecord] = []
         self._on_veto = on_veto
         self._on_clear = on_clear
+        self._authorizer = authorizer
+        if authorizer is None:
+            logger.warning(
+                "SovereignVeto(agent_id=%r) constructed with no Authorizer wired; "
+                "operator_id on the audit chain is an UNAUTHENTICATED assertion. "
+                "Inject an Authorizer to gate clear() and trust the recorded "
+                "operator identity (CR-12).",
+                agent_id,
+            )
 
     @property
     def is_vetoed(self) -> bool:
@@ -136,6 +185,13 @@ class SovereignVeto:
         Clear active veto(s). Only humans can clear vetos.
         If veto_id is None, clears all active vetos.
 
+        CR-12: self-clearing is HARD-blocked. ``operator_id == agent_id``
+        raises :class:`VetoBlockedError` even when the wired Authorizer
+        would allow the action — no agent can clear its own veto.
+
+        When an :class:`Authorizer` is wired on the constructor, the
+        ``authorize()`` check must return True before the clear proceeds.
+
         Args:
             operator_id: Identity of the human clearing the veto.
             reason: Documented justification (required for audit).
@@ -143,7 +199,39 @@ class SovereignVeto:
 
         Returns:
             List of cleared VetoRecords.
+
+        Raises:
+            VetoBlockedError: if the self-clearing rule fires, or if the
+                wired Authorizer rejects the operation.
         """
+        # CR-12 — self-clearing rule (always enforced, even with a
+        # permissive Authorizer).
+        if operator_id == self.agent_id:
+            logger.critical(
+                "REJECTED self-clearing attempt | agent: %s | operator: %s",
+                self.agent_id,
+                operator_id,
+            )
+            raise VetoBlockedError(
+                f"self-clearing forbidden: operator_id={operator_id!r} "
+                f"equals agent_id; no agent can clear its own veto"
+            )
+        # CR-12 — Authorizer gate.
+        if self._authorizer is not None:
+            context: dict[str, Any] = {
+                "agent_id": self.agent_id,
+                "veto_id": veto_id,
+                "reason": reason,
+            }
+            if not self._authorizer.authorize(operator_id, "clear_veto", context):
+                logger.critical(
+                    "REJECTED clear by Authorizer | agent: %s | operator: %s",
+                    self.agent_id,
+                    operator_id,
+                )
+                raise VetoBlockedError(
+                    f"Authorizer rejected clear_veto by operator_id={operator_id!r}"
+                )
         now = datetime.now(UTC).isoformat()
         cleared = []
         for v in self._vetos:

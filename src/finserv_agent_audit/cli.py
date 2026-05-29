@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections import Counter
 from collections.abc import Iterator
@@ -32,11 +33,7 @@ from finserv_agent_audit.governance.audit_chain import (
     AuditChain,
     AuditChainTamperError,
 )
-from finserv_agent_audit.schemas.audit_event import (
-    AuditEvent,
-    AuditEventType,
-    AutonomyLevel,
-)
+from finserv_agent_audit.schemas.audit_event import AuditEvent, AuditEventType
 
 EXIT_OK = 0
 EXIT_TAMPERED = 1
@@ -49,7 +46,13 @@ EXIT_BAD_INPUT = 2
 
 
 def _iter_jsonl(path: Path) -> Iterator[AuditEvent]:
-    """Yield ``AuditEvent`` rows from a JSONL audit-chain file."""
+    """Yield ``AuditEvent`` rows from a JSONL audit-chain file.
+
+    CR-2 — replay rows through ``AuditEvent.from_jsonl`` so a tampered
+    line raises ``AuditChainTamperError`` at construction time. The
+    ``_cmd_verify`` handler catches that and reports TAMPERED with
+    the standard exit code.
+    """
     text = path.read_text(encoding="utf-8")
     for line_no, raw in enumerate(text.splitlines(), start=1):
         if not raw.strip():
@@ -59,19 +62,7 @@ def _iter_jsonl(path: Path) -> Iterator[AuditEvent]:
         except json.JSONDecodeError as exc:
             raise ValueError(f"{path}:{line_no}: invalid JSON: {exc}") from exc
 
-        event = AuditEvent(
-            event_type=AuditEventType(data["event_type"]),
-            autonomy_level=AutonomyLevel(data["autonomy_level"]),
-            agent_id=data["agent_id"],
-            payload=data["payload"],
-            prev_hash=data["prev_hash"],
-            event_id=data["event_id"],
-            timestamp=data["timestamp"],
-            actor_id=data.get("actor_id"),
-            schema_version=data.get("schema_version", "1.0.0"),
-        )
-        event.event_hash = data["event_hash"]
-        yield event
+        yield AuditEvent.from_jsonl(data)
 
 
 def _load_chain(jsonl_path: Path) -> AuditChain:
@@ -94,36 +85,42 @@ def _load_chain(jsonl_path: Path) -> AuditChain:
 
 
 def _cmd_verify(args: argparse.Namespace) -> int:
+    # CR-9: HMAC keys MUST NOT be accepted on argv (would leak via `ps`,
+    # /proc/$pid/cmdline, container labels, CI logs, shell history). The
+    # argparse flag is retained only to detect+reject; the value is never
+    # read from it. Operators set FINSERV_AUDIT_MI_PROXY_KEY instead.
+    if getattr(args, "mi_proxy_key", None):
+        print(
+            "ERROR: --mi-proxy-key is not accepted on the command line "
+            "(would leak via 'ps').\n"
+            "Set FINSERV_AUDIT_MI_PROXY_KEY environment variable instead.",
+            file=sys.stderr,
+        )
+        return EXIT_BAD_INPUT
+
     jsonl_path = Path(args.jsonl)
     try:
         chain = _load_chain(jsonl_path)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_BAD_INPUT
+    except AuditChainTamperError as exc:
+        # CR-2 — ``AuditEvent.from_jsonl`` raises on a tampered line
+        # at load time, before the chain is fully materialized. Report
+        # TAMPERED with the same exit code as the post-load check.
+        print(f"TAMPERED: {exc}", file=sys.stderr)
+        return EXIT_TAMPERED
 
     mi_proxy = None
-    if args.mi_proxy_key:
-        from finserv_agent_audit.governance.mi_proxy import (
-            MIN_KEY_BYTES,
-            LocalMIProxy,
-            _decode_key,
-        )
+    if os.environ.get("FINSERV_AUDIT_MI_PROXY_KEY"):
+        # CR-9: HMAC keys are read ONLY from the env var. Argv is rejected
+        # by the pre-check below to keep secrets out of `ps`, /proc/$pid/cmdline,
+        # container labels, CI step-logs, and shell history.
+        from finserv_agent_audit.governance.mi_proxy import LocalMIProxy
 
-        raw = args.mi_proxy_key.strip()
-        # Accept either a base64/hex-encoded key (matching ``LocalMIProxy.from_env``)
-        # or a raw ASCII secret >= MIN_KEY_BYTES.
-        try:
-            key = _decode_key(raw)
-        except ValueError:
-            key_bytes = raw.encode("utf-8")
-            if len(key_bytes) < MIN_KEY_BYTES:
-                print(
-                    f"error: --mi-proxy-key must decode to >= {MIN_KEY_BYTES} bytes",
-                    file=sys.stderr,
-                )
-                return EXIT_BAD_INPUT
-            key = key_bytes
-        mi_proxy = LocalMIProxy(signing_key=key)
+        # Import-time warning is suppressed: a missing key is the operator-set
+        # default; from_env emits MIProxyKeyMissingWarning when set to empty.
+        mi_proxy = LocalMIProxy.from_env()
 
     try:
         chain.verify_strict(mi_proxy=mi_proxy)
@@ -208,7 +205,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_verify.add_argument(
         "--mi-proxy-key",
         default=None,
-        help="optional HMAC signing key for MI Proxy verifier attestation (ADR-0015)",
+        help=(
+            "REJECTED — secret on argv leaks via 'ps'. Set the "
+            "FINSERV_AUDIT_MI_PROXY_KEY env var instead (CR-9)."
+        ),
     )
     p_verify.set_defaults(func=_cmd_verify)
 

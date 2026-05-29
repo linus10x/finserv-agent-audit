@@ -20,6 +20,7 @@ from finserv_agent_audit.governance.sar_workflow_audit import (
     SARWorkflowAudit,
     SARWorkflowEntry,
 )
+from finserv_agent_audit.governance.subject_id import HMACSubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import AuditEventType
 
 # --------------------------------------------------------------------------- #
@@ -242,6 +243,55 @@ def test_write_failure_raises_bsa_audit_write_failed() -> None:
     with pytest.raises(SARAuditError) as exc_info:
         audit.record(_entry())
     assert "BSA-AUDIT-WRITE-FAILED" in str(exc_info.value)
+
+
+# --------------------------------------------------------------------------- #
+# Subject-ID hashing (CR-8)                                                   #
+# --------------------------------------------------------------------------- #
+
+
+class TestSubjectIdHashing:
+    def test_no_hasher_writes_cleartext_and_logs_warning(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        store = InMemoryLedgerStore()
+        audit = SARWorkflowAudit(ledger_store=store, agent_id="aml")
+        with caplog.at_level("WARNING"):
+            audit.record(_entry(suspect_party_ids=("party-NPI-001",)))
+        event = list(store)[0]
+        assert event.payload["suspect_party_ids"] == ["party-NPI-001"]
+        assert "suspect_party_id_hashes_b64" not in event.payload
+        assert any("GLBA" in rec.message for rec in caplog.records)
+
+    def test_hasher_replaces_cleartext_with_hashes(self) -> None:
+        store = InMemoryLedgerStore()
+        hasher = HMACSubjectIdHasher(pepper=b"z" * 32, pepper_version="v4")
+        audit = SARWorkflowAudit(
+            ledger_store=store,
+            agent_id="aml",
+            subject_id_hasher=hasher,
+        )
+        audit.record(_entry(suspect_party_ids=("party-NPI-002", "party-NPI-003")))
+        event = list(store)[0]
+        assert "suspect_party_ids" not in event.payload
+        assert "party-NPI-002" not in str(event.payload)
+        hashes = event.payload["suspect_party_id_hashes_b64"]
+        assert isinstance(hashes, list)
+        assert len(hashes) == 2
+        assert event.payload["suspect_party_id_pepper_version"] == "v4"
+        assert event.payload["suspect_party_id_algorithm"] == "HMAC-SHA256"
+
+    def test_hasher_with_no_suspects_still_writes_metadata(self) -> None:
+        store = InMemoryLedgerStore()
+        hasher = HMACSubjectIdHasher(pepper=b"w" * 32)
+        audit = SARWorkflowAudit(
+            ledger_store=store,
+            agent_id="aml",
+            subject_id_hasher=hasher,
+        )
+        audit.record(_entry(suspect_party_ids=()))
+        event = list(store)[0]
+        assert event.payload["suspect_party_id_hashes_b64"] == []
 
 
 # --------------------------------------------------------------------------- #

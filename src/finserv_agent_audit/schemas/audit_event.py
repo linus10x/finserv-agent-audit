@@ -100,10 +100,37 @@ class AutonomyLevel(Enum):
     A4 = "A4"  # Autonomous — agent executes, audit trail only
 
 
-@dataclass
+@dataclass(frozen=True)
 class AuditEvent:
     """
     Immutable audit record. Hash is computed on construction.
+
+    CR-2 (v2.0). The dataclass is ``frozen=True`` — every field is
+    read-only post-construction. The old impl declared ``event_hash``
+    via ``field(init=False)`` and set it inside ``__post_init__``,
+    which left the attribute freely re-assignable. Replay paths
+    exploited that to "restore" the on-disk stored hash, which masked
+    tampering: an attacker who edited a JSONL line could leave the
+    chain replay consistent because the re-loaded ``event_hash`` was
+    simply overwritten with whatever the tampered line claimed.
+
+    Two construction paths now exist:
+
+      * ``AuditEvent.create(...)`` — for *new* events. Computes the
+        hash from the field values and freezes the result. Use this
+        wherever code previously called ``AuditEvent(...)``.
+
+      * ``AuditEvent.from_jsonl(dict)`` — for *replay* of stored
+        events. Reconstructs the event with the stored ``event_hash``,
+        recomputes the hash against the reconstructed fields, and
+        raises ``AuditChainTamperError`` on mismatch. The chain is
+        self-verifying on load, not just on explicit ``verify()``.
+
+    The bare ``AuditEvent(...)`` constructor still works for backward
+    compatibility — if no ``event_hash`` keyword is supplied, the
+    constructor computes one (matching pre-CR-2 behavior). Replay
+    code that passes a stored ``event_hash`` MUST instead call
+    ``from_jsonl`` so the recomputation gate fires.
 
     Fields:
         event_id:       UUID4 uniquely identifying this event
@@ -128,10 +155,101 @@ class AuditEvent:
     timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     actor_id: str | None = None
     schema_version: str = "1.0.0"
-    event_hash: str = field(init=False)
+    # ``event_hash`` is now a regular field with a sentinel default so
+    # the v1.x construction call site (``AuditEvent(...)`` with no
+    # ``event_hash`` kwarg) continues to work. ``__post_init__``
+    # fills in the computed value via ``object.__setattr__`` (the
+    # only permitted post-init write on a frozen dataclass).
+    event_hash: str = ""
 
     def __post_init__(self) -> None:
-        self.event_hash = self._compute_hash()
+        # On a frozen dataclass we cannot do ``self.event_hash = ...``
+        # at any time, including ``__post_init__``. The canonical
+        # workaround is ``object.__setattr__``. We only compute a new
+        # hash when the caller did not supply one — replay paths
+        # construct via ``from_jsonl`` which passes the stored hash
+        # AND validates the recomputation independently.
+        if not self.event_hash:
+            object.__setattr__(self, "event_hash", self._compute_hash())
+
+    # ------------------------------------------------------------------ #
+    # Construction classmethods                                          #
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        event_type: AuditEventType,
+        autonomy_level: AutonomyLevel,
+        agent_id: str,
+        payload: dict[str, Any],
+        prev_hash: str,
+        event_id: str | None = None,
+        timestamp: str | None = None,
+        actor_id: str | None = None,
+        schema_version: str = "1.0.0",
+    ) -> AuditEvent:
+        """Construct a *new* event. Computes ``event_hash`` and freezes."""
+        kwargs: dict[str, Any] = {
+            "event_type": event_type,
+            "autonomy_level": autonomy_level,
+            "agent_id": agent_id,
+            "payload": payload,
+            "prev_hash": prev_hash,
+            "actor_id": actor_id,
+            "schema_version": schema_version,
+        }
+        if event_id is not None:
+            kwargs["event_id"] = event_id
+        if timestamp is not None:
+            kwargs["timestamp"] = timestamp
+        return cls(**kwargs)
+
+    @classmethod
+    def from_jsonl(cls, data: dict[str, Any]) -> AuditEvent:
+        """Replay a stored event. Recomputes and raises on mismatch.
+
+        ``data`` is the dict form written by ``to_dict`` /
+        ``to_jsonl``. The replay path reconstructs the event with the
+        STORED ``event_hash``, then computes a fresh hash from the
+        reconstructed fields. A mismatch means the on-disk line was
+        tampered with — the stored hash does not match the fields it
+        claims to summarize — and raises
+        ``AuditChainTamperError``.
+
+        Note: the exception is raised *during construction* of the
+        replay path, before the event is returned, so the caller can
+        never accidentally proceed with a tampered event.
+        """
+        # Lazy import — ``audit_chain`` imports ``schemas.audit_event``
+        # at module load time, so the reverse import has to stay lazy
+        # to avoid a circular import at package init.
+        from finserv_agent_audit.governance.audit_chain import (
+            AuditChainTamperError,
+        )
+
+        stored_event_hash = str(data["event_hash"])
+        event = cls(
+            event_type=AuditEventType(data["event_type"]),
+            autonomy_level=AutonomyLevel(data["autonomy_level"]),
+            agent_id=str(data["agent_id"]),
+            payload=dict(data["payload"]),
+            prev_hash=str(data["prev_hash"]),
+            event_id=str(data["event_id"]),
+            timestamp=str(data["timestamp"]),
+            actor_id=None if data.get("actor_id") is None else str(data["actor_id"]),
+            schema_version=str(data.get("schema_version", "1.0.0")),
+            event_hash=stored_event_hash,
+        )
+        recomputed = event._compute_hash()
+        if recomputed != stored_event_hash:
+            raise AuditChainTamperError(
+                f"event_hash mismatch on replay (event_id={event.event_id!r}): "
+                f"stored={stored_event_hash!r}, recomputed={recomputed!r} — "
+                "the on-disk line has been modified after writing"
+            )
+        return event
 
     def _compute_hash(self) -> str:
         payload = {

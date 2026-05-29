@@ -45,15 +45,32 @@ even when the rest of the system is in DEFCON-1 (per ADR-0001).
 
 from __future__ import annotations
 
+import hashlib
 import json
+import sys
+import threading
+import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
+# CR-4 — POSIX-only file-lock import. On Windows ``fcntl`` is
+# unavailable; the v1.0 default-mode JSONL writes fall back to the
+# in-process append_lock alone. See ``ledger_store_jsonl`` module
+# docstring for the documented Windows caveat.
+if sys.platform != "win32":
+    import fcntl
+else:  # pragma: no cover - exercised on Windows hosts only
+    fcntl = None  # type: ignore[assignment]
 
 from finserv_agent_audit.schemas.audit_event import (
     AuditEvent,
     AuditEventType,
     AutonomyLevel,
 )
+
+SCHEMA_VERSION = "1.0.0"
+"""Default schema version stamped on events the chain constructs."""
 
 if TYPE_CHECKING:
     from finserv_agent_audit.governance.ledger_store import LedgerStore
@@ -66,7 +83,58 @@ VERIFIER_COMPONENT_ID = "finserv_agent_audit.governance.audit_chain"
 """Stable identifier for this verifier; passed to ``MIProxy.attest``."""
 
 GENESIS_HASH = "0" * 64
-"""Sentinel value for the first entry's ``prev_hash``. SHA-256 zeroes."""
+"""Legacy sentinel value for the first entry's ``prev_hash``.
+
+CR-7 (v2.0) — chains now derive a per-deployer genesis hash via
+``_compute_genesis_hash(deployer_id, chain_creation_iso)``; the SHA-256
+zeroes sentinel is retained only for backward-compat detection of
+pre-CR-7 chains and for callers that still import the symbol. New
+chains MUST use the deployer-keyed derivation; loading a legacy chain
+whose first event's ``prev_hash`` equals this sentinel emits a
+``DeprecationWarning`` recommending re-creation with an explicit
+``deployer_id``.
+"""
+
+GENESIS_DOMAIN_SEPARATOR = "finserv-agent-audit/genesis/v1"
+"""Domain-separation tag for ``_compute_genesis_hash``.
+
+Bumping the ``v1`` suffix is a chain-format break: a chain seeded
+under ``v1`` will not re-verify against a chain seeded under ``v2``
+even when ``deployer_id`` and ``chain_creation_iso`` are unchanged.
+The version is baked into the seed so deployers can audit the
+genesis discipline by inspecting the on-disk event #0 payload.
+"""
+
+GENESIS_AGENT_ID = "finserv-audit-chain"
+"""``agent_id`` carried on the GENESIS event #0.
+
+A fixed identifier so verifiers can locate the genesis event by name
+without scanning. Tested in
+``tests/test_genesis_domain_separation.py``.
+"""
+
+GENESIS_VERSION = "v1"
+"""Stamped on event #0 payload so verifiers can branch on format."""
+
+
+def _compute_genesis_hash(deployer_id: str, chain_creation_iso: str) -> str:
+    """CR-7 — Deployer-keyed seed for the genesis event's ``prev_hash``.
+
+    The seed is ``SHA-256(domain_separator/deployer_id/chain_creation_iso)``
+    where the domain separator is the constant ``GENESIS_DOMAIN_SEPARATOR``.
+    The seed is the genesis event #0's ``prev_hash``; the event itself
+    has an ``event_hash`` computed over its full fields (including the
+    seed-as-prev_hash). Subsequent events derive their ``prev_hash``
+    from the genesis event's ``event_hash``.
+
+    Two chains with different ``deployer_id`` produce different seeds;
+    two chains with different ``chain_creation_iso`` produce different
+    seeds. An attacker without the deployer's identity cannot
+    regenerate a chain from scratch and have it match an existing
+    deployer's head.
+    """
+    payload = f"{GENESIS_DOMAIN_SEPARATOR}/{deployer_id}/{chain_creation_iso}".encode()
+    return hashlib.sha256(payload).hexdigest()
 
 
 class AuditChainTamperError(RuntimeError):
@@ -116,7 +184,35 @@ class AuditChain:
         timestamp_source: TimestampSource | None = None,
         witness_register: WitnessRegister | None = None,
         mi_proxy: MIProxy | None = None,
+        deployer_id: str | None = None,
+        chain_creation_iso: str | None = None,
     ) -> None:
+        """CR-7 — chains are seeded with a deployer-keyed genesis event.
+
+        New parameters:
+
+          * ``deployer_id`` — string the deployer uses to identify
+            their environment (e.g. ``"acme-bank-prod"``). Folded into
+            the genesis seed so an attacker who can rewrite the
+            storage layer cannot regenerate a chain from scratch and
+            have it match the legitimate deployer's chain head. When
+            omitted, a hostname-based default is used and the chain
+            is still domain-separated, but the deployer is encouraged
+            to pass an explicit value.
+
+          * ``chain_creation_iso`` — ISO-8601 UTC timestamp folded
+            into the seed alongside the deployer_id. When omitted,
+            ``datetime.now(UTC).isoformat()`` is used at construction
+            time. Passing an explicit value makes the seed
+            reproducible across hosts (useful for cross-deployment
+            verification tests).
+
+        Backward compat: when a JSONL log is replayed and the FIRST
+        event's ``prev_hash`` equals the legacy ``"0"*64`` sentinel,
+        the chain is accepted with a ``DeprecationWarning`` rather
+        than rebuilt; the deployer is told to re-create the chain
+        with an explicit deployer_id.
+        """
         # Resolve seams with v1.0-preserving defaults. The
         # InMemoryLedgerStore + JSONL-file pair preserves the original
         # behavior: events are kept in memory for fast iteration AND
@@ -132,6 +228,32 @@ class AuditChain:
         self._witness_register: WitnessRegister | None = witness_register
         self._mi_proxy: MIProxy | None = mi_proxy
 
+        # CR-4 — serialize append + verify against TOCTOU on head_event_hash.
+        # An ``RLock`` is used (not a plain ``Lock``) because
+        # ``anchor_to_witness`` re-enters ``append`` to record the
+        # witness receipt as its own chained event. A plain Lock would
+        # deadlock; the re-entrant Lock honors the same-thread
+        # re-acquire semantics.
+        self._append_lock = threading.RLock()
+
+        # CR-7 — resolve the deployer identity. An explicit value
+        # wins; ``deployer_id=None`` (the v1.x call signature) is
+        # honored as legacy mode: no event #0 is prepended and the
+        # chain seeds from the legacy ``"0"*64`` sentinel. v2.0
+        # callers SHOULD pass an explicit ``deployer_id`` to engage
+        # the domain-separated genesis seed; on the next major
+        # version bump this fallback will be removed.
+        self._deployer_id: str | None = deployer_id
+        # When the caller passes a deployer_id but no creation_iso,
+        # we resolve a wall-clock value so the seed is well-defined.
+        # When the caller passes neither, we leave the creation_iso
+        # at None and stay in legacy mode.
+        self._chain_creation_iso: str | None
+        if deployer_id is not None:
+            self._chain_creation_iso = chain_creation_iso or datetime.now(UTC).isoformat()
+        else:
+            self._chain_creation_iso = chain_creation_iso
+
         # Only honor the legacy JSONL log-file path when no external store
         # is supplied. Stores own their own persistence — mixing both
         # would write each event twice.
@@ -145,6 +267,119 @@ class AuditChain:
         # chain head is correct across restarts (v1.0 contract).
         if not self._external_store and self.log_file is not None:
             self._load_existing()
+
+        # CR-7 — seed the genesis event #0 if the caller explicitly
+        # passed a ``deployer_id`` AND the chain is empty. We do this
+        # AFTER ``_load_existing`` so a re-opened chain preserves its
+        # original genesis event rather than getting a new one
+        # prepended. External stores that ship with their own events
+        # (e.g. SQLite restored from backup) also skip this path. The
+        # ``deployer_id is None`` fallback is the v1.x legacy mode and
+        # is documented as deprecated; new callers MUST pass a
+        # deployer_id.
+        if deployer_id is not None and len(self._store) == 0:
+            self._seed_genesis_event()
+
+    # ------------------------------------------------------------------ #
+    # Genesis seeding                                                    #
+    # ------------------------------------------------------------------ #
+
+    def _seed_genesis_event(self) -> None:
+        """CR-7 — Write event #0 to a freshly-created chain.
+
+        The genesis event carries the deployer identity + creation
+        timestamp + genesis-format version in its payload, and uses
+        the deployer-keyed seed as its ``prev_hash``. Its
+        ``event_hash`` is the SHA-256 of the genesis event's fields
+        (including the seed-as-prev_hash). Event #1 (the first
+        non-genesis event) chains off the genesis event's
+        ``event_hash``.
+
+        The genesis event is FULLY deterministic given
+        ``deployer_id + chain_creation_iso``:
+
+          * ``event_id`` is a deterministic UUIDv5 derived from the
+            same domain separator + deployer + creation_iso so two
+            independent constructions of the same logical chain
+            produce the same event #0.
+          * ``timestamp`` is the supplied ``chain_creation_iso`` (no
+            wall-clock read).
+          * ``prev_hash`` is the deployer-keyed seed.
+
+        This determinism is what lets a regulator on a different host
+        re-derive the exact event #0 from the deployer's published
+        ``deployer_id`` and ``chain_creation_iso`` — useful for
+        cross-host verification under SR 11-7 effective challenge.
+        """
+        # Both fields are guaranteed non-None by the caller (only
+        # invoked when ``deployer_id`` was explicitly supplied).
+        # Local copies + asserts give mypy --strict a non-Optional
+        # type to work with.
+        assert self._deployer_id is not None
+        assert self._chain_creation_iso is not None
+        deployer_id = self._deployer_id
+        chain_creation_iso = self._chain_creation_iso
+
+        seed = _compute_genesis_hash(deployer_id, chain_creation_iso)
+        # Deterministic UUIDv5 — same deployer + same creation_iso ->
+        # same event_id. The namespace is a stable random UUID baked
+        # into the source so a future format change can rotate it.
+        genesis_namespace = uuid.UUID("8b1d0a2c-1b8a-4f5d-9d2f-7c0e5a1b3a4c")
+        event_id = str(
+            uuid.uuid5(
+                genesis_namespace,
+                f"{GENESIS_DOMAIN_SEPARATOR}/{deployer_id}/{chain_creation_iso}",
+            )
+        )
+        genesis_payload: dict[str, Any] = {
+            "deployer_id": deployer_id,
+            "chain_creation_iso": chain_creation_iso,
+            "genesis_version": GENESIS_VERSION,
+        }
+        # Use ``chain_creation_iso`` as the genesis event's timestamp
+        # so the event is fully deterministic. The TSA call still
+        # happens — its token rides along in the payload as side-
+        # channel evidence — but the canonical event timestamp
+        # IS the deployer-declared creation_iso.
+        timestamp_iso = chain_creation_iso
+        canonical_pre_timestamp = json.dumps(
+            {
+                "event_id": event_id,
+                "event_type": AuditEventType.AGENT_STARTED.value,
+                "autonomy_level": AutonomyLevel.A0.value,
+                "agent_id": GENESIS_AGENT_ID,
+                "payload": genesis_payload,
+                "actor_id": None,
+                "prev_hash": seed,
+                "schema_version": SCHEMA_VERSION,
+            },
+            sort_keys=True,
+        ).encode()
+        pre_digest = hashlib.sha256(canonical_pre_timestamp).digest()
+        # The TSA is still consulted so its messageImprint binds the
+        # TSA-asserted time to the genesis event's pre-digest. The
+        # asserted_at is intentionally NOT folded back into the
+        # canonical timestamp — that would defeat determinism — but
+        # the TSR token is stashed in the payload so a verifier can
+        # re-check ``messageImprint == pre_digest``.
+        ts_response = self._timestamp_source.stamp(pre_digest)
+        payload = genesis_payload
+        if ts_response.tsr_token_b64 is not None:
+            payload = {**genesis_payload, "_tsr_token_b64": ts_response.tsr_token_b64}
+
+        genesis_event = AuditEvent.create(
+            event_type=AuditEventType.AGENT_STARTED,
+            autonomy_level=AutonomyLevel.A0,
+            agent_id=GENESIS_AGENT_ID,
+            payload=payload,
+            prev_hash=seed,
+            event_id=event_id,
+            timestamp=timestamp_iso,
+            schema_version=SCHEMA_VERSION,
+        )
+        self._store.append(genesis_event)
+        if not self._external_store and self.log_file is not None:
+            self._write(genesis_event)
 
     # ------------------------------------------------------------------ #
     # v1.0-compatible accessors                                          #
@@ -182,29 +417,102 @@ class AuditChain:
         payload: dict[str, Any],
         actor_id: str | None = None,
     ) -> AuditEvent:
-        """Append a new event to the chain and persist it."""
-        # Pull the trusted timestamp first so it can be folded into the
-        # event payload. LocalClock is free; RFC3161Source crosses the
-        # network. We accept the cost so the trusted time is bound into
-        # the chained hash, not appended after the fact.
-        timestamp_iso = self._timestamp_source.stamp(b"").asserted_at.isoformat()
+        """Append a new event to the chain and persist it.
 
-        event = AuditEvent(
-            event_type=event_type,
-            autonomy_level=autonomy_level,
-            agent_id=agent_id,
-            payload=payload,
-            prev_hash=self._store.head_event_hash(),
-            actor_id=actor_id,
-            timestamp=timestamp_iso,
-        )
-        self._store.append(event)
+        CR-3 — the TSA stamp is bound to a *canonical pre-timestamp
+        digest* of the event's identifying fields, not to empty bytes.
+        The flow is:
 
-        # Mirror to JSONL only when running in v1.0 default mode (no
-        # external store supplied). External stores persist on append().
-        if not self._external_store and self.log_file is not None:
-            self._write(event)
-        return event
+          1. Generate the event_id up front (so it can be folded into
+             the pre-digest).
+          2. Compute a SHA-256 over the JSON of
+             ``{event_id, event_type, autonomy_level, agent_id,
+                payload, actor_id, prev_hash, schema_version}``
+             (every field that uniquely identifies the event EXCEPT
+             timestamp + event_hash, which depend on the TSA call).
+          3. Pass that 32-byte digest to ``stamp(pre_digest)``.
+          4. The TSA's ``messageImprint`` field now binds the
+             attested time to the specific event; a TSR copied from
+             a different event will not re-verify against the new
+             event's pre-digest.
+
+        When the timestamp source returns a TSR token (``RFC3161Source``
+        does; ``LocalClock`` returns ``None``), the token is stashed
+        in ``payload["_tsr_token_b64"]`` so a verifier can re-check
+        ``messageImprint == pre_digest`` from the on-disk event alone.
+
+        CR-4 — the body is wrapped in ``self._append_lock`` to close
+        the TOCTOU window between
+        ``self._store.head_event_hash()`` and
+        ``self._store.append(event)``. Without the lock two threads
+        both observe the same head, both build events with the same
+        ``prev_hash``, and the chain forks silently — ``verify()``
+        then returns False on the second branch.
+        """
+        with self._append_lock:
+            # 1. Stable identifying fields, computed once.
+            event_id = str(uuid.uuid4())
+            prev_hash = self._store.head_event_hash()
+
+            # 2. Canonical pre-timestamp digest. The serialization must
+            #    use ``sort_keys=True`` so the verifier (which may not
+            #    know the original dict-insertion order) re-derives the
+            #    same bytes.
+            canonical_pre_timestamp = json.dumps(
+                {
+                    "event_id": event_id,
+                    "event_type": event_type.value,
+                    "autonomy_level": autonomy_level.value,
+                    "agent_id": agent_id,
+                    "payload": payload,
+                    "actor_id": actor_id,
+                    "prev_hash": prev_hash,
+                    "schema_version": SCHEMA_VERSION,
+                },
+                sort_keys=True,
+            ).encode()
+            pre_digest = hashlib.sha256(canonical_pre_timestamp).digest()
+
+            # 3. Pull the trusted timestamp, binding the TSA-asserted time
+            #    to the pre-digest. LocalClock is free; RFC3161Source
+            #    crosses the network. We accept the cost so the trusted
+            #    time is bound to the event, not to b"".
+            ts_response = self._timestamp_source.stamp(pre_digest)
+            timestamp_iso = ts_response.asserted_at.isoformat()
+
+            # 4. Stash the TSR token (if any) in the payload so a verifier
+            #    can re-check ``messageImprint == pre_digest`` from the
+            #    on-disk event alone. ``LocalClock`` returns ``None`` for
+            #    ``tsr_token_b64`` — no side-channel key is injected when
+            #    no TSA was contacted.
+            if ts_response.tsr_token_b64 is not None:
+                # Defensive copy so the caller's dict is not mutated under
+                # them. The TSR token is a side-channel that belongs to
+                # this specific event.
+                payload = {**payload, "_tsr_token_b64": ts_response.tsr_token_b64}
+
+            # 5. Construct the event with the bound timestamp. The
+            #    event_id passed here MUST equal the one folded into the
+            #    pre-digest, otherwise the TSR's messageImprint does not
+            #    re-verify against the stored event.
+            event = AuditEvent.create(
+                event_type=event_type,
+                autonomy_level=autonomy_level,
+                agent_id=agent_id,
+                payload=payload,
+                prev_hash=prev_hash,
+                event_id=event_id,
+                actor_id=actor_id,
+                timestamp=timestamp_iso,
+                schema_version=SCHEMA_VERSION,
+            )
+            self._store.append(event)
+
+            # Mirror to JSONL only when running in v1.0 default mode (no
+            # external store supplied). External stores persist on append().
+            if not self._external_store and self.log_file is not None:
+                self._write(event)
+            return event
 
     def verify(self) -> bool:
         """Replay the chain and verify every hash. Returns False if tampered.
@@ -212,16 +520,26 @@ class AuditChain:
         Soft-failure variant — preserves the v1.0 return contract.
         For strict (raise on tamper) plus optional MI Proxy verifier
         attestation, call ``verify_strict``.
+
+        CR-4 — held under ``self._append_lock`` so a concurrent
+        ``append`` cannot mutate the underlying store mid-walk
+        (which would raise ``RuntimeError: list modified during
+        iteration`` on the InMemoryLedgerStore or yield a torn-tail
+        False on the JSONL store). The RLock allows a single thread
+        to hold ``append`` and ``verify`` simultaneously when the
+        verifier is invoked from within an append path
+        (e.g. ``anchor_to_witness``).
         """
-        prev = GENESIS_HASH
-        for event in self._store:
-            expected = event._compute_hash()
-            if event.event_hash != expected:
-                return False
-            if event.prev_hash != prev:
-                return False
-            prev = event.event_hash
-        return True
+        with self._append_lock:
+            prev = GENESIS_HASH
+            for event in self._store:
+                expected = event._compute_hash()
+                if event.event_hash != expected:
+                    return False
+                if event.prev_hash != prev:
+                    return False
+                prev = event.event_hash
+            return True
 
     def verify_strict(self, *, mi_proxy: MIProxy | None = None) -> None:
         """Raise ``AuditChainTamperError`` on any inconsistency.
@@ -253,20 +571,24 @@ class AuditChain:
                     "a verified result"
                 )
 
-        prev = GENESIS_HASH
-        for index, event in enumerate(self._store):
-            expected = event._compute_hash()
-            if event.event_hash != expected:
-                raise AuditChainTamperError(
-                    f"event_hash mismatch at index {index} (event_id={event.event_id!r})"
-                )
-            if event.prev_hash != prev:
-                raise AuditChainTamperError(
-                    f"prev_hash mismatch at index {index} "
-                    f"(event_id={event.event_id!r}): "
-                    f"expected {prev!r}, got {event.prev_hash!r}"
-                )
-            prev = event.event_hash
+        # CR-4 — hold the append lock for the duration of the walk so
+        # an in-flight append can't tear the iteration. See
+        # ``verify`` for the soft-failure variant.
+        with self._append_lock:
+            prev = GENESIS_HASH
+            for index, event in enumerate(self._store):
+                expected = event._compute_hash()
+                if event.event_hash != expected:
+                    raise AuditChainTamperError(
+                        f"event_hash mismatch at index {index} (event_id={event.event_id!r})"
+                    )
+                if event.prev_hash != prev:
+                    raise AuditChainTamperError(
+                        f"prev_hash mismatch at index {index} "
+                        f"(event_id={event.event_id!r}): "
+                        f"expected {prev!r}, got {event.prev_hash!r}"
+                    )
+                prev = event.event_hash
 
     def chain_head(self) -> str:
         """Return the chain head — the current ``event_hash`` of the last entry.
@@ -307,8 +629,20 @@ class AuditChain:
         if self.log_file is None:
             return
         Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
+        # CR-4 — same fcntl-flock discipline as JsonlLedgerStore so
+        # the v1.0 default-mode JSONL writes are cross-process safe
+        # when multiple writers share the file. The append_lock
+        # already serializes within-process callers; the flock
+        # extends serialization to the file-system layer.
         with open(self.log_file, "a", encoding="utf-8") as fh:
-            fh.write(event.to_jsonl() + "\n")
+            if fcntl is not None:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+            try:
+                fh.write(event.to_jsonl() + "\n")
+                fh.flush()
+            finally:
+                if fcntl is not None:
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
 
     def _load_existing(self) -> None:
         if self.log_file is None:
@@ -316,23 +650,38 @@ class AuditChain:
         p = Path(self.log_file)
         if not p.exists():
             return
+        first_event_loaded: AuditEvent | None = None
         for line in p.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             data = json.loads(line)
-            event = AuditEvent(
-                event_type=AuditEventType(data["event_type"]),
-                autonomy_level=AutonomyLevel(data["autonomy_level"]),
-                agent_id=data["agent_id"],
-                payload=data["payload"],
-                prev_hash=data["prev_hash"],
-                event_id=data["event_id"],
-                timestamp=data["timestamp"],
-                actor_id=data.get("actor_id"),
-                schema_version=data.get("schema_version", "1.0.0"),
-            )
-            # Round-trip preserves the stored event_hash; in deterministic
-            # cases recomputation yields the same value, but we explicitly
-            # restore for fidelity with on-disk records.
-            event.event_hash = data["event_hash"]
+            # CR-2 — replay through ``from_jsonl`` so the recomputed
+            # hash is checked against the stored hash at load time.
+            # A tampered on-disk line raises ``AuditChainTamperError``
+            # before the event reaches the in-memory store; the chain
+            # is self-verifying on load rather than only on explicit
+            # ``verify()``.
+            event = AuditEvent.from_jsonl(data)
+            if first_event_loaded is None:
+                first_event_loaded = event
             self._store.append(event)
+
+        # CR-7 — back-compat detection. A chain whose first event's
+        # ``prev_hash`` is the legacy ``"0"*64`` sentinel was created
+        # before deployer-keyed genesis was introduced. Accept it
+        # (the per-line ``from_jsonl`` check has already validated
+        # internal integrity) but flag the deprecation so the
+        # deployer can plan a re-create with an explicit deployer_id.
+        if first_event_loaded is not None and first_event_loaded.prev_hash == GENESIS_HASH:
+            import warnings
+
+            warnings.warn(
+                f"AuditChain loaded from {str(p)!r} uses the legacy "
+                "GENESIS_HASH sentinel (prev_hash='0'*64) as its "
+                "chain seed. v2.0 derives a per-deployer genesis "
+                "hash so an attacker cannot regenerate an entire "
+                "chain from scratch. Re-create this chain with an "
+                "explicit deployer_id to upgrade.",
+                DeprecationWarning,
+                stacklevel=3,
+            )

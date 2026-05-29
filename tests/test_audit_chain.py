@@ -131,7 +131,12 @@ class TestAuditChain:
             agent_id="zeus",
             payload={"action": "buy"},
         )
-        chain._events[0].event_hash = "deadbeef" * 8
+        # CR-2 — ``AuditEvent`` is frozen post-construction. Tampering
+        # is simulated by mutating the dict-typed ``payload`` (the
+        # dict reference is frozen, the dict contents are not); the
+        # stored ``event_hash`` no longer matches a freshly-computed
+        # hash, so ``verify()`` returns False.
+        chain._events[0].payload["action"] = "sell"
         assert chain.verify() is False
 
     def test_chain_writes_jsonl_file(self, tmp_path: Path) -> None:

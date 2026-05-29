@@ -120,3 +120,69 @@ class TestStatePersistence:
         # Simulate restart
         m2 = DEFCONMachine(state_file=tmp_path / "s.json", audit_file=tmp_path / "a.jsonl")
         assert m2.level == DEFCON.DANGER  # reloaded from disk
+
+
+# --------------------------------------------------------------------------- #
+# CR-12 — DEFCONMachine.manual_override Authorizer (governance/defcon)        #
+# --------------------------------------------------------------------------- #
+
+
+class TestDefconAuthorizer:
+    """CR-12: the *governance/defcon* module's DEFCONMachine accepts an
+    Authorizer that gates manual_override. The examples/defcon_state_machine
+    demo module is intentionally simpler and is exercised by the suites above.
+    """
+
+    def test_no_authorizer_logs_warning(
+        self,
+        tmp_path: Path,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        from finserv_agent_audit.governance.defcon import (
+            DEFCONMachine as GovDEFCONMachine,
+        )
+
+        with caplog.at_level("WARNING"):
+            GovDEFCONMachine(
+                state_file=tmp_path / "s.json",
+                audit_file=tmp_path / "a.jsonl",
+            )
+        assert any("Authorizer" in rec.message for rec in caplog.records)
+
+    def test_authorizer_blocks_manual_override(self, tmp_path: Path) -> None:
+        from finserv_agent_audit.governance import defcon as gov
+
+        class DenyAll:
+            def authorize(self, operator_id: str, action: str, context: dict[str, object]) -> bool:
+                return False
+
+        m = gov.DEFCONMachine(
+            state_file=tmp_path / "s.json",
+            audit_file=tmp_path / "a.jsonl",
+            authorizer=DenyAll(),
+        )
+        with pytest.raises(gov.DEFCONOverrideRejectedError, match="Authorizer rejected"):
+            m.manual_override(
+                target=gov.DEFCON.CAUTION,
+                operator_id="operator-001",
+                reason="reviewed",
+            )
+
+    def test_authorizer_allows_manual_override(self, tmp_path: Path) -> None:
+        from finserv_agent_audit.governance import defcon as gov
+
+        class AllowAll:
+            def authorize(self, operator_id: str, action: str, context: dict[str, object]) -> bool:
+                return True
+
+        m = gov.DEFCONMachine(
+            state_file=tmp_path / "s.json",
+            audit_file=tmp_path / "a.jsonl",
+            authorizer=AllowAll(),
+        )
+        m.manual_override(
+            target=gov.DEFCON.CAUTION,
+            operator_id="operator-001",
+            reason="reviewed",
+        )
+        assert m.level == gov.DEFCON.CAUTION

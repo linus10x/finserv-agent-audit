@@ -21,6 +21,7 @@ from finserv_agent_audit.governance.adverse_action_gate import (
     ReasonCode,
 )
 from finserv_agent_audit.governance.ledger_store import InMemoryLedgerStore
+from finserv_agent_audit.governance.subject_id import HMACSubjectIdHasher
 from finserv_agent_audit.schemas.audit_event import AuditEventType
 
 # --------------------------------------------------------------------------- #
@@ -208,6 +209,50 @@ class TestAuditOnFailure:
 # --------------------------------------------------------------------------- #
 # Reference reason-code dictionary                                            #
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
+# Subject-ID hashing (CR-8)                                                   #
+# --------------------------------------------------------------------------- #
+
+
+class TestSubjectIdHashing:
+    def test_no_hasher_writes_cleartext_and_logs_warning(
+        self,
+        audited_gate: tuple[AdverseActionGate, InMemoryLedgerStore],
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        gate, store = audited_gate
+        with caplog.at_level("WARNING"):
+            gate.evaluate(_packet(consumer_id="consumer-PII-001"))
+        event = list(store)[0]
+        assert event.payload["consumer_id"] == "consumer-PII-001"
+        assert "consumer_id_hash_b64" not in event.payload
+        assert any("GLBA" in rec.message for rec in caplog.records)
+
+    def test_hasher_replaces_cleartext_with_hash(self) -> None:
+        store = InMemoryLedgerStore()
+        hasher = HMACSubjectIdHasher(pepper=b"x" * 32, pepper_version="v3")
+        gate = AdverseActionGate(ledger_store=store, subject_id_hasher=hasher)
+        gate.evaluate(_packet(consumer_id="consumer-PII-002"))
+        event = list(store)[0]
+        # Cleartext must not appear in payload.
+        assert "consumer_id" not in event.payload
+        assert "consumer-PII-002" not in str(event.payload)
+        assert event.payload["consumer_id_hash_b64"]
+        assert event.payload["consumer_id_pepper_version"] == "v3"
+        assert event.payload["consumer_id_algorithm"] == "HMAC-SHA256"
+
+    def test_hashed_consumer_id_stable_across_evaluations(self) -> None:
+        store = InMemoryLedgerStore()
+        hasher = HMACSubjectIdHasher(pepper=b"y" * 32)
+        gate = AdverseActionGate(ledger_store=store, subject_id_hasher=hasher)
+        gate.evaluate(_packet(consumer_id="alice"))
+        gate.evaluate(_packet(decision_id="dec-002", consumer_id="alice"))
+        events = list(store)
+        assert (
+            events[0].payload["consumer_id_hash_b64"] == (events[1].payload["consumer_id_hash_b64"])
+        )
 
 
 class TestReferenceReasonCodes:

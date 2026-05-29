@@ -138,6 +138,7 @@ from finserv_agent_audit.governance.ledger_store import (
 from finserv_agent_audit.governance.ledger_store_jsonl import JsonlLedgerStore
 from finserv_agent_audit.governance.ledger_store_sqlite import SqliteLedgerStore
 from finserv_agent_audit.governance.ledger_store_worm import (
+    BestEffortWORMLedgerStore,
     WORMLedgerStore,
     WORMViolationError,
 )
@@ -147,8 +148,11 @@ from finserv_agent_audit.governance.llm_disparate_impact_harness import (
     RubricScorer,
 )
 from finserv_agent_audit.governance.mi_proxy import (
+    BaselineEntry,
+    BaselineMIProxy,
     IntegrityVerificationError,
     LocalMIProxy,
+    LocalMIProxyFreshnessCheck,
     MIProxy,
     enforce_attestation,
 )
@@ -180,10 +184,16 @@ from finserv_agent_audit.governance.shadow_mode import (
     VetoDirection,
 )
 from finserv_agent_audit.governance.sovereign_veto import (
+    Authorizer,
     SovereignVeto,
     VetoBlockedError,
     VetoReason,
     VetoRecord,
+)
+from finserv_agent_audit.governance.subject_id import (
+    HashedSubjectId,
+    HMACSubjectIdHasher,
+    SubjectIdHasher,
 )
 from finserv_agent_audit.governance.timestamp_source import (
     LocalClock,
@@ -218,6 +228,7 @@ __all__ = [
     "DEFCON",
     "DEFCONMachine",
     "RiskMetrics",
+    "Authorizer",
     "SovereignVeto",
     "VetoBlockedError",
     "VetoReason",
@@ -227,6 +238,7 @@ __all__ = [
     "LedgerStore",
     "JsonlLedgerStore",
     "SqliteLedgerStore",
+    "BestEffortWORMLedgerStore",
     "WORMLedgerStore",
     "WORMViolationError",
     "LocalClock",
@@ -238,10 +250,17 @@ __all__ = [
     "RekorWitness",
     "WitnessRegister",
     "anchor_to_witness",
+    "BaselineEntry",
+    "BaselineMIProxy",
     "IntegrityVerificationError",
     "LocalMIProxy",
+    "LocalMIProxyFreshnessCheck",
     "MIProxy",
     "enforce_attestation",
+    # v2.0 CR-8 — subject-ID hashing (GLBA / GDPR-safe payloads)
+    "HMACSubjectIdHasher",
+    "HashedSubjectId",
+    "SubjectIdHasher",
     # Vendor-mediated AI
     "InMemoryVendorScoreGate",
     "VendorClass",
