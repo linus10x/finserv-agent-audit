@@ -32,7 +32,9 @@ jobs:
       - name: Run OSV-Scanner
         uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2  # v2.3.8
         with:
+          # `--skip-git` was removed in osv-scanner v2 ('flag provided but not
+          # defined: -skip-git'); .git is excluded by default. Keep --recursive
+          # so transitive manifests (lockfiles, action SHAs) are scanned.
           scan-args: |-
             --recursive
-            --skip-git
             ./

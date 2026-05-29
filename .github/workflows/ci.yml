@@ -34,7 +34,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          # Install dev + every optional-extras group so mypy --strict sees the real
+          # third-party types behind every import-guard. Without the extras installed,
+          # `# type: ignore` comments on the import-guard-pattern lines fire
+          # `unused-ignore` errors in strict mode (the imports fail silently before
+          # the comment can be evaluated, so mypy concludes the comment was
+          # unnecessary).
+          pip install -e ".[dev,api,all-agentic,mcp,otel,test-property]"
 
       - name: Lint (ruff)
         run: ruff check .

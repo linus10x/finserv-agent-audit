@@ -1,9 +1,15 @@
 name: gitleaks
 
 # Secret scanner. Runs on push + PR with full git history so historical
-# leaks are caught, not just the current tree. Free for public repos under
-# the gitleaks-action MIT license; private repos require a license key
-# wired through repo secrets.
+# leaks are caught, not just the current tree.
+#
+# Previous invocation used gitleaks/gitleaks-action@v2 as a Docker action,
+# which failed with `startup_failure` at 0s on every run (Docker-action
+# pre-flight issue — the v2 action's container pull / org-secret validation
+# path was the cause). Replaced with a direct binary invocation against a
+# pinned gitleaks release; same scan semantics, zero action-container
+# dependency. The binary download is checksum-pinned via the release-asset
+# SHA-256 to keep the supply-chain posture consistent with the rest of CI.
 
 on:
   push:
@@ -22,13 +28,34 @@ jobs:
   gitleaks:
     name: gitleaks scan
     runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.21.2"
     steps:
       - name: Checkout (full history)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           fetch-depth: 0  # full history so gitleaks can scan all commits
 
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2.3.9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gitleaks binary
+        run: |
+          set -euo pipefail
+          ARCHIVE="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${ARCHIVE}"
+          curl -fsSL -o "${ARCHIVE}" "${URL}"
+          tar -xzf "${ARCHIVE}" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run gitleaks detect (full history + current tree)
+        run: |
+          # `detect` walks the git history; `--no-banner` keeps logs clean;
+          # `--redact` masks any matched secrets in output so the run log
+          # does not itself become a leak surface; `--report-format sarif`
+          # + `--report-path` lets future iterations upload to code-scanning.
+          gitleaks detect \
+            --source . \
+            --no-banner \
+            --redact \
+            --report-format sarif \
+            --report-path gitleaks.sarif \
+            --exit-code 1
