@@ -1,0 +1,25 @@
+---
+# yamllint config — pragmatic ruleset for the finserv-agent-audit repo.
+# Extends `default` but loosens the strictest rules so existing workflow
+# YAML (long `uses:` lines for SHA-pinned actions, comment-style
+# preferences) does not red-bar CI on cosmetic issues.
+
+extends: default
+
+rules:
+  line-length:
+    max: 200
+  truthy: disable
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+
+ignore: |
+  .github/releases/
+  .git/
+  .mypy_cache/
+  .pytest_cache/
+  .ruff_cache/
+  .hypothesis/
+  htmlcov/
+  vendor-clauses/

@@ -1,0 +1,41 @@
+name: pip-audit
+
+# SCA against the PyPA Advisory Database. Runs on every push/PR plus a
+# daily cron so newly-disclosed CVEs surface even on quiet weeks. The base
+# wheel has zero runtime deps; the audit covers extras declared in
+# pyproject.toml.
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # daily 00:00 UTC
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pip-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pip-audit:
+    name: pip-audit (PyPA Advisory DB)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version: "3.13"
+
+      - name: Run pip-audit on pyproject.toml
+        uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266  # v1.1.0
+        with:
+          inputs: pyproject.toml
+          # Fails on any known CVE. Adjust with `vulnerability-service`
+          # or `ignore-vulns` once baseline is triaged.

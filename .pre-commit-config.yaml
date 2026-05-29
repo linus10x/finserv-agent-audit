@@ -27,6 +27,33 @@ repos:
         args: [--strict, --ignore-missing-imports]
         additional_dependencies: []
 
+  # Secret scanner — catches API keys, private keys, cloud creds in diff.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  # GitHub Actions linter — catches malformed `uses:`, missing `needs:`,
+  # invalid expression syntax before CI ever runs.
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+
+  # YAML linter — applies .yamllint.yml ruleset.
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ["-c=.yamllint.yml"]
+
+  # Shell-script static analysis (for scripts/, deploy/, action.yml inline
+  # shells). Pinned to the official shellcheck-precommit mirror.
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+
   - repo: local
     hooks:
       - id: banned-term-lint

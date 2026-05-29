@@ -58,6 +58,20 @@ dev = [
     "ruff>=0.8",
     "pre-commit>=3.7",
 ]
+# Property-based fuzz harness for the hand-rolled DER codec
+# (governance/rfc3161_codec.py). Kept separate from `dev` so the standard
+# CI matrix stays minimal — adopters running the CR-6 fuzz suite install
+# `[test-property]` explicitly. Stdlib-only runtime posture is preserved;
+# hypothesis is a test-time dep only.
+test-property = ["hypothesis>=6.115"]
+# CI-side security tooling (SAST + SCA). Kept separate from `dev` so
+# day-to-day contributor envs stay lean; CI installs `[security-dev]` on
+# the bandit / pip-audit workflow runners. NOT bundled into
+# `all-integrations` because these are tooling, not runtime extras.
+security-dev = [
+    "bandit[toml]>=1.7",
+    "pip-audit>=2.7",
+]
 # Optional ecosystem-onramp dependencies (v1.2 + v2.0). These are NOT
 # runtime deps; the import-guard pattern in
 # src/finserv_agent_audit/integrations/* and
@@ -142,6 +156,7 @@ testpaths = ["tests"]
 addopts = "--tb=short -q"
 markers = [
     "network: tests that hit external network (e.g. Sigstore Rekor public-good); default-skipped unless FINSERV_AUDIT_NETWORK_TESTS=1",
+    "slow: long-running tests (e.g. hypothesis fuzz harnesses); skipped via `-m 'not slow'` for fast local iteration",
 ]
 
 [tool.coverage.run]

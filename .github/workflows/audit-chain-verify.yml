@@ -8,6 +8,10 @@ name: Audit chain verify (reusable)
 # Every PR in the org then runs the audit-chain verify against the path
 # the caller specifies. Pair with branch protection that requires this
 # workflow's status check to pass before merge.
+#
+# All third-party actions are SHA-pinned for supply-chain integrity. Adopter
+# orgs SHOULD repin `linus10x/finserv-agent-audit@v1` to a specific SHA in
+# their own ruleset (see action.yml § Supply-Chain Note).
 
 on:
   workflow_call:
@@ -46,6 +50,13 @@ on:
         description: HMAC signing key for the MI Proxy verifier (ADR-0015).
         required: false
 
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-chain-verify-${{ github.ref }}-${{ inputs.audit-jsonl-path }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Verify audit chain
@@ -54,7 +65,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout caller repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
       - name: Run finserv-agent-audit verification
         id: audit
@@ -80,7 +91,7 @@ jobs:
 
       - name: Upload verification report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: ${{ inputs.artifact-name }}
           path: audit-verification-report/

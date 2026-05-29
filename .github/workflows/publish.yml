@@ -12,6 +12,10 @@ name: Publish to PyPI
 # The `pypi` environment is configured with required reviewers so the final
 # push to production PyPI cannot proceed without explicit human approval,
 # even after a tag push.
+#
+# All third-party actions are SHA-pinned (CWE-1357 supply-chain hardening,
+# per the tj-actions/changed-files 2025 incident class). Dependabot picks up
+# the trailing `# vX.Y.Z` comment for version-bump PRs.
 
 on:
   push:
@@ -22,13 +26,19 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build wheel + sdist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
         with:
           # Full history so that setuptools-scm-style version derivation, if
           # ever adopted, has the tag graph available. Harmless for the
@@ -36,7 +46,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.12"
 
@@ -52,7 +62,7 @@ jobs:
         run: ls -la dist/
 
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: dist
           path: dist/
@@ -67,16 +77,17 @@ jobs:
       name: testpypi
       url: https://test.pypi.org/p/finserv-agent-audit
     permissions:
-      id-token: write  # Required for Trusted Publishing OIDC token mint
+      id-token: write       # Required for Trusted Publishing OIDC token mint
+      contents: read
     steps:
       - name: Download dist artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
           name: dist
           path: dist/
 
       - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # v1.14.0
         with:
           repository-url: https://test.pypi.org/legacy/
           # PEP 740 attestation generation is on by default for Trusted
@@ -100,13 +111,13 @@ jobs:
       contents: read
     steps:
       - name: Download dist artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
         with:
           name: dist
           path: dist/
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # v1.14.0
         # No `with:` block needed:
         #   - default repository-url is https://upload.pypi.org/legacy/
         #   - Trusted Publishing binding supplies the credential

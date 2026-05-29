@@ -1,0 +1,34 @@
+name: gitleaks
+
+# Secret scanner. Runs on push + PR with full git history so historical
+# leaks are caught, not just the current tree. Free for public repos under
+# the gitleaks-action MIT license; private repos require a license key
+# wired through repo secrets.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitleaks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: gitleaks scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        with:
+          fetch-depth: 0  # full history so gitleaks can scan all commits
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,38 @@
+name: OSV-Scanner
+
+# Multi-ecosystem vulnerability scanner backed by the OSV.dev database.
+# Complements pip-audit (PyPA Advisory DB) with Google's curated feed and
+# catches transitive issues across multiple manifests (pyproject.toml,
+# lockfiles, GitHub Actions, container images when present).
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # daily 00:00 UTC
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: osv-scanner-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  osv-scanner:
+    name: OSV-Scanner (OSV.dev)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Run OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2  # v2.3.8
+        with:
+          scan-args: |-
+            --recursive
+            --skip-git
+            ./
