@@ -28,6 +28,8 @@ Extracted from a multi-year build of a 6-agent autonomous trading system — hun
 - [How It Compares](#how-it-compares)
 - [Who This Is For](#who-this-is-for)
 - [Roadmap](#roadmap)
+- [Deployment](#deployment)
+- [Commercial Services](#commercial-services)
 - [Community](#community)
 - [Contributing](#contributing)
 - [Author](#author)
@@ -316,6 +318,22 @@ Two v2.0 platform surfaces ship deployment artifacts that adopters can lift dire
 
 - **Kubernetes operator + CRDs** — `deploy/k8s/` contains the controller manifests, three custom resource definitions (`AuditChain`, `SovereignVeto`, `ChainSink`), and Kyverno + OPA sample admission-policy bundles. See [`deploy/k8s/README.md`](deploy/k8s/README.md) for the one-page deploy walkthrough.
 - **FastAPI governance endpoint** — `src/finserv_agent_audit/integrations/governance_api.py` builds an OpenAPI 3.1 REST surface plus a Server-Sent Events live stream for `AuditEvent` flow. Install with `pip install finserv-agent-audit[api]`; serve via `uvicorn finserv_agent_audit.integrations.governance_api:create_app --factory`. See [ADR-0032](docs/adr/0032-fastapi-governance-endpoint.md) for the design rationale, route inventory, and authn / authz integration points.
+
+---
+
+## Commercial Services
+
+The framework is MIT — fork it, ship it, adopt it. The author offers paid productized advisory + assurance services for FSI institutions, Big-4 firms, BigLaw counsel, and PE operating partners that want hands-on deployment or examination-ready audit-evidence packs:
+
+- **Diagnostic** — 2-week structured gap-assessment against the OCC 2026-13 white-space + Treasury FS AI RMF + NIST AI 600-1 GenAI Profile · 5 deliverables incl. scored pre-examination self-assessment + 12-month remediation roadmap
+- **Audit** — 6-week implementation-grade engagement producing Big-4-handoff-ready evidence pack + SR 11-7 model-inventory + co-branded `ASSURANCE-GUIDE` walkthrough
+- **Retainer** — ongoing access · weekly regulatory-change digest · quarterly maturity rescore · monthly office hours · written Audit/Risk Committee report each quarter
+- **Expert Witness** — independent technical expert for fair-lending, model-risk-management, AI-audit-chain forensic depositions and reports
+- **Fractional CAIO / CTO** — 6-12 month interim engagement at FSI institutions and PE portcos; DFW-preferred, remote-friendly
+
+Pricing, methodology pages, and intake form: **[autonomy-ladder.io/services](https://autonomy-ladder.io/services)** · or LinkedIn DM with subject `Diagnostic inquiry` to [Kunjar Bhaduri](https://linkedin.com/in/kunjarbhaduri).
+
+Authority moat sits on the public framework. The MIT artifact stays open; paid engagements adapt the framework to a buyer's specific risk surface, regulatory regime, and Big-4 audit-evidence requirements.
 
 Earlier-version deployment walkthroughs (AWS / Azure) remain in [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md).
 
