@@ -50,3 +50,7 @@ output/
 docs/Autonomy_Ladder_Pitch_Deck_v1.pdf
 docs/*.pptx
 docs/*.key
+
+
+# Operator-internal strategy doc — not for public repo
+MANUAL_REMEDIATION_AUTHOR.md
