@@ -93,11 +93,11 @@ class AutonomyLevel(Enum):
     Maps to human oversight requirements at each level.
     """
 
-    A0 = "A0"  # Human decides — agent proposes only
-    A1 = "A1"  # Human in loop — agent proposes, human confirms
-    A2 = "A2"  # Human on loop — agent executes, human can override
-    A3 = "A3"  # Human notified — agent executes, human alerted
-    A4 = "A4"  # Autonomous — agent executes, audit trail only
+    A0 = "A0"  # Informational — agent reads and recommends, no write authority
+    A1 = "A1"  # Assisted — agent drafts, human approves every write
+    A2 = "A2"  # Delegated — agent writes in a hard envelope, sampled review
+    A3 = "A3"  # Supervised Autonomous — in-scope autonomous writes, sovereign veto, live ledger
+    A4 = "A4"  # Production Autonomous — A3 plus orchestration and operator-validated escalation
 
 
 @dataclass(frozen=True)

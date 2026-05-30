@@ -12,13 +12,15 @@ by the level of human oversight required at each decision point.
 
 ## The Five Levels
 
-| Level | Name | Human Role | When to Use |
+| Level | Name | Behavior | When to Use |
 |---|---|---|---|
-| **A0** | Human Decides | Agent proposes; human decides and executes | Irreversible decisions with significant capital or compliance impact |
-| **A1** | Human In Loop | Agent proposes; human must confirm before execution | High-impact decisions where speed is not critical |
-| **A2** | Human On Loop | Agent executes; human can override within a time window | Normal operational decisions with defined reversal procedures |
-| **A3** | Human Notified | Agent executes; human receives alert and can investigate | Routine decisions with low individual impact |
-| **A4** | Autonomous | Agent executes; audit trail only | High-frequency, low-impact, well-understood decisions |
+| **A0** | Informational | Agent reads and recommends. No write authority. Human decides and executes. | Irreversible decisions with significant capital or compliance impact |
+| **A1** | Assisted | Agent drafts. Human approves every write before execution. | High-impact decisions where a reviewer signature is warranted |
+| **A2** | Delegated | Agent writes inside a hard envelope. Human reviews a sampled subset and all out-of-envelope decisions. | Normal operational decisions with defined reversal procedures |
+| **A3** | Supervised Autonomous | Agent writes for the in-scope decision class. Non-overridable sovereign veto; live audit ledger. Human supervises by exception. | In-scope decisions behind a tested sovereign-veto gate |
+| **A4** | Production Autonomous | A3 plus inter-agent orchestration and operator-validated escalation paths. Audit trail of record. | High-frequency, well-understood decisions with mature operating evidence |
+
+> **Canonical labels.** A0 Informational · A1 Assisted · A2 Delegated · A3 Supervised Autonomous · A4 Production Autonomous. These tier names are shared across the Autonomy Ladder™ portfolio — see [`cre-agent-audit` ADR-0004](https://github.com/linus10x/cre-agent-audit/blob/main/docs/adr/0004-autonomy-ladder-a0-a4.md) and [autonomy-ladder.io](https://autonomy-ladder.io).
 
 ---
 

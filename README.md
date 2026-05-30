@@ -117,11 +117,11 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
     A[Agent Decision] --> B{Autonomy Level}
-    B -->|A0 — Human decides| C[Human Approval Required]
-    B -->|A1 — Human in loop| D[Propose → Human Confirms]
-    B -->|A2 — Human on loop| E[Execute → Human Can Override]
-    B -->|A3 — Human notified| F[Execute → Log → Alert]
-    B -->|A4 — Autonomous| G[Execute → Audit Trail Only]
+    B -->|A0 — Informational| C[Read & Recommend — Human Decides]
+    B -->|A1 — Assisted| D[Draft → Human Approves Write]
+    B -->|A2 — Delegated| E[Write in Envelope → Sampled Review]
+    B -->|A3 — Supervised Autonomous| F[Autonomous Write → Sovereign Veto + Audit]
+    B -->|A4 — Production Autonomous| G[Autonomous → Audit Trail of Record]
 
     E --> H{Sovereign Veto?}
     F --> H

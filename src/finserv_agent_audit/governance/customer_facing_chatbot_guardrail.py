@@ -450,10 +450,10 @@ class CustomerFacingChatbotGuardrail:
     handoff, or revise) so the audit chain becomes the operator-side
     evidence record the Air Canada precedent indicates.
 
-    The autonomy-level default is A2 (human on the loop) — the chatbot
+    The autonomy-level default is A2 (delegated) — the chatbot
     runs autonomously per turn but a human supervisor can override or
-    take over. Deployers running A3 (human notified) layer their own
-    notification surface above this guardrail; A4 (autonomous) is not
+    take over. Deployers running A3 (supervised autonomous) layer their own
+    notification surface above this guardrail; A4 (production autonomous) is not
     recommended for customer-facing chatbots and the guardrail does
     not change its decisions when ``autonomy_level=AutonomyLevel.A4``
     is passed — the audit record will name the level the deployer
