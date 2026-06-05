@@ -13,6 +13,16 @@ the first-line program team, the second-line model-validation team
 (SR 11-7), and the third-line internal-audit team, and supplied as a
 ``PromotionRequirements`` record to ``check_a2_to_a3_promotion``.
 
+**Advisory by default (P1).** The default check is ADVISORY: it
+evaluates the caller-asserted ``PromotionRequirements`` and trusts
+those inputs — it does not itself collect or verify the evidence, so a
+model owner could assert the booleans with no independent check. The
+returned report carries ``advisory=True`` and must NOT be presented as
+an enforcing control. To make the gate enforcing, run it with
+``require_attestation=True`` and a mapping of independent (second- or
+third-line) ``CriterionAttestation`` records — see
+``check_a2_to_a3_promotion``.
+
 Why tiers and not a binary. Regulators (EU AI Act Article 14 — human
 oversight, NIST AI RMF Govern function, FRB SR 11-7 three-lines-of-
 defense), institutional investors, and internal risk committees all
@@ -188,6 +198,35 @@ class PromotionGateNotMet(RuntimeError):  # noqa: N818 - public parity with cre-
 
 
 @dataclass(frozen=True)
+class CriterionAttestation:
+    """P1 — independent attestation of one promotion criterion's evidence.
+
+    The bare ``PromotionRequirements`` booleans/timedeltas are
+    caller-asserted: the gate cannot, on its own, know whether the
+    "90-day ledger" claim is true. An attestation binds the claim to a
+    NAMED party and their line of defense, so a regulator can see WHO
+    stands behind each criterion.
+
+    ``line_of_defense`` follows the three-lines model: 1 = the program
+    team that owns/built the model (NOT independent), 2 = model
+    validation / MRM, 3 = internal audit. Independent attestation
+    requires line 2 or 3 — a first-line self-attestation does not clear
+    the strict gate (a model owner cannot attest its own promotion).
+    """
+
+    criterion: str
+    attestor_id: str
+    line_of_defense: int
+    attested_at: str
+    statement: str = ""
+
+    @property
+    def is_independent(self) -> bool:
+        """True only for second- or third-line attestors (not the owner)."""
+        return self.line_of_defense in (2, 3)
+
+
+@dataclass(frozen=True)
 class PromotionGateReport:
     """Structured result of the A2 → A3 promotion gate check.
 
@@ -196,10 +235,17 @@ class PromotionGateReport:
     empty. Every failure is enumerated so the program team sees every
     gap in one pass rather than discovering them one-at-a-time across
     multiple submission cycles.
+
+    ``advisory`` is True when the check ran WITHOUT independent
+    attestation (the default): the result reflects only caller-asserted
+    inputs and is NOT an enforcing control. It is False only when run
+    with ``require_attestation=True`` and every satisfied criterion
+    carried an independent (line-2/3) attestation.
     """
 
     passed: bool
     failures: tuple[str, ...]
+    advisory: bool = True
 
     def raise_if_blocked(self) -> None:
         if not self.passed:
@@ -211,15 +257,53 @@ class PromotionGateReport:
 _MIN_AUDIT_LEDGER_DAYS = 90
 _MIN_SHADOW_MODE_DAYS = 30
 
+# The four criterion keys, used to match attestations in strict mode.
+_CRITERION_KEYS = (
+    "sovereign_veto_load_tested",
+    "audit_ledger_running_for",
+    "shadow_mode_running_for",
+    "circuit_breaker_test_recent",
+)
 
-def check_a2_to_a3_promotion(requirements: PromotionRequirements) -> PromotionGateReport:
+
+def check_a2_to_a3_promotion(
+    requirements: PromotionRequirements,
+    *,
+    attestations: dict[str, CriterionAttestation] | None = None,
+    require_attestation: bool = False,
+) -> PromotionGateReport:
     """Evaluate the four A2 → A3 promotion criteria.
 
     Returns a report with the full list of failures (not just the
     first one) so the program team, second-line model-validation team,
     and third-line internal audit see every gap in one pass.
+
+    **P1 — advisory vs enforcing.** By default this is an ADVISORY
+    check: it evaluates the caller-asserted ``PromotionRequirements``
+    record and trusts those inputs (it does not itself collect or
+    verify that the 90-day ledger actually ran). The returned report's
+    ``advisory`` flag is ``True`` and the result MUST NOT be presented
+    as an enforcing control.
+
+    Pass ``require_attestation=True`` plus an ``attestations`` mapping
+    (criterion key -> :class:`CriterionAttestation`) to run the STRICT
+    gate: every otherwise-satisfied criterion must carry an INDEPENDENT
+    (line-2 or line-3) attestation, or it is recorded as a failure. In
+    strict mode the report's ``advisory`` flag is ``False``. This is an
+    opt-in; it does NOT change the default behavior.
     """
+    attestations = attestations or {}
     failures: list[str] = []
+
+    def _satisfied(key: str) -> bool:
+        if key == "sovereign_veto_load_tested":
+            return requirements.sovereign_veto_load_tested
+        if key == "audit_ledger_running_for":
+            return requirements.audit_ledger_running_for >= timedelta(days=_MIN_AUDIT_LEDGER_DAYS)
+        if key == "shadow_mode_running_for":
+            return requirements.shadow_mode_running_for >= timedelta(days=_MIN_SHADOW_MODE_DAYS)
+        return requirements.circuit_breaker_test_recent
+
     if not requirements.sovereign_veto_load_tested:
         failures.append("sovereign_veto not load-tested under representative traffic")
     if requirements.audit_ledger_running_for < timedelta(days=_MIN_AUDIT_LEDGER_DAYS):
@@ -235,4 +319,23 @@ def check_a2_to_a3_promotion(requirements: PromotionRequirements) -> PromotionGa
     if not requirements.circuit_breaker_test_recent:
         failures.append("circuit_breaker test not recent (must be tested at least quarterly)")
 
-    return PromotionGateReport(passed=not failures, failures=tuple(failures))
+    if require_attestation:
+        # Each satisfied criterion must carry an INDEPENDENT attestation;
+        # a missing or first-line attestation fails the strict gate.
+        for key in _CRITERION_KEYS:
+            if not _satisfied(key):
+                continue  # already a failure above
+            att = attestations.get(key)
+            if att is None:
+                failures.append(f"{key}: no independent attestation supplied (strict mode)")
+            elif not att.is_independent:
+                failures.append(
+                    f"{key}: attestation by {att.attestor_id!r} is line-{att.line_of_defense} "
+                    "(not independent; requires second- or third-line)"
+                )
+
+    return PromotionGateReport(
+        passed=not failures,
+        failures=tuple(failures),
+        advisory=not require_attestation,
+    )

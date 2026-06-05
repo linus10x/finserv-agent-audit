@@ -286,3 +286,79 @@ class TestGenesisHashFormula:
             b"finserv-agent-audit/genesis/v1/acme/2026-05-28T00:00:00+00:00",
         ).hexdigest()
         assert chain._events[0].prev_hash == expected_seed
+
+
+# --------------------------------------------------------------------------- #
+# P3 (AL-PROBE-03b) regression — the deployer-keyed verifier defect.
+#
+# Pre-fix, verify()/verify_strict() seeded prev=GENESIS_HASH ('0'*64)
+# unconditionally, so a CLEAN deployer-keyed chain (whose event #0 carries
+# a deployer-keyed prev_hash) raised a FALSE tamper finding. These tests pin
+# the corrected contract: BOTH a hardened deployer-keyed chain AND a legacy
+# chain verify True; legacy detection is unchanged.
+# --------------------------------------------------------------------------- #
+
+
+def _append_three(chain: AuditChain) -> None:
+    for i in range(3):
+        chain.append(
+            event_type=AuditEventType.DECISION_MADE,
+            autonomy_level=AutonomyLevel.A2,
+            agent_id="zeus",
+            payload={"i": i},
+        )
+
+
+def test_deployer_keyed_clean_chain_verifies_true(tmp_path: Path) -> None:
+    """A freshly-built, untampered deployer-keyed chain must verify True."""
+    chain = AuditChain(
+        log_file=tmp_path / "hardened.jsonl",
+        deployer_id="acme-bank-prod",
+        chain_creation_iso="2026-01-01T00:00:00+00:00",
+    )
+    _append_three(chain)
+    assert chain.verify() is True
+    # verify_strict must NOT raise on a clean hardened chain.
+    chain.verify_strict()
+
+
+def test_legacy_chain_still_verifies_true(tmp_path: Path) -> None:
+    """A legacy (no deployer_id) chain still verifies True — no regression."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        chain = AuditChain(log_file=tmp_path / "legacy.jsonl")
+        _append_three(chain)
+        assert chain.verify() is True
+        chain.verify_strict()
+
+
+def test_deployer_keyed_chain_reopened_in_legacy_mode_verifies(tmp_path: Path) -> None:
+    """Re-opening a hardened chain WITHOUT passing deployer_id still verifies.
+
+    The verifier must re-derive the seed from the on-disk genesis payload,
+    not from a constructor-supplied deployer_id (which a reload omits).
+    """
+    log = tmp_path / "reopen.jsonl"
+    first = AuditChain(
+        log_file=log,
+        deployer_id="acme-bank-prod",
+        chain_creation_iso="2026-01-01T00:00:00+00:00",
+    )
+    _append_three(first)
+    # Re-open with the v1.x signature (no deployer_id) — loads event #0.
+    reopened = AuditChain(log_file=log)
+    assert reopened.verify() is True
+    reopened.verify_strict()
+
+
+def test_deployer_keyed_chain_inplace_tamper_still_detected(tmp_path: Path) -> None:
+    """The fix must not weaken tamper detection on a hardened chain."""
+    chain = AuditChain(
+        log_file=tmp_path / "tamper.jsonl",
+        deployer_id="acme-bank-prod",
+        chain_creation_iso="2026-01-01T00:00:00+00:00",
+    )
+    _append_three(chain)
+    # Mutate a middle event's payload in place.
+    object.__setattr__(chain._events[2], "payload", {"i": 999})
+    assert chain.verify() is False

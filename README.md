@@ -308,7 +308,16 @@ Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-
 
 ### Governance surfaces
 
-[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough; v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_appendix.md](docs/pcaob_as_2201_amendments_appendix.md)) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 
@@ -358,6 +367,17 @@ For *illustrative* walkthroughs of how a given primitive would have engaged with
 - **Risk architects** designing kill-switch and override mechanisms for AI systems
 - **Compliance teams** mapping AI agent behavior to EU AI Act, SEC Rule 15c3-5, MiFID II, or SOC 2 requirements
 - **CTOs and Chief AI Officers** establishing governance frameworks before regulators ask for them
+
+---
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 

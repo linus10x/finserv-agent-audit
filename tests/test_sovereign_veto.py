@@ -153,3 +153,79 @@ class TestAuthorizer:
         with pytest.raises(VetoBlockedError, match="self-clearing"):
             veto.clear(operator_id="zeus", reason="self-clear attempt")
         assert veto.is_vetoed is True
+
+
+# --------------------------------------------------------------------------- #
+# P2 — PRODUCTION MODE: a wired Authorizer is MANDATORY (fail-closed).
+# Default (advisory) construction is unchanged. (§2 P2)
+# --------------------------------------------------------------------------- #
+
+
+class _AllowAuthorizer:
+    def authorize(self, operator_id: str, action: str, context: dict) -> bool:  # type: ignore[type-arg]
+        return True
+
+
+class TestProductionMode:
+    def test_production_without_authorizer_fails_closed(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import SovereignVeto
+
+        with pytest.raises(ValueError, match="requires a wired Authorizer"):
+            SovereignVeto(agent_id="zeus", production=True)
+
+    def test_production_with_authorizer_constructs(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import SovereignVeto
+
+        veto = SovereignVeto(agent_id="zeus", production=True, authorizer=_AllowAuthorizer())
+        veto.trigger(VetoReason.RISK_LIMIT_BREACH, "risk_monitor", "ALERT")
+        assert veto.allow_execution() is False
+
+    def test_default_is_advisory_backward_compatible(self) -> None:
+        from finserv_agent_audit.governance.sovereign_veto import SovereignVeto
+
+        # No production flag, no authorizer — still constructs (advisory).
+        veto = SovereignVeto(agent_id="zeus")
+        assert veto.allow_execution() is True
+
+
+def test_concurrent_trigger_and_clear_no_race() -> None:
+    """P2 hardening — concurrent trigger() + clear() must not collide.
+
+    The veto's purpose is concurrent operation (risk monitor triggers while a
+    human operator clears). Pre-lock, clear()'s iteration could collide with a
+    trigger() append (RuntimeError: list changed size during iteration).
+    """
+    import threading
+
+    from finserv_agent_audit.governance.sovereign_veto import SovereignVeto, VetoReason
+
+    veto = SovereignVeto(agent_id="zeus", authorizer=_AllowAuthorizer())
+    errors: list[Exception] = []
+    stop = threading.Event()
+
+    def trigger_loop() -> None:
+        try:
+            while not stop.is_set():
+                veto.trigger(VetoReason.RISK_LIMIT_BREACH, "risk_monitor", "spike")
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    def clear_loop() -> None:
+        try:
+            while not stop.is_set():
+                veto.clear(operator_id="operator_001", reason="reviewed")
+                _ = veto.is_vetoed
+                _ = veto.active_vetos()
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [threading.Thread(target=trigger_loop) for _ in range(3)] + [
+        threading.Thread(target=clear_loop) for _ in range(3)
+    ]
+    for t in threads:
+        t.start()
+    stop.wait(0.5)
+    stop.set()
+    for t in threads:
+        t.join()
+    assert not errors, f"concurrency errors: {errors[:3]}"

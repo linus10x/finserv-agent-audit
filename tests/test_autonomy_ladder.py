@@ -152,3 +152,77 @@ class TestA2ToA3PromotionGate:
         )
         report = check_a2_to_a3_promotion(reqs)
         assert report.passed is True
+
+
+# --------------------------------------------------------------------------- #
+# P1 — attest-or-advisory: default is advisory; strict requires independent
+# (line-2/3) attestation of each satisfied criterion. (§2 P1)
+# --------------------------------------------------------------------------- #
+
+from datetime import timedelta as _td  # noqa: E402
+
+from finserv_agent_audit.governance.autonomy_ladder import (  # noqa: E402
+    CriterionAttestation,
+)
+
+
+def _all_met() -> PromotionRequirements:
+    return PromotionRequirements(
+        sovereign_veto_load_tested=True,
+        audit_ledger_running_for=_td(days=120),
+        shadow_mode_running_for=_td(days=45),
+        circuit_breaker_test_recent=True,
+    )
+
+
+def test_default_check_is_advisory() -> None:
+    report = check_a2_to_a3_promotion(_all_met())
+    assert report.passed is True
+    assert report.advisory is True  # NOT an enforcing control by default
+
+
+def test_strict_without_attestation_blocks_even_when_met() -> None:
+    report = check_a2_to_a3_promotion(_all_met(), require_attestation=True)
+    assert report.passed is False
+    assert report.advisory is False
+    assert any("no independent attestation" in f for f in report.failures)
+
+
+def test_strict_with_first_line_attestation_rejected() -> None:
+    atts = {
+        k: CriterionAttestation(
+            criterion=k,
+            attestor_id="model-owner",
+            line_of_defense=1,
+            attested_at="2026-06-05T00:00:00+00:00",
+        )
+        for k in (
+            "sovereign_veto_load_tested",
+            "audit_ledger_running_for",
+            "shadow_mode_running_for",
+            "circuit_breaker_test_recent",
+        )
+    }
+    report = check_a2_to_a3_promotion(_all_met(), attestations=atts, require_attestation=True)
+    assert report.passed is False
+    assert any("not independent" in f for f in report.failures)
+
+
+def test_strict_with_independent_attestation_passes() -> None:
+    atts = {
+        k: CriterionAttestation(
+            criterion=k,
+            attestor_id="mrm-2nd-line",
+            line_of_defense=2,
+            attested_at="2026-06-05T00:00:00+00:00",
+        )
+        for k in (
+            "sovereign_veto_load_tested",
+            "audit_ledger_running_for",
+            "shadow_mode_running_for",
+            "circuit_breaker_test_recent",
+        )
+    }
+    report = check_a2_to_a3_promotion(_all_met(), attestations=atts, require_attestation=True)
+    assert report.passed is True
+    assert report.advisory is False
