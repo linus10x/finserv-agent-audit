@@ -78,14 +78,14 @@ MATTERS: tuple[Matter, ...] = (
             "ECOA, 15 U.S.C. § 1691 et seq.",
             "Consumer Financial Protection Act",
         ),
-        remedy="~$9M combined ($3.85M loan-subsidy fund + outreach; CMP UNVERIFIED vs primary)",
+        remedy="~$9M combined: $3.85M loan-subsidy fund + outreach + $5M CMP ($4M to OCC, $1M to CFPB; OCC NR 2021-109)",
         failure_shape=(
             "Only 4 of 25 Memphis-area branches in majority-nonwhite neighborhoods, none with an "
             "assigned mortgage loan officer; failed to market/offer/originate in those tracts."
         ),
         governance_primitive="equity_audit",
         primary_source_url="https://www.justice.gov/crt/case/consent-order-united-states-v-trustmark-national-bank-wd-tenn",
-        verification="PARTIAL",  # CMP split UNVERIFIED against DOJ page text
+        verification="VERIFIED",  # CMP confirmed via OCC News Release 2021-109 (2026-06-05 Chrome primary-source pass)
     ),
     Matter(
         matter_id="fnb-pennsylvania-redlining-2024",
@@ -119,7 +119,7 @@ MATTERS: tuple[Matter, ...] = (
             "PRETEXTUAL adverse-action reason codes masking the national-origin basis."
         ),
         governance_primitive="adverse_action_gate",
-        primary_source_url="https://files.consumerfinance.gov/f/documents/cfpb_citibank-na_2023-cfpb-0013_consent-order_2023-11.pdf",
+        primary_source_url="https://www.consumerfinance.gov/enforcement/actions/citibank-n-a/",
         verification="VERIFIED",
     ),
 )
