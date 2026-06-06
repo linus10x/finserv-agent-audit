@@ -42,7 +42,7 @@ pytest tests/ -q                               # full suite · mypy --strict cle
 
 The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
 
-> **Receipts:** 661 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.2.0**.
+> **Receipts:** 661 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.3.0**.
 
 ## Read me first
 
