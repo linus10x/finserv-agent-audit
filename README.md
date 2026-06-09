@@ -32,6 +32,16 @@ This repository is that missing layer — battle-tested governance patterns extr
 
 ---
 
+## Why this exists for frontier autonomy stacks
+
+The controls in this library are **domain-agnostic**. The DEFCON state machine, the non-overridable **sovereign veto** (a separate-process control the agent cannot switch off), the **hash-chain audit ledger** (it detects tampering within its trust boundary), the **hard envelopes with mechanical escalation**, the **sampled-review tripwires**, and **monitor-led promotion** were forged in real multi-agent production systems under consequence — and they apply directly to any high-stakes coordinated autonomy (vehicles, robots, agent swarms) where *invisible promotion* or *cascade failure* is unacceptable. The decision class is a parameter: this repo encodes it for **cross-vertical financial services**, but the same A0→A4 deployment-authority structure lifts into any decision class without inheriting financial-services assumptions.
+
+- **Framework + whitepaper:** [autonomy-ladder.io](https://autonomy-ladder.io)
+- **Non-financial demo (under 60s):** [`finserv-agent-audit/examples/agent_coordination`](https://github.com/linus10x/finserv-agent-audit/tree/main/examples/agent_coordination) — the same veto / envelope / audit-chain / demotion primitives on a generic agent swarm.
+
+> **For reviewers & safety teams:** every control here is falsifiable — the test suite (630 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
+
+
 ## Part of the Autonomy Ladder™ family
 
 Six co-equal regulated-vertical reference libraries implementing the **Autonomy Ladder** — a governance framework for autonomous AI in regulated operations (A0→A4, every rung demotable). **Framework + whitepaper: [autonomy-ladder.io](https://autonomy-ladder.io).**
