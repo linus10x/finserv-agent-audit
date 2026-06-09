@@ -29,6 +29,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [2.1.3] — 2026-06-09
+
+Frontier-autonomy README section ('Why this exists for frontier autonomy stacks') + 'for reviewers & safety teams' note; added a non-financial `examples/agent_coordination/` demo proving the control primitives are domain-agnostic. No core source changes.
+
 ## [2.1.2] — 2026-06-09
 
 Documentation release: README rebuilt to the conversion standard (badge row, proof strip, Autonomy Ladder family block), fixed broken doc/ADR links, reconciled version metadata across pyproject/__init__/CITATION. No source changes.

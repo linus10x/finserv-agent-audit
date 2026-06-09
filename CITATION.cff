@@ -71,7 +71,7 @@ keywords:
   - multi-agent systems
   - compliance
 license: "MIT OR Apache-2.0"
-version: "2.1.2"
+version: "2.1.3"
 date-released: "2026-05-28"
 # Concept DOI (resolves to all versions of the framework):
 #   Author action at tag time — verify the concept DOI from
