@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Generic fail-closed PII pre-push gate (GLOBAL scaffold). PII belongs outside git; this backstops
+# anything that slips into a tracked path. Portable ERE (no \b). Exit 1 blocks the push. A project
+# layers its own gates (brand, council, drift) via 00_Control/githooks/pre-push.ext.sh (sourced if present).
+set -u
+fail=0; z="0000000000000000000000000000000000000000"
+FRE='(passport|driver.?licen|green.?card|h-?1b|eta\.?750|gratuity|separation.?agreement|background.?check|social.?security|(^|[^a-z0-9])(w-?2|w-?9|i-?9|ssn)($|[^a-z0-9]))'
+while read -r lref lsha rref rsha; do
+  [ -z "${lsha:-}" ] && continue
+  case "$lsha" in *[!0]*) : ;; *) continue ;; esac
+  if [ "$rsha" = "$z" ]; then files=$(git ls-tree -r --name-only "$lsha")
+  else files=$(git diff --name-only "$rsha" "$lsha"); fi
+  bad=$(printf '%s\n' "$files" | grep -iE "$FRE" || true)
+  [ -n "$bad" ] && { echo "PRE-PUSH BLOCK: PII-looking filename(s):"; echo "$bad"; fail=1; }
+  ssn=$(git grep -I -nE '[0-9]{3}-[0-9]{2}-[0-9]{4}' "$lsha" -- '*.md' '*.txt' '*.csv' '*.json' '*.yaml' '*.yml' '*.html' 2>/dev/null || true)
+  [ -n "$ssn" ] && { echo "PRE-PUSH BLOCK: SSN-pattern content:"; echo "$ssn" | head; fail=1; }
+done
+[ "$fail" -eq 1 ] && { echo ">>> Push blocked by PII gate. Move to a git-ignored path or redact, then retry."; exit 1; }
+# Optional project extension gate (brand/council/drift). Degrades loudly if unrunnable.
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+EXT="$ROOT/00_Control/githooks/pre-push.ext.sh"
+[ -f "$EXT" ] && { bash "$EXT" || exit 1; }
+exit 0
