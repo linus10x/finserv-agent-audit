@@ -29,6 +29,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [2.1.1] — 2026-05-29
+
+### Fixed (CI/SCM, no source changes)
+- Closed all post-v2.1.0-push workflow failures: `ci.yml` mypy `--strict` (install the full optional-extra set so import-guard `type: ignore` comments stay live), `bandit.yml` (SARIF formatter extra), `pip-audit.yml` (direct invocation against the installed tree), `osv-scanner.yml` (drop removed `--skip-git` flag), `gitleaks.yml` (direct SHA-pinned binary invocation). The published v2.1.0 PyPI wheel is unaffected — all changes are CI configuration. Full detail in [`.github/releases/v2.1.1-notes.md`](.github/releases/v2.1.1-notes.md).
+
+### Documentation
+- Reconciled package metadata and README to a single version of record (`2.1.1`): bumped `pyproject.toml` from `2.1.0`, updated the README header.
+- README upgrade: badge row keyed to verified receipts (630 tests · 93% coverage · zero deps · `mypy --strict` on 46 source files · 34 ADRs · 46 docs); buyer-first failure-mode hook; surfaced the CR-1..CR-12 hardening story and the zero-runtime-deps principle in a dedicated "Security & assurance" section; replaced the two-vertical "Related" section with the six co-equal Autonomy Ladder™ family block; moved the long roadmap to a 3-line teaser pointing at `ROADMAP.md`.
+- Fixed 8 broken relative links and the Apache-license filename references (`LICENSE-APACHE-2.0` → `LICENSE-APACHE`): the NYDFS Part 500, State-AG fair-lending matrix, and PCAOB AS 2201 mapping docs, plus the 0027–0030 and 0032 ADR links, now point to their real filenames. All 71 relative links in the README verified to resolve.
+
+---
+
 ## [2.1.0] — 2026-05-28
 
 **Tier-1 FSI-buyer hardening release.** Closes all 12 Critical findings from the May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) targeting the questionnaire bar that JPMC Tech Risk, BoA AppSec, Schwab Compliance Tech, BNY Mellon Trust Architecture, Fidelity Risk, Citi Model Risk, UBS Group Information Security, Broadridge InfoSec, and First Data review boards apply to an OSS package before authorizing inbound supply-chain inclusion. Test count 532 → 630 (+98); coverage 91.74% → 93.47%; `mypy --strict` clean across 46 source files; ruff + format + banned-term + tamper-language drift lints clean; CI now SHA-pins every GitHub Action and runs CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner per push.
