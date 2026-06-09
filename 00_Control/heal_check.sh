@@ -42,13 +42,24 @@ else warn ".gitignore has no default-deny '/*' — consider allowlisting (recomm
 FRE='(passport|driver.?licen|green.?card|h-?1b|eta\.?750|gratuity|separation.?agreement|background.?check|social.?security|(^|[^a-z0-9])(w-?2|w-?9|i-?9|ssn)($|[^a-z0-9]))'
 pii="$(git ls-files | grep -iE "$FRE" || true)"
 [ -z "$pii" ] && ok "no PII-looking tracked filenames" || { bad "PII-looking tracked filename(s):"; printf '      %s\n' $pii; }
-ssn="$(git grep -I -nE '[0-9]{3}-[0-9]{2}-[0-9]{4}' -- '*.md' '*.txt' '*.csv' '*.json' '*.yaml' '*.yml' '*.html' 2>/dev/null || true)"
+# Boundary guards exclude matches embedded in longer digit-hyphen runs (ISBNs in
+# citation URLs like 978-88-6969-443-1 are not SSNs).
+ssn="$(git grep -I -nE '(^|[^0-9-])[0-9]{3}-[0-9]{2}-[0-9]{4}([^0-9-]|$)' -- '*.md' '*.txt' '*.csv' '*.json' '*.yaml' '*.yml' '*.html' 2>/dev/null || true)"
 [ -z "$ssn" ] && ok "no SSN-pattern content in tracked text" || { bad "SSN-pattern content tracked:"; printf '%s\n' "$ssn" | head -3; }
 
 # 5. Cost discipline (HARD — global rule): no ANTHROPIC_API_KEY in env or committed config.
 [ -z "${ANTHROPIC_API_KEY:-}" ] && ok "ANTHROPIC_API_KEY not set in env" || bad "ANTHROPIC_API_KEY set — subscription auth only (unset it)"
-if git grep -qIE '(ANTHROPIC_API_KEY=|"ANTHROPIC_API_KEY"[[:space:]]*:)' -- '*.json' '*.sh' ':!*heal_check*' 2>/dev/null; then
-  bad "ANTHROPIC_API_KEY assigned in tracked config — remove it"; else ok "no ANTHROPIC_API_KEY assignment in tracked config"; fi
+# A real ASSIGNMENT only — redacted/placeholder values, Secrets-Manager references
+# (valueFrom ARNs), and shell self-expansions are fine.
+keyhits="$(git grep -InE '(ANTHROPIC_API_KEY=|"ANTHROPIC_API_KEY"[[:space:]]*:)' -- '*.json' '*.sh' ':!*heal_check*' 2>/dev/null \
+  | grep -ivE 'REDACTED|your[_-]?[a-z_-]*key|placeholder|example|changeme|dummy|<[^>]*>|valueFrom|secretsmanager|\$\{?ANTHROPIC_API_KEY' || true)"
+[ -z "$keyhits" ] && ok "no ANTHROPIC_API_KEY assignment in tracked config" \
+  || { bad "ANTHROPIC_API_KEY assigned in tracked config — remove it"; printf '%s\n' "$keyhits" | head -3; }
+# Key MATERIAL anywhere in tracked text is a leak regardless of file type (the old
+# *.json/*.sh-only scan missed a key pasted into a tracked .md) — rotate + purge.
+realkey="$(git grep -InE 'sk-ant-[A-Za-z0-9_-]{16,}' 2>/dev/null | grep -vi 'redacted' | grep -v 'heal_check' || true)"
+[ -z "$realkey" ] && ok "no Anthropic key material tracked" \
+  || { bad "Anthropic key material (sk-ant-...) tracked — rotate the key + purge:"; printf '%s\n' "$realkey" | head -3; }
 
 # 6. Project extension hook — a repo can layer its own checks without forking this core.
 EXT="$REPO_ROOT/00_Control/heal_check.ext.sh"
