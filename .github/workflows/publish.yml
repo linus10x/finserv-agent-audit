@@ -73,6 +73,10 @@ jobs:
     name: Publish to TestPyPI
     needs: build
     runs-on: ubuntu-latest
+    # Best-effort: TestPyPI requires a Trusted Publisher configured on test.pypi.org
+    # for this project. Until that owner-side config exists, a publish failure must
+    # NOT fail the release (the library is distributed via git + Zenodo, not PyPI).
+    continue-on-error: true
     environment:
       name: testpypi
       url: https://test.pypi.org/p/finserv-agent-audit
