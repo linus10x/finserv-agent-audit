@@ -82,6 +82,8 @@ Audit trail written to: output/demo_audit.jsonl
 State persisted to:     output/demo_state.json
 ```
 
+**Domain-agnostic:** see [`examples/agent_coordination/`](examples/agent_coordination/) — the same veto / envelope / audit-chain / demotion primitives applied to a non-financial agent swarm in under 60 seconds (`python examples/agent_coordination/coordination.py`).
+
 ---
 
 ## Architecture Overview
