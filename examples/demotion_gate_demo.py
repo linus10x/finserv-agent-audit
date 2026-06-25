@@ -35,6 +35,7 @@ or directly:
 from __future__ import annotations
 
 import sys
+from datetime import timedelta
 
 from finserv_agent_audit.governance.audit_chain import (
     AuditChain,
@@ -44,6 +45,10 @@ from finserv_agent_audit.governance.authority_lifecycle import (
     AuthorityInvariantError,
     AuthorityLifecycle,
     verify_authority_invariants,
+)
+from finserv_agent_audit.governance.autonomy_ladder import (
+    PromotionRequirements,
+    check_a2_to_a3_promotion,
 )
 from finserv_agent_audit.governance.ledger_store import InMemoryLedgerStore
 from finserv_agent_audit.governance.witness_anchor import (
@@ -58,8 +63,10 @@ from finserv_agent_audit.schemas.audit_event import (
     AutonomyLevel,
 )
 
-DEPLOYER_ID = "acme-bank-prod"
+DEPLOYER_ID = "example-deployer"  # transparently synthetic — NOT a real deployment
 CREATION_ISO = "2026-06-24T00:00:00+00:00"
+GRANTOR = "first-line:model-owner"
+EXAMINER = "second-line:model-risk"  # independent of the grantor (SR 11-7)
 
 
 def _print(verbose: bool, *args: object) -> None:
@@ -75,26 +82,41 @@ def _build_honest_chain() -> tuple[AuditChain, RecordingWitness, str]:
         chain_creation_iso=CREATION_ISO,
     )
     lc = AuthorityLifecycle(chain, agent_id="rebalancer-agent")
+    # The A3 grant's evidence is the OUTPUT of the real A2->A3 promotion gate,
+    # not a free-text assertion — so the recorded grant is provably gate-cleared.
+    requirements = PromotionRequirements(
+        sovereign_veto_load_tested=True,
+        audit_ledger_running_for=timedelta(days=120),
+        shadow_mode_running_for=timedelta(days=45),
+        circuit_breaker_test_recent=True,
+    )
+    gate = check_a2_to_a3_promotion(requirements)
+    gate.raise_if_blocked()  # demo asserts the gate actually passed
     grant = lc.grant(
         level=AutonomyLevel.A3,
         evidence={
-            "sovereign_veto_load_tested": True,
-            "audit_ledger_running_days": 120,
-            "shadow_mode_running_days": 45,
-            "circuit_breaker_test_recent": True,
+            "promotion_gate": "A2->A3",
+            "gate_passed": gate.passed,
+            "sovereign_veto_load_tested": requirements.sovereign_veto_load_tested,
+            "audit_ledger_running_days": requirements.audit_ledger_running_for.days,
+            "shadow_mode_running_days": requirements.shadow_mode_running_for.days,
+            "circuit_breaker_test_recent": requirements.circuit_breaker_test_recent,
         },
+        actor_id=GRANTOR,
     )
     exam = lc.examine(
         grant_event_id=grant.event_id,
         at_level=AutonomyLevel.A3,
         finding="2 out-of-envelope writes exceeded the drift band threshold",
         passed=False,
+        actor_id=EXAMINER,  # independent of GRANTOR — enforced by the verifier
     )
     revoke = lc.revoke(
         grant_event_id=grant.event_id,
         examination_event_id=exam.event_id,
         to_level=AutonomyLevel.A1,
         reason="examination failed: out-of-envelope drift",
+        actor_id=EXAMINER,
     )
     witness = RecordingWitness()
     anchor_to_witness(audit_chain=chain, witness=witness)

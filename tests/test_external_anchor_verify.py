@@ -19,7 +19,10 @@ from __future__ import annotations
 
 import pytest
 
-from finserv_agent_audit.governance.audit_chain import AuditChain
+from finserv_agent_audit.governance.audit_chain import (
+    AuditChain,
+    AuditChainTamperError,
+)
 from finserv_agent_audit.governance.authority_lifecycle import AuthorityLifecycle
 from finserv_agent_audit.governance.ledger_store import InMemoryLedgerStore
 from finserv_agent_audit.governance.witness_anchor import (
@@ -28,7 +31,11 @@ from finserv_agent_audit.governance.witness_anchor import (
     anchor_to_witness,
     verify_against_external_anchors,
 )
-from finserv_agent_audit.schemas.audit_event import AutonomyLevel
+from finserv_agent_audit.schemas.audit_event import (
+    AuditEvent,
+    AuditEventType,
+    AutonomyLevel,
+)
 
 
 def _chain_with_revocation() -> tuple[AuditChain, RecordingWitness, str]:
@@ -119,3 +126,41 @@ class TestVerifyAgainstAnchors:
         chain, _, _ = _chain_with_revocation()
         # An empty anchor set cannot contradict anything.
         verify_against_external_anchors(chain, [])
+
+    def test_fail_closed_when_chain_is_not_hash_consistent(self) -> None:
+        """Called on a hash-broken chain, the anchor verifier must NOT silently
+        pass — it runs verify() first and raises. This closes the "called alone"
+        ghost-event bypass the security review flagged."""
+        chain, witness, _ = _chain_with_revocation()
+        # Break the hash chain in place (mutate a payload, keep its stored hash).
+        target = chain._store._events[1]  # noqa: SLF001
+        mutated = AuditEvent(
+            event_type=target.event_type,
+            autonomy_level=target.autonomy_level,
+            agent_id=target.agent_id,
+            payload={**target.payload, "tampered": True},
+            prev_hash=target.prev_hash,
+            event_id=target.event_id,
+            timestamp=target.timestamp,
+            actor_id=target.actor_id,
+            schema_version=target.schema_version,
+            event_hash=target.event_hash,  # stale hash -> verify() False
+        )
+        chain._store._events[1] = mutated  # noqa: SLF001
+        assert chain.verify() is False
+        with pytest.raises(AuditChainTamperError):
+            verify_against_external_anchors(chain, witness.records)
+
+    def test_empty_chain_anchor_does_not_false_positive(self) -> None:
+        """Anchoring an empty (legacy) chain records the GENESIS sentinel; a
+        later verify must SKIP it rather than false-positive on an honest chain."""
+        chain = AuditChain(ledger_store=InMemoryLedgerStore())
+        witness = RecordingWitness()
+        anchor_to_witness(audit_chain=chain, witness=witness)  # anchors the sentinel
+        chain.append(
+            event_type=AuditEventType.DECISION_MADE,
+            autonomy_level=AutonomyLevel.A2,
+            agent_id="a",
+            payload={"k": 1},
+        )
+        verify_against_external_anchors(chain, witness.records)  # must not raise

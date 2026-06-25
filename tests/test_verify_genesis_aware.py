@@ -113,3 +113,30 @@ class TestTamperedGenesisIsCaught:
         )
         chain._store._events[0] = forged_genesis  # noqa: SLF001
         assert chain.verify() is False
+
+
+class TestNonSerializablePayloadIsTamperNotCrash:
+    def test_verify_returns_false_on_non_serializable_forged_payload(self) -> None:
+        """A storage-layer attacker plants an event whose payload can't be
+        canonicalized (a set), with a supplied event_hash so construction skips
+        recompute. verify() must return False (tamper verdict), not raise an
+        uncaught TypeError that turns a tamper attempt into a verifier crash."""
+        chain = AuditChain(ledger_store=InMemoryLedgerStore())
+        chain.append(
+            event_type=AuditEventType.DECISION_MADE,
+            autonomy_level=AutonomyLevel.A2,
+            agent_id="a",
+            payload={"k": 1},
+        )
+        forged = AuditEvent(
+            event_type=AuditEventType.DECISION_MADE,
+            autonomy_level=AutonomyLevel.A2,
+            agent_id="attacker",
+            payload={"bad": {1, 2, 3}},  # a set: not JSON-serializable
+            prev_hash=chain.chain_head(),
+            event_hash="d" * 64,  # supplied -> __post_init__ skips recompute
+        )
+        chain._store.append(forged)  # noqa: SLF001
+        assert chain.verify() is False
+        with pytest.raises(AuditChainTamperError):
+            chain.verify_strict()

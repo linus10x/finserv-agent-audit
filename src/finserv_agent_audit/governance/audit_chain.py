@@ -564,7 +564,14 @@ class AuditChain:
         with self._append_lock:
             prev = self._expected_chain_seed()
             for event in self._store:
-                expected = event._compute_hash()
+                # A forged event whose payload cannot be canonicalized to JSON
+                # (e.g. a non-serializable object planted by a storage-layer
+                # attacker) is a tamper, not a crash: verify()'s contract is
+                # "returns False if tampered", so a hashing failure is False.
+                try:
+                    expected = event._compute_hash()
+                except (TypeError, ValueError):
+                    return False
                 if event.event_hash != expected:
                     return False
                 if event.prev_hash != prev:
@@ -608,7 +615,17 @@ class AuditChain:
         with self._append_lock:
             prev = self._expected_chain_seed()
             for index, event in enumerate(self._store):
-                expected = event._compute_hash()
+                # A non-serializable forged payload is a tamper verdict, not an
+                # uncaught TypeError (which would turn a tamper attempt into a
+                # verifier crash / DoS).
+                try:
+                    expected = event._compute_hash()
+                except (TypeError, ValueError) as exc:
+                    raise AuditChainTamperError(
+                        f"event at index {index} (event_id={event.event_id!r}) "
+                        "has a payload that cannot be canonicalized to JSON; "
+                        "its hash cannot be recomputed — treated as tampered"
+                    ) from exc
                 if event.event_hash != expected:
                     raise AuditChainTamperError(
                         f"event_hash mismatch at index {index} (event_id={event.event_id!r})"

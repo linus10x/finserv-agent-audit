@@ -41,7 +41,11 @@ from datetime import UTC, datetime
 from typing import Protocol
 from urllib.parse import urlparse
 
-from finserv_agent_audit.governance.audit_chain import AuditChain
+from finserv_agent_audit.governance.audit_chain import (
+    GENESIS_HASH,
+    AuditChain,
+    AuditChainTamperError,
+)
 from finserv_agent_audit.schemas.audit_event import (
     AuditEvent,
     AuditEventType,
@@ -228,7 +232,7 @@ def verify_against_external_anchors(
     audit_chain: AuditChain,
     anchors: Iterable[ExternalAnchorRecord],
 ) -> None:
-    """Raise ``WitnessContradictionError`` if any witnessed head is gone.
+    """Raise on a chain that contradicts what an external witness recorded.
 
     An honest append-only chain only grows, so every head an external witness
     recorded MUST still appear as the ``event_hash`` of some event in the
@@ -237,19 +241,34 @@ def verify_against_external_anchors(
     history (backdating) — neither of which a hash-chain ``verify()`` can
     detect on its own.
 
-    MUST be co-run with ``verify`` / ``verify_strict``. The invariant checked
-    here is "the witnessed head is present as SOME event's ``event_hash``", not
-    "present on the head-path". On its own that could be bypassed by an
-    attacker who re-inserts the witnessed digest into a forged event's
-    ``event_hash`` field — but such a forgery fails ``verify`` (the field no
-    longer equals the event's recomputed hash). The two checks together are
-    sound; this one alone is not. Run BOTH.
+    FAIL-CLOSED CO-RUN. The "witnessed head is present as SOME event's
+    ``event_hash``" invariant is only sound on a hash-consistent chain — an
+    attacker could otherwise re-insert the witnessed digest into a forged
+    event's ``event_hash`` field. To remove that footgun this function runs
+    ``audit_chain.verify()`` FIRST and raises ``AuditChainTamperError`` if the
+    chain is not hash-consistent, so calling this verifier alone is safe (it
+    can never pass a chain that ``verify()`` would reject). Raises
+    ``WitnessContradictionError`` when the chain is hash-consistent but a
+    witnessed head is gone.
+
+    Anchors of an empty chain (head == ``GENESIS_HASH`` sentinel) carry no
+    information and are skipped — anchoring an empty chain is refused at
+    ``anchor_to_witness`` time anyway.
 
     No network: ``anchors`` are the witness's own retained records (or, in
     production, the inclusion proofs read back from the external register).
     """
+    if not audit_chain.verify():
+        raise AuditChainTamperError(
+            "external-anchor verification requires a hash-consistent chain; "
+            "AuditChain.verify() returned False. Fix or investigate the "
+            "hash-chain break before trusting the external-anchor check "
+            "(the two checks are co-dependent — see this function's docstring)."
+        )
     present = {event.event_hash for event in audit_chain._events}  # noqa: SLF001
     for anchor in anchors:
+        if anchor.chain_head_hex == GENESIS_HASH:
+            continue
         if anchor.chain_head_hex not in present:
             raise WitnessContradictionError(
                 f"externally-witnessed head {anchor.chain_head_hex[:12]}... "
@@ -272,9 +291,11 @@ def anchor_to_witness(
     """Anchor the chain head to `witness`; record the receipt as a new event.
 
     The chain head is the `event_hash` of the most recently appended event
-    (or the genesis hash if the chain is empty). The returned `AuditEvent`
-    has `event_type=AuditEventType.WITNESS_ANCHOR` and a payload that
-    captures the register, URL, anchored head, opaque receipt (hex), and
+    (or the genesis sentinel if the chain is empty — a "time zero" anchor;
+    ``verify_against_external_anchors`` skips genesis-sentinel anchors since
+    they carry no falsifiable information about recorded events). The returned
+    `AuditEvent` has `event_type=AuditEventType.WITNESS_ANCHOR` and a payload
+    that captures the register, URL, anchored head, opaque receipt (hex), and
     any inclusion identifiers the register returned.
     """
     head = _chain_head(audit_chain)

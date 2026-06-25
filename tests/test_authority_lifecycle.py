@@ -176,3 +176,47 @@ class TestInvariantVerifier:
         assert chain.verify() is True
         with pytest.raises(AuthorityInvariantError):
             verify_authority_invariants(chain)
+
+
+class TestExaminerIndependence:
+    def test_examiner_same_as_grantor_is_caught(self) -> None:
+        chain = _fresh_chain()
+        lc = AuthorityLifecycle(chain, agent_id="agent")
+        g = lc.grant(level=AutonomyLevel.A3, evidence={"x": 1}, actor_id="same-person")
+        lc.examine(
+            grant_event_id=g.event_id,
+            at_level=AutonomyLevel.A3,
+            finding="self-examination",
+            passed=False,
+            actor_id="same-person",  # the grantor examining their own grant
+        )
+        with pytest.raises(AuthorityInvariantError) as exc:
+            verify_authority_invariants(chain)
+        assert "independent" in str(exc.value).lower()
+
+    def test_distinct_grantor_and_examiner_pass(self) -> None:
+        chain = _fresh_chain()
+        lc = AuthorityLifecycle(chain, agent_id="agent")
+        g = lc.grant(level=AutonomyLevel.A3, evidence={"x": 1}, actor_id="model-owner")
+        lc.examine(
+            grant_event_id=g.event_id,
+            at_level=AutonomyLevel.A3,
+            finding="ok",
+            passed=False,
+            actor_id="model-risk",  # independent of the grantor
+        )
+        verify_authority_invariants(chain)  # must not raise
+
+    def test_missing_actor_ids_skip_the_independence_check(self) -> None:
+        # Can't verify independence without recorded actors; must not raise.
+        chain = _fresh_chain()
+        _grant_exam_revoke(chain)  # no actor_ids supplied
+        verify_authority_invariants(chain)
+
+
+class TestEvidenceMustBeJsonNative:
+    def test_grant_with_non_serializable_evidence_is_refused_at_write_time(self) -> None:
+        chain = _fresh_chain()
+        lc = AuthorityLifecycle(chain, agent_id="agent")
+        with pytest.raises(TypeError):
+            lc.grant(level=AutonomyLevel.A3, evidence={"s": {1, 2, 3}})  # a set
