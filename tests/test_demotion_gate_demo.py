@@ -1,7 +1,8 @@
 """The runnable demo must actually run and self-verify.
 
 A green ``run_demo()`` proves: the honest lifecycle verifies, AND all four
-attacks (forged grant / deleted revocation / in-place mutation) are caught.
+attacks (forged grant / deleted revocation / in-place mutation / backdated
+regeneration) are caught.
 ``run_demo`` returns non-zero if any expected catch fails to fire, so this
 test is a polarity check on the whole demo — it would fail if a verifier
 silently stopped catching its attack.

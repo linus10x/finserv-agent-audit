@@ -1,6 +1,6 @@
 # finserv-agent-audit
 
-**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready.**
+**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready by design** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
