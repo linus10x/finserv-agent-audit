@@ -42,7 +42,6 @@ from typing import Protocol
 from urllib.parse import urlparse
 
 from finserv_agent_audit.governance.audit_chain import (
-    GENESIS_HASH,
     AuditChain,
     AuditChainTamperError,
 )
@@ -52,6 +51,10 @@ from finserv_agent_audit.schemas.audit_event import (
     AutonomyLevel,
 )
 
+
+# Local constant to avoid module-level cyclic import of audit_chain.GENESIS_HASH.
+# Keep value aligned with finserv_agent_audit.governance.audit_chain.
+GENESIS_HASH = "0" * 64
 
 @dataclass(frozen=True)
 class WitnessReceipt:
