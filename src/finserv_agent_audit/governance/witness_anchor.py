@@ -35,7 +35,8 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
+from collections.abc import Iterable
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Protocol
 from urllib.parse import urlparse
@@ -154,6 +155,103 @@ class OpenTimestampsWitness:
             except Exception as exc:  # noqa: BLE001
                 last_exc = exc
         raise RuntimeError(f"all OTS calendars failed: {last_exc!r}")
+
+
+# ---------------------------------------------------------------------- #
+# External-anchor verification — ADR-0014 (defeats truncation + backdating)
+# ---------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class ExternalAnchorRecord:
+    """A ``(head, time)`` pair a witness recorded OUTSIDE the chain.
+
+    In production this is read back from the external register (Sigstore Rekor
+    inclusion proof, an OpenTimestamps receipt, or a regulator-side log). It is
+    the deployer-independent copy the chain is checked against.
+    """
+
+    chain_head_hex: str
+    witnessed_at: datetime
+    register_name: str
+
+
+class WitnessContradictionError(RuntimeError):
+    """Raised when an externally-witnessed head is absent from the chain.
+
+    Distinct from ``AuditChainTamperError`` (an in-chain hash break). A
+    contradiction means the chain was truncated below, or regenerated away
+    from, a point an external witness already attested — the attack a
+    hash-chain alone cannot see.
+    """
+
+
+@dataclass
+class RecordingWitness:
+    """Offline ``WitnessRegister`` that RETAINS every anchored head.
+
+    Stands in for the external log / regulator copy in tests and the offline
+    demo — no network. Each ``anchor`` call returns a normal ``WitnessReceipt``
+    AND keeps an ``ExternalAnchorRecord`` so the chain can later be verified
+    against what was witnessed.
+    """
+
+    register_name: str = "recording-witness"
+    _records: list[ExternalAnchorRecord] = field(default_factory=list)
+
+    def anchor(self, chain_head_hex: str) -> WitnessReceipt:
+        if len(chain_head_hex) != 64:
+            raise ValueError("chain_head_hex must be 64 chars (SHA-256)")
+        now = datetime.now(UTC)
+        self._records.append(
+            ExternalAnchorRecord(
+                chain_head_hex=chain_head_hex,
+                witnessed_at=now,
+                register_name=self.register_name,
+            )
+        )
+        return WitnessReceipt(
+            register_name=self.register_name,
+            register_url="memory://recording-witness",
+            submitted_at=now,
+            receipt_blob=chain_head_hex.encode(),
+            inclusion_uuid=None,
+            log_index=len(self._records) - 1,
+        )
+
+    @property
+    def records(self) -> tuple[ExternalAnchorRecord, ...]:
+        return tuple(self._records)
+
+
+def verify_against_external_anchors(
+    audit_chain: AuditChain,
+    anchors: Iterable[ExternalAnchorRecord],
+) -> None:
+    """Raise ``WitnessContradictionError`` if any witnessed head is gone.
+
+    An honest append-only chain only grows, so every head an external witness
+    recorded MUST still appear as the ``event_hash`` of some event in the
+    chain. A witnessed head that is absent means the chain was truncated below
+    it (a deleted tail / removed revocation) or regenerated to a different
+    history (backdating) — neither of which a hash-chain ``verify()`` can
+    detect on its own. Run this ALONGSIDE ``verify`` for adversarial
+    tamper-evidence.
+
+    No network: ``anchors`` are the witness's own retained records (or, in
+    production, the inclusion proofs read back from the external register).
+    """
+    present = {event.event_hash for event in audit_chain._events}  # noqa: SLF001
+    for anchor in anchors:
+        if anchor.chain_head_hex not in present:
+            raise WitnessContradictionError(
+                f"externally-witnessed head {anchor.chain_head_hex[:12]}... "
+                f"(witnessed {anchor.witnessed_at.isoformat()} via "
+                f"{anchor.register_name}) is ABSENT from the current chain — "
+                "the chain was truncated below, or regenerated away from, a "
+                "point the witness already attested. An append-only chain only "
+                "grows; a witnessed head cannot disappear from an honest chain."
+            )
 
 
 def anchor_to_witness(
