@@ -133,7 +133,7 @@ class RFC3161Source:
             },
             method="POST",
         )
-        with urlopen(req, timeout=self.timeout_s) as resp:  # noqa: S310 - scheme validated above
+        with urlopen(req, timeout=self.timeout_s) as resp:  # noqa: S310 - scheme validated above  # nosec B310 — scheme validated to http/https in stamp() before _post is called
             if resp.status != 200:
                 raise RuntimeError(f"TSA returned HTTP {resp.status}")
             body: bytes = resp.read()

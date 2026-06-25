@@ -262,3 +262,13 @@ def test_module_lives_at_documented_path() -> None:
     root = Path(__file__).resolve().parent.parent
     expected = root / "src" / "finserv_agent_audit" / "governance" / "deprecation_watch.py"
     assert expected.is_file()
+
+
+@pytest.mark.parametrize("bad_url", ["file:///etc/passwd", "ftp://host/x", "gopher://x"])
+def test_default_http_get_rejects_non_http_scheme(bad_url: str) -> None:
+    # The stdlib urlopen wrapper must refuse non-http(s) schemes before the
+    # URL ever reaches urlopen (urllib.request can open file:// / ftp://).
+    from finserv_agent_audit.governance.deprecation_watch import _default_http_get
+
+    with pytest.raises(ValueError):
+        _default_http_get(bad_url)
