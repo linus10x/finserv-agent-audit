@@ -235,8 +235,15 @@ def verify_against_external_anchors(
     chain. A witnessed head that is absent means the chain was truncated below
     it (a deleted tail / removed revocation) or regenerated to a different
     history (backdating) — neither of which a hash-chain ``verify()`` can
-    detect on its own. Run this ALONGSIDE ``verify`` for adversarial
-    tamper-evidence.
+    detect on its own.
+
+    MUST be co-run with ``verify`` / ``verify_strict``. The invariant checked
+    here is "the witnessed head is present as SOME event's ``event_hash``", not
+    "present on the head-path". On its own that could be bypassed by an
+    attacker who re-inserts the witnessed digest into a forged event's
+    ``event_hash`` field — but such a forgery fails ``verify`` (the field no
+    longer equals the event's recomputed hash). The two checks together are
+    sound; this one alone is not. Run BOTH.
 
     No network: ``anchors`` are the witness's own retained records (or, in
     production, the inclusion proofs read back from the external register).

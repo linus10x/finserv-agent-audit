@@ -9,7 +9,7 @@
 # editable install). No pip, no venv, no credentials, no network calls.
 #
 # The demo builds a grant -> examine -> revoke authority lifecycle, anchors it to
-# an external witness, then runs three attacks a hash-chain alone would miss and
+# an external witness, then runs four attacks a hash-chain alone would miss and
 # proves each is caught. It exits non-zero if any expected catch fails to fire.
 set -euo pipefail
 

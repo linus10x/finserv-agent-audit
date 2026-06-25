@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - LDA-search continuous-feature quantile-binning helper (per `ProtectedClassProxyDetector` v1.2 docstring deferral)
 - Sigstore cosign signature verification of the `BaselineMIProxy` pinned manifest (CR-11 follow-up; v2.1 shipped the deploy-time-pinned baseline scaffold, v2.2 adds Sigstore signature verification via a `[sigstore]` extra)
 - `Authorizer` reference implementations (CR-12 follow-up; v2.1 shipped the `Authorizer` Protocol + self-clearing rule; v2.2 adds OIDC + SAML reference adapters)
-- Defer-and-document for the latent `AuditChain.verify()` interaction with deployer-keyed genesis chains (called out during the CR-4 concurrency port; tracked as v2.2 hardening work)
+- ~~Defer-and-document for the latent `AuditChain.verify()` interaction with deployer-keyed genesis chains~~ — **DONE in v2.2.0** (verify() is now genesis-aware; see below)
 
 ### Planned (v3.0) — Async-Native + Multi-Region + WASM
 - Async-native pattern variants — `asyncio`-compatible versions of every governance pattern for high-throughput agent pipelines
@@ -28,6 +28,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - WASM runtime for client-side guardrail evaluation — compile the customer-facing chatbot guardrail and the autonomy-ladder runtime helper to WebAssembly for in-browser pre-flight enforcement
 
 ---
+
+## [2.2.0] — 2026-06-25
+
+Demotion-gated authority lifecycle + external-anchor verification + a runnable, self-verifying demo. This is the "falsifiable under audit" contribution made executable: a claimed authority level can be checked, and four attacks a hash-chain alone would miss are each caught.
+
+### Added
+- **Demotion-gated authority lifecycle** (`governance/authority_lifecycle.py`, ADR-0026). `AuthorityLifecycle` records GRANT / EXAMINE / REVOKE as first-class hash-chained events: authority is granted only against evidence, a granted level is examined by an independent finding, and a revocation is recorded against the grant and the finding that triggered it (authority going *down*, recorded). New `AuditEventType` members `AUTHORITY_GRANTED`, `AUTHORITY_EXAMINED`, `AUTHORITY_REVOKED`.
+- **`verify_authority_invariants`** — semantic verification above hash-chain integrity. Rejects a forged grant (no evidence, or an evidence/`evidence_digest` mismatch) and a revocation referencing an absent grant/examination, *even in a chain whose hashes were regenerated to pass `verify()`*.
+- **External-anchor verification** (`governance/witness_anchor.py`): `verify_against_external_anchors` defeats head-truncation and backdated regeneration in one check — an honest append-only chain only grows, so a witnessed head must still be present. `RecordingWitness` + `ExternalAnchorRecord` retain anchored heads offline (stand in for Rekor / OpenTimestamps / a regulator-side log), so verification needs no network. Must be co-run with `verify` / `verify_strict`.
+- **Runnable demotion-gate demo + `./demo.sh`** (`examples/demotion_gate_demo.py`). Clone-and-run, no install / no network / no credentials, self-verifying (exits non-zero if any expected catch fails): builds the lifecycle, anchors it, and proves four attacks are each caught — forged grant, deleted revocation, in-place mutation, backdated regeneration. The README 30-second tour now leads with it.
+
+### Fixed
+- **`AuditChain.verify()` / `verify_strict()` are now genesis-aware** — resolves the v2.2-tracked hardening item ("the latent `verify()` interaction with deployer-keyed genesis chains"). An honest deployer-keyed (CR-7) chain previously failed verification because the walk hard-coded the legacy `"0"*64` seed (a false tamper-alarm that silently disabled the anti-regeneration mode); the walk now starts from the recomputed deployer seed and additionally rejects a genesis whose seed disagrees with its declared `deployer_id` / `chain_creation_iso`. No prior tamper guarantee is weakened.
+
+### Changed
+- Honesty (LIMITATIONS + DISCLAIMER): explicit that there is no named production deployment and no examiner has reviewed a chain in situ — the runnable demo proves the *mechanism*, not an operational track record.
+- Test suite: 654 passing (was 630-class), `mypy --strict` clean, 93% coverage.
 
 ## [2.1.3] — 2026-06-09
 

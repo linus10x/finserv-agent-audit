@@ -102,7 +102,7 @@ def _build_honest_chain() -> tuple[AuditChain, RecordingWitness, str]:
 
 
 def run_demo(*, verbose: bool = True) -> int:
-    """Return 0 iff the honest chain verifies AND all three attacks are caught."""
+    """Return 0 iff the honest chain verifies AND all four attacks are caught."""
     ok = True
 
     # ---- 1. Honest lifecycle: all three verifiers agree it is clean. ------- #
