@@ -70,6 +70,15 @@ class AuditEventType(Enum):
     POLICY_VIOLATION = "governance.policy_violation"
     COMPLIANCE_CHECK = "governance.compliance_check"
 
+    # Authority lifecycle (v2.2 — demotion-gated control surface, ADR-0026)
+    # The falsifiable-under-audit claim rests on these three: authority is
+    # GRANTED only against evidence, the grant is EXAMINED by an independent
+    # finding, and authority is REVOKED/demoted recorded against the grant +
+    # the finding that triggered it.
+    AUTHORITY_GRANTED = "authority.granted"
+    AUTHORITY_EXAMINED = "authority.examined"
+    AUTHORITY_REVOKED = "authority.revoked"
+
     # Vendor-mediated AI (v1.1 — VendorScoreGate, ADR-0016)
     VENDOR_SCORE_RECORDED = "vendor.score_recorded"
     VENDOR_SCORE_DRIFT_DETECTED = "vendor.score_drift_detected"
