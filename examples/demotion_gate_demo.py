@@ -2,7 +2,7 @@
 """Demotion-gated control surface — runnable demo (clone-and-run, no network).
 
 This is the falsifiable-under-audit claim, executable. It builds an authority
-lifecycle, anchors it to an external witness, and then runs three attacks that
+lifecycle, anchors it to an external witness, and then runs four attacks that
 a hash-chain ALONE would miss — proving each is caught:
 
     1. a forged GRANT inserted with no evidence (chain hashes regenerated so the
@@ -10,7 +10,9 @@ a hash-chain ALONE would miss — proving each is caught:
     2. a deleted REVOCATION / head-truncation (so the agent appears to still
        hold A3) -> caught by the EXTERNAL-ANCHOR verifier;
     3. an in-place MUTATION of a recorded event -> caught by the HASH-CHAIN
-       verifier.
+       verifier;
+    4. a backdated REGENERATION of the whole history that omits the revocation
+       -> caught by the EXTERNAL-ANCHOR verifier (the witnessed head is absent).
 
 It is SELF-VERIFYING: it asserts each expected catch actually fires and exits
 non-zero if any does not. A green run is the proof, not the printout.
@@ -206,9 +208,36 @@ def run_demo(*, verbose: bool = True) -> int:
         ok = False
         _print(verbose, "  hash-chain verify_strict()    : MISSED (expected a catch!)")
 
+    # ---- 5. Attack: backdated regeneration of the whole chain. ------------ #
+    _print(verbose, "\n" + "-" * 70)
+    _print(verbose, "ATTACK 4 — regenerate a backdated history that omits the revocation")
+    _print(verbose, "-" * 70)
+    _, witness4, revoked_head4 = _build_honest_chain()
+    honest_anchors = witness4.records  # what the external witness saw on the real chain
+    # Attacker rebuilds a different, internally-consistent history: a grant with
+    # NO revocation, so the agent appears to still hold A3.
+    regenerated = AuditChain(
+        ledger_store=InMemoryLedgerStore(),
+        deployer_id=DEPLOYER_ID,
+        chain_creation_iso=CREATION_ISO,
+    )
+    lc4 = AuthorityLifecycle(regenerated, agent_id="rebalancer-agent")
+    lc4.grant(level=AutonomyLevel.A3, evidence={"shadow_mode_running_days": 45})
+    if regenerated.verify() is True:
+        _print(verbose, "  hash-chain verify()           : PASS (regenerated chain consistent)")
+    caught = False
+    try:
+        verify_against_external_anchors(regenerated, honest_anchors)
+    except WitnessContradictionError:
+        caught = True
+        _print(verbose, f"  external-anchor check         : CAUGHT -> {revoked_head4[:10]}... gone")
+    if not caught:
+        ok = False
+        _print(verbose, "  external-anchor check         : MISSED (expected a catch!)")
+
     _print(verbose, "\n" + "=" * 70)
     if ok:
-        _print(verbose, "RESULT: PASS — honest chain verifies and all three attacks were caught.")
+        _print(verbose, "RESULT: PASS — honest chain verifies and all four attacks were caught.")
     else:
         _print(verbose, "RESULT: FAIL — an expected catch did not fire.")
     _print(verbose, "=" * 70)
