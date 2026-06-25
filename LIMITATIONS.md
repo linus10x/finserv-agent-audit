@@ -34,6 +34,8 @@ This document is the explicit non-coverage list. If a property is not stated as 
 
 9. **The audit chain detects tampering; it does not prevent it.** A hash-chain invariant violation means a previously-valid chain has been mutated. Recovery is operator-driven. The chain is the evidence, not the enforcement mechanism.
 
+9a. **No named production deployment; no examiner has reviewed a chain produced by this code in situ.** The "examination-ready" claim is about the artifact's *design* — the control surface is falsifiable under audit, demonstrated by the runnable `./demo.sh` (forged grant, deleted revocation, and in-place mutation each caught) — not about a completed regulatory examination or an operational track record. The demo proves the *mechanism*; it does not substitute for a first real deployed-and-examined engagement.
+
 10. **The Vendor Score Gate detects emission diff; it does not validate the vendor's underlying model.** Same `(vendor_id, input_hash, model_version)` producing a different score is the drift signal. Whether the vendor's new score is more accurate, less accurate, or differently biased is outside the framework's signal.
 
 ### Infrastructure dependencies

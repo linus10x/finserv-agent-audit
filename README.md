@@ -20,17 +20,27 @@
 
 ## 30-second tour
 
+Zero install, no network — clone and run the demotion-gate demo:
+
 ```bash
 git clone https://github.com/linus10x/finserv-agent-audit.git
 cd finserv-agent-audit
+./demo.sh        # grant→examine→revoke, then 3 attacks a hash-chain alone would miss — each caught
+```
+
+`./demo.sh` builds an authority lifecycle (an agent is **granted** A3 against evidence, **examined**, then **revoked** to A1 — the revocation recorded against the finding that triggered it), anchors the revoked head to an external witness, then runs three attacks and proves each is caught: a **forged grant with no evidence** (caught by the semantic verifier), a **deleted revocation / head-truncation** (caught by the external-anchor verifier), and an **in-place mutation** (caught by the hash-chain verifier). It exits non-zero if any expected catch fails to fire — a green run is the proof, not the printout. No `pip install`, no credentials, no network.
+
+Full dev setup (the rest of the library):
+
+```bash
 pip install -e ".[dev]"
 
 python examples/defcon_state_machine.py        # risk-state machine: NORMAL → HALT with hysteresis
 python examples/agent_coordination/coordination.py   # veto / envelope / audit-chain / demotion, domain-agnostic
-pytest tests/ -q                               # 630 tests · 93% coverage · mypy --strict clean
+pytest tests/ -q                               # full suite · mypy --strict clean
 ```
 
-Under 60 seconds from clone to a running governance demo. The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
+The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
 
 > **Receipts:** 630 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.1.1**.
 
