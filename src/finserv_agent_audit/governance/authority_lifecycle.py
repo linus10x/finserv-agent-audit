@@ -288,11 +288,7 @@ def verify_authority_invariants(chain: AuditChain) -> None:
                     f"grant {grant_ref!r} which is not present earlier in the chain"
                 )
             grantor = grant_actor[grant_ref]
-            if (
-                event.actor_id is not None
-                and grantor is not None
-                and event.actor_id == grantor
-            ):
+            if event.actor_id is not None and grantor is not None and event.actor_id == grantor:
                 raise AuthorityInvariantError(
                     f"AUTHORITY_EXAMINED event {event.event_id!r} examiner "
                     f"actor_id {event.actor_id!r} is the SAME as the grantor of "
