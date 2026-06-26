@@ -38,22 +38,22 @@ import urllib.request
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 from urllib.parse import urlparse
 
-from finserv_agent_audit.governance.audit_chain import (
-    AuditChain,
-    AuditChainTamperError,
-)
+from finserv_agent_audit.governance.audit_chain import GENESIS_HASH
 from finserv_agent_audit.schemas.audit_event import (
     AuditEvent,
     AuditEventType,
     AutonomyLevel,
 )
 
-# Local constant to avoid module-level cyclic import of audit_chain.GENESIS_HASH.
-# Keep value aligned with finserv_agent_audit.governance.audit_chain.
-GENESIS_HASH = "0" * 64
+if TYPE_CHECKING:
+    # AuditChain is used only in type annotations (with `from __future__ import
+    # annotations`, never evaluated at runtime), so a TYPE_CHECKING-only import
+    # avoids the module-level cycle with audit_chain. AuditChainTamperError is
+    # raised at runtime and is imported lazily at its raise site below.
+    from finserv_agent_audit.governance.audit_chain import AuditChain
 
 
 @dataclass(frozen=True)
@@ -262,6 +262,10 @@ def verify_against_external_anchors(
     production, the inclusion proofs read back from the external register).
     """
     if not audit_chain.verify():
+        # Deferred import (runtime use) — keeps the module-level cycle with
+        # audit_chain broken; both modules are fully initialized by call time.
+        from finserv_agent_audit.governance.audit_chain import AuditChainTamperError
+
         raise AuditChainTamperError(
             "external-anchor verification requires a hash-consistent chain; "
             "AuditChain.verify() returned False. Fix or investigate the "
