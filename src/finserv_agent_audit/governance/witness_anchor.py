@@ -222,7 +222,7 @@ def _post(
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # noqa: S310  # nosec B310 — scheme validated to http/https above
             return resp.read(), resp.status
     except urllib.error.HTTPError as http_err:
         # Preserve the body + status so the caller can decide what to do

@@ -38,9 +38,9 @@ def test_audit_chain_tamper_error_canonical_module() -> None:
     assert canonical.__module__ == "finserv_agent_audit.governance.audit_chain"
 
 
-def test_audit_chain_tamper_error_caught_by_either_path() -> None:
+def test_governance_error_caught_via_agents_path() -> None:
     """An exception raised through the governance path MUST be caught
-    by an ``except`` written against the agents path (and vice versa)."""
+    by an ``except`` written against the agents path."""
     import pytest
 
     from finserv_agent_audit.agents import AuditChainTamperError as ViaAgents
@@ -48,6 +48,15 @@ def test_audit_chain_tamper_error_caught_by_either_path() -> None:
 
     with pytest.raises(ViaAgents):
         raise ViaGovernance("simulated")
+
+
+def test_agents_error_caught_via_governance_path() -> None:
+    """An exception raised through the agents path MUST be caught
+    by an ``except`` written against the governance path."""
+    import pytest
+
+    from finserv_agent_audit.agents import AuditChainTamperError as ViaAgents
+    from finserv_agent_audit.governance import AuditChainTamperError as ViaGovernance
 
     with pytest.raises(ViaGovernance):
         raise ViaAgents("simulated")
