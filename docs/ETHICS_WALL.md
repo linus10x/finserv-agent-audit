@@ -12,7 +12,7 @@
 The framework is published under the open-source license shipped at the repository root by an author who also operates two related-but-distinct activities under the NTCI name:
 
 1. **NTCI Consulting, LLC (the advisory entity).** A Texas LLC formed to hold the framework IP and to deliver productized advisory engagements (Diagnostic, Audit, Retainer) to FSI and CRE buyers around AI-governance, autonomous-agent risk, and the patterns documented in this repository and in the sibling `cre-agent-audit` repository.
-2. **NTCI (the research lab).** A self-funded research activity that develops private quantitative options research and adjacent capital-markets research. The lab operates in paper-trading Phase 0 as of the date of this document; no live capital has been deployed. The lab's research surface includes APEX (a 6-agent autonomous options research program with Marcos López de Prado named as advisor on adjacent work), ShadowForge (a 10-agent adversarial red team), and v3-trading-automation (a Russell 3000 + 4,300+ ETFs weekly best-trade scanner).
+2. **NTCI (the research lab).** A self-funded research activity that develops private quantitative options research and adjacent capital-markets research. The lab operates in paper-trading Phase 0 as of the date of this document; no live capital has been deployed.
 
 The two activities share an authoring principal (Kunjar Bhaduri) and share lineage in the patterns published in this repository. The framework's commercial-advisory path (under NTCI Consulting, LLC) routinely engages with buy-side, sell-side, and platform firms whose securities, vendor surfaces, or product lines could plausibly intersect with the research lab's universe. The intersection creates a conflict-of-interest surface that requires explicit information barriers, pre-clearance, and disclosure.
 
@@ -48,13 +48,13 @@ The following barriers are policy commitments. They are observable from external
 
 **B4. The author does not trade securities of firms that compete with advisory-engagement clients on the basis of any information learned in the engagement.** This barrier is functionally identical to the standard insider-trading discipline: information learned in confidence during an engagement does not inform any trading activity, whether of the client itself or of a competitor.
 
-**B5. The framework's open-source content does not embed any confidential information from any advisory engagement.** The framework's content is derived from the author's accumulated experience in regulated financial services (25+ year operator track record at Cognizant, Wipro, Broadridge, O'Neil Digital Solutions) and from the research lab's published-pattern abstractions. No engagement-client confidential information is ever included in the open-source repository, the documentation, the ADR record, or any commit message.
+**B5. The framework's open-source content does not embed any confidential information from any advisory engagement.** The framework's content is derived from the author's accumulated experience across a 25+ year regulated financial-services and technology career and from the research lab's published-pattern abstractions. No engagement-client confidential information is ever included in the open-source repository, the documentation, the ADR record, or any commit message.
 
 ---
 
 ## Pre-clearance process
 
-Any advisory engagement with a firm whose securities sit in the research lab's universe — defined here as any firm with ticker presence in the Russell 3000 (the v3-trading-automation scanner's universe) or in the ETF universe the lab actively monitors — triggers a pre-engagement clearance review. The review answers three questions:
+Any advisory engagement with a firm whose securities sit in the research lab's universe — defined here as any firm with ticker presence in the Russell 3000 or in the ETF universe the lab actively monitors — triggers a pre-engagement clearance review. The review answers three questions:
 
 1. **Universe intersection.** Does the prospective client's ticker sit in any active research-lab universe? If no, the engagement clears for execution. If yes, proceed to question 2.
 2. **Active-position check.** Does the research lab have any active position (including paper-trading position) in the client's securities at the time of the engagement-letter execution? If yes, the position is closed (or, for paper-trading positions, removed from the lab's tracking) before the engagement-letter is countersigned. If no, proceed to question 3.

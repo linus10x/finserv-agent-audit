@@ -10,7 +10,7 @@
 
 The BITS (formerly the Banking Industry Technology Secretariat, now under the Financial Services Roundtable) **Acceptable Use Policy (AUP)** questionnaire is a financial-services-specific supplier questionnaire that focuses on the supplier's information security, business resilience, and shared-use-environment commitments. The framework is shipped as open-source patterns code, so several BITS AUP controls (multi-tenant SaaS, customer-data segregation, shared-environment incident isolation) are not in scope; the questions are answered to that effect.
 
-The BITS AUP is used at varying intensity by US bank-holding companies and their subsidiaries. JPMorgan Chase, Bank of America, Citi, Wells Fargo, PNC, and several other Tier-1 buyers maintain BITS-AUP-derived supplier-onboarding flows.
+The BITS AUP is used at varying intensity by US bank-holding companies and their subsidiaries. Most Tier-1 bank-holding companies maintain BITS-AUP-derived supplier-onboarding flows.
 
 ---
 

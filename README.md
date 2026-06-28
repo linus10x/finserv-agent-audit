@@ -343,7 +343,7 @@ When production infrastructure was hard-downed with no disaster recovery availab
 The DEFCON state machine governs a six-agent pipeline. It has prevented over 40 simulated runaway conditions during the paper-trading phase by halting execution before loss thresholds were breached.
 
 **3. EU AI Act readiness assessment**
-The EU AI Act mapping document was used as a pre-audit checklist for a wealth management platform serving $750M+ AUM, mapping each automated decision point to the relevant Article requirements.
+The EU AI Act mapping document was used as a pre-audit checklist for a large wealth-management platform, mapping each automated decision point to the relevant Article requirements.
 
 **4. Compliance team onboarding**
 The Autonomy Ladder (A0→A4) framework has been used to onboard compliance teams new to AI agent governance — it provides a vocabulary that bridges engineering and regulatory language.
@@ -415,11 +415,13 @@ This library constrains, records, and proves agent decisions; it does not make t
 
 ---
 
-## Author
+## Author & disclosures
 
-**Kunjar Bhaduri** — 25+ year FSI technology executive. Rescued a $750M multi-year wealth-management platform deal at Broadridge. Rebuilt production infrastructure on Azure during a 12-day ransomware attack with no DR available. Operator of a private quantitative options research program; these governance patterns were extracted from that program's operational discipline (multi-year build; hundreds of engineering sessions; the source system operates in paper-trading Phase 0 — no live capital deployed).
+**Kunjar Bhaduri** — 25+ year financial-services technology executive. Author of the Autonomy Ladder (A0→A4) AI-governance framework and its six open regulated-vertical reference libraries; founder of North Texas Capital Investments, a self-funded AI-governance research lab. Earlier in his career he rebuilt a regulated production platform on Azure through a 12-day ransomware hard-down with no disaster recovery available; the MVP was restored in 50 days against a six-month plan, with full migration in 75 days. The recovered platform was subsequently certified to SOC 2 Type 2 and ISO 27001. The governance patterns in this library trace to that regulated-production experience and to the operational discipline of a private quantitative options research program (a multi-year, multi-hundred-session solo build that runs in paper-trading Phase 0, with no live capital deployed).
 
-[LinkedIn](https://linkedin.com/in/kunjarbhaduri) · [NTCI Portfolio](https://github.com/linus10x)
+This is independent research. It is not produced on behalf of, and does not represent the views of, any employer or client, and contains no employer- or client-confidential material. The regulatory content is reference mapping, not legal advice. See [DISCLAIMER.md](DISCLAIMER.md).
+
+[LinkedIn](https://linkedin.com/in/kunjarbhaduri) · [Autonomy Ladder](https://autonomy-ladder.io) · [NTCI Portfolio](https://github.com/linus10x)
 
 ---
 

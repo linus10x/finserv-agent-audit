@@ -14,7 +14,7 @@ at the election of the adopter. Election does not require notice to the maintain
 The May 2026 6-chamber project council (BigLaw + IP · FSI CTO/CIO buyer · AI-Governance Researcher · Brand Strategist · HN Skeptic) voted 4-of-1 for dual-licensing (memo at `Applications-May-2026/v2-Refresh/Memos/Council_v2.1.0_Release_Decisions_2026-05-28.md`). The synthesized rationale:
 
 - **Preserves the v1.0.1 citation graph.** The framework shipped MIT under v1.0.1 (Zenodo DOI `10.5281/zenodo.20434570`); pure replacement with Apache 2.0 would break the citation surface and force re-attribution by every prior adopter.
-- **Supplies the express patent grant** that Tier-1 financial-services legal review (JPMorgan Chase, Bank of America, Charles Schwab, BNY Mellon, Fidelity, Citi, UBS, Broadridge, First Data) routinely requires before authorizing OSS into a regulated supply chain. Apache 2.0 §3 supplies it; MIT does not.
+- **Supplies the express patent grant** that Tier-1 financial-services legal review at major financial institutions routinely requires before authorizing OSS into a regulated supply chain. Apache 2.0 §3 supplies it; MIT does not.
 - **Costs nothing at zero external contributors.** The decision is reversible by a future maintainer (a deprecation of one license arm is a semver-minor change); a unilateral re-license away from MIT is not.
 
 ## Adopter election
