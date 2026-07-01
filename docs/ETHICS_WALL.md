@@ -113,7 +113,7 @@ The annual review is documented in a single-page memo retained in the advisory e
 - [`OWNERSHIP.md`](../OWNERSHIP.md) — IP-holding entity (the advisory entity that this document discusses)
 - [`DISCLAIMER.md`](../DISCLAIMER.md) — bounded claims of the open-source framework
 - [`MANUAL_REMEDIATION_AUTHOR.md`](../MANUAL_REMEDIATION_AUTHOR.md) — author-action backlog including Item 3 (ethics-wall formation)
-- [`CITATION.cff`](../CITATION.cff) — framework citation metadata, including the NTCI / López de Prado attribution
+- [`CITATION.cff`](../CITATION.cff) — framework citation metadata, including the NTCI research-lab attribution
 
 ---
 

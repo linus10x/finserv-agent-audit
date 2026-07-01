@@ -15,8 +15,8 @@ Three consecutive CI failures on `main` (F811 duplicate import, ruff format
 alignment spacing, E401/E501 inline import + long signature) were caught
 only after push, requiring manual fix cycles. Each cycle cost one
 conversation turn + one GitHub Actions run (~90 seconds). The pattern
-matches the APEX M-155/M-160 recurrence class documented in
-`session102_parallel_posttooluse_ruff_hook.md`.
+matches a recurring CI-failure class documented in the author's prior
+operating-loop research.
 
 Root cause: no structured loop exists to (1) poll CI deterministically,
 (2) classify failures into actionable categories, and (3) enforce a
@@ -26,8 +26,8 @@ Root cause: no structured loop exists to (1) poll CI deterministically,
 
 ## Decision
 
-Implement `scripts/ci_watch.py` — a CLI tool that ports the APEX
-**Check-Revise-Escalate** revision loop (from `revision-loop.md`) to
+Implement `scripts/ci_watch.py` — a CLI tool that ports a
+**Check-Revise-Escalate** revision loop to
 GitHub Actions CI monitoring.
 
 ### Loop Contract
@@ -117,14 +117,14 @@ python scripts/ci_watch.py --sha $(git rev-parse HEAD)
 
 ---
 
-## Relationship to APEX Architecture
+## Relationship to prior operating-loop research
 
-This ADR is a direct port of:
+This ADR ports patterns from the author's prior multi-agent operating-loop
+work:
 
-- `revision-loop.md` → Check-Revise-Escalate 3-iteration contract
-- `APEX_OPERATING_LOOP.md` → VERIFY_PASS / VERIFY_FAIL / INCIDENT_OPENED event types
-- `session102_parallel_posttooluse_ruff_hook.md` → failure category taxonomy,
-  PostToolUse early-warning philosophy
+- a Check-Revise-Escalate 3-iteration revision contract
+- an operating-loop event vocabulary (VERIFY_PASS / VERIFY_FAIL / INCIDENT_OPENED)
+- a CI failure-category taxonomy with a PostToolUse early-warning philosophy
 
 The `finserv-agent-audit` version operates at the GitHub Actions layer
 (post-push) rather than the Claude Code tool-use layer (pre-push), because

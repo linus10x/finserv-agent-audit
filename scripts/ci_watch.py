@@ -2,7 +2,7 @@
 """
 CI Self-Healing Watch Loop for finserv-agent-audit.
 
-Ports the APEX Check-Revise-Escalate pattern to GitHub Actions CI.
+Ports a Check-Revise-Escalate operating pattern to GitHub Actions CI.
 Runs after every push to main, polls the workflow run, classifies
 failures, and emits structured fix guidance for the next iteration.
 
@@ -169,7 +169,7 @@ def classify_failure(job: dict[str, Any]) -> CIFailure:
 
 
 # ---------------------------------------------------------------------------
-# APEX Check-Revise-Escalate loop
+# Check-Revise-Escalate loop
 # ---------------------------------------------------------------------------
 
 
@@ -182,7 +182,7 @@ class LoopState:
 
 def run_loop(sha: str, token: str | None, max_iter: int = 3) -> int:
     """
-    APEX revision loop — Check-Revise-Escalate.
+    Check-Revise-Escalate revision loop.
 
     Iteration flow (mirrors revision-loop.md):
       1. Wait for CI run to complete
