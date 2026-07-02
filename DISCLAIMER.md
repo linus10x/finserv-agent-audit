@@ -12,6 +12,10 @@ The legal contract between the author of `finserv-agent-audit` and any adopter i
 
 Per the MIT License, this software is provided "AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT." Use in production is at the adopter's own risk.
 
+## No named deployment; no completed examination
+
+This is public reference IP. There is no named production deployment behind it, and no regulator or examiner has reviewed a chain produced by this code in situ. The "examination-ready" framing describes the artifact's design — a control surface whose claimed authority levels are falsifiable under audit (see the runnable `./demo.sh`) — not a completed examination or an operational track record. The runnable demonstration proves the mechanism; it is not a substitute for the adopter's own validation and a first real deployed-and-examined engagement.
+
 ## Adopters retain regulatory obligations
 
 Adopting this framework — in part or in whole — does not transfer, reduce, or satisfy the adopter's regulatory obligations to any supervisor, including but not limited to:

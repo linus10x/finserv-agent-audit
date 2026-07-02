@@ -1,19 +1,63 @@
 # finserv-agent-audit
 
-**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready.**
+**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready by design** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/linus10x/finserv-agent-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/linus10x/finserv-agent-audit)
-[![Tests](https://img.shields.io/badge/tests-630%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
+[![Tests](https://img.shields.io/badge/tests-661%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](pyproject.toml)
-[![mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20434570.svg)](https://doi.org/10.5281/zenodo.20434570)
-[![Autonomy Ladder family](https://img.shields.io/badge/Autonomy%20Ladder-family-1a2b4c)](https://autonomy-ladder.io)
+[![Autonomy Ladder family](https://img.shields.io/badge/Autonomy%20Ladder-family-1a2b4c)](https://github.com/linus10x/autonomy-ladder-libraries)
 
-> **630 tests · 93% coverage · 0 runtime dependencies · `mypy --strict` clean across 46 source files · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, with every third-party Action SHA-pinned.** Current version: **v2.1.1**.
+> **What this is:** composable, dependency-free Python governance primitives — a risk-state machine, a non-overridable sovereign veto, a tamper-detecting audit chain, and an A0→A4 autonomy gate — plus FSI-specific controls and primary-source regulatory mappings, for autonomous agents that must survive a regulatory audit, a risk committee, and a 3am incident.
+>
+> **What this is not:** a model, an agent framework, or legal advice. It governs whatever agent runtime you already run (LangGraph, CrewAI, A2A, Microsoft Agent Framework, or your own) — it does not make decisions; it constrains, records, and proves them.
+>
+> **Who this is for:** an FSI model-risk / compliance lead who has to produce a defensible per-decision trail on demand — or a frontier-lab / cloud-FSI applied lead who needs the same veto / envelope / audit-chain / demotion primitives on any high-stakes coordinated-autonomy stack, financial or not.
+
+---
+
+## 30-second tour
+
+Zero install, no network — clone and run the demotion-gate demo:
+
+```bash
+git clone https://github.com/linus10x/finserv-agent-audit.git
+cd finserv-agent-audit
+./demo.sh        # grant→examine→revoke, then 4 attacks a hash-chain alone would miss — each caught
+```
+
+`./demo.sh` builds an authority lifecycle (an agent is **granted** A3 against evidence, **examined**, then **revoked** to A1 — the revocation recorded against the finding that triggered it), anchors the revoked head to an external witness, then runs four attacks and proves each is caught: a **forged grant with no evidence** (caught by the semantic verifier), a **deleted revocation / head-truncation** and a **backdated regeneration** (both caught by the external-anchor verifier), and an **in-place mutation** (caught by the hash-chain verifier). It exits non-zero if any expected catch fails to fire — a green run is the proof, not the printout. No `pip install`, no credentials, no network.
+
+Full dev setup (the rest of the library):
+
+```bash
+pip install -e ".[dev]"
+
+python examples/defcon_state_machine.py        # risk-state machine: NORMAL → HALT with hysteresis
+python examples/agent_coordination/coordination.py   # veto / envelope / audit-chain / demotion, domain-agnostic
+pytest tests/ -q                               # full suite · mypy --strict clean
+```
+
+The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
+
+> **Receipts:** 661 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.2.0**.
+
+## Read me first
+
+1. **The best illustrative test** — [`tests/test_sovereign_veto.py`](tests/test_sovereign_veto.py): the kill switch is infrastructure, not a flag. The clearest single proof is that an agent cannot clear its own veto (`test_*self_clear*`) — read that one test and you understand the trust boundary the whole library defends.
+2. **[WORKED_EXAMPLE.md](WORKED_EXAMPLE.md)** — a five-beat walkthrough (decision class → agent acts → envelope/veto catches the irreversible action → audit-chain entry → A3→A2 demotion) over the runnable [`examples/agent_coordination/coordination.py`](examples/agent_coordination/coordination.py).
+3. **[autonomy-ladder.io](https://autonomy-ladder.io)** — the framework and whitepaper this library implements. The rung-by-rung mapping for *this* repo is in [AUTONOMY_LADDER.md](AUTONOMY_LADDER.md).
+
+## Install
+
+```bash
+git clone https://github.com/linus10x/finserv-agent-audit.git
+cd finserv-agent-audit
+pip install -e .            # governance core, zero runtime dependencies
+# optional extras: [dev] [test-property] [api] [a2a] [langgraph] [maf] [crewai] [all-agentic]
+```
 
 ---
 
@@ -39,12 +83,12 @@ The controls in this library are **domain-agnostic**. The DEFCON state machine, 
 - **Framework + whitepaper:** [autonomy-ladder.io](https://autonomy-ladder.io)
 - **Non-financial demo (under 60s):** [`finserv-agent-audit/examples/agent_coordination`](https://github.com/linus10x/finserv-agent-audit/tree/main/examples/agent_coordination) — the same veto / envelope / audit-chain / demotion primitives on a generic agent swarm.
 
-> **For reviewers & safety teams:** every control here is falsifiable — the test suite (630 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
+> **For reviewers & safety teams:** every control here is falsifiable — the test suite (661 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
 
 
 ## Part of the Autonomy Ladder™ family
 
-Six co-equal regulated-vertical reference libraries implementing the **Autonomy Ladder** — a governance framework for autonomous AI in regulated operations (A0→A4, every rung demotable). **Framework + whitepaper: [autonomy-ladder.io](https://autonomy-ladder.io).**
+Six co-equal regulated-vertical reference libraries implementing the **Autonomy Ladder** — a governance framework for autonomous AI in regulated operations (A0→A4, every rung demotable). **Framework + whitepaper: [autonomy-ladder.io](https://autonomy-ladder.io)** · **family index: [autonomy-ladder-libraries](https://github.com/linus10x/autonomy-ladder-libraries)**. How this repo's primitives map to the rungs: [AUTONOMY_LADDER.md](AUTONOMY_LADDER.md).
 
 | Vertical | Library |
 |---|---|
@@ -167,9 +211,9 @@ Governance code that cannot itself be trusted is theater. The assurance posture 
 
 - **Hardened to a Tier-1 buyer bar.** v2.1 closed all 12 Critical findings (CR-1..CR-12) from a May 2026 six-chamber adversarial deep-dive (architecture · code · security · test-strategy · DevOps · deployment), calibrated to the questionnaire bar Tier-1 FSI buyer review boards apply: a consolidated `AuditChainTamperError`; a frozen, self-verifying `AuditEvent`; TSA pre-digest bound to event content; a thread- and process-safe `AuditChain`; a domain-separated genesis hash; PII handled via `HashedSubjectId` + `SubjectIdHasher`; a bounded RFC 3161 DER codec with a structural ASN.1 walk and Hypothesis fuzz; an `Authorizer` Protocol with a self-clearing rule; and a deploy-time-pinned `BaselineMIProxy` scaffold. Per-CR detail in [CHANGELOG.md § 2.1.0](CHANGELOG.md).
 - **Zero runtime dependencies.** The base wheel declares `dependencies = []`. Every optional integration (FastAPI, the four agentic-runtime adapters, OTel, MCP, Sigstore/OpenTimestamps witnesses) is import-guarded behind an `HAS_X` flag and a named install extra, so the governance core never pulls a transitive supply-chain surface you did not ask for.
-- **Receipts, run locally:** 630 tests passing · 93% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 46 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
+- **Receipts, run locally:** 661 tests passing · 93% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 46 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
 - **Supply-chain CI on every push:** CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner, with every third-party GitHub Action **SHA-pinned**. PyPI Trusted Publishing with PEP 740 Sigstore-attested wheels.
-- **Examination-ready.** [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) is a Big-4 audit-evidence walkthrough (v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_2026_appendix.md](docs/pcaob_as_2201_amendments_2026_appendix.md)); [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) ships pre-filled SIG Lite, CSA CAIQ v4.0.3, and BITS Shared Assessments AUP questionnaires.
+- **Built for examination** (no examination completed — see [LIMITATIONS.md](LIMITATIONS.md) §9a). [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) is a Big-4 audit-evidence walkthrough (v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_2026_appendix.md](docs/pcaob_as_2201_amendments_2026_appendix.md)); [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) ships pre-filled SIG Lite, CSA CAIQ v4.0.3, and BITS Shared Assessments AUP questionnaires.
 
 ---
 
@@ -304,6 +348,8 @@ The EU AI Act mapping document was used as a pre-audit checklist for a wealth ma
 **4. Compliance team onboarding**
 The Autonomy Ladder (A0→A4) framework has been used to onboard compliance teams new to AI agent governance — it provides a vocabulary that bridges engineering and regulatory language.
 
+For *illustrative* walkthroughs of how a given primitive would have engaged with the failure mode in named, on-record FSI enforcement matters (Wells Fargo · Schwab Intelligent Portfolios · CFPB Circular 2022-03), see [CASE_STUDIES.md](CASE_STUDIES.md) — honest reference framing, not a claim the control was deployed in any of those matters.
+
 ---
 
 ## Who This Is For
@@ -380,6 +426,21 @@ This library constrains, records, and proves agent decisions; it does not make t
 ## Citation
 
 If you use these patterns in your systems or research, please cite using [CITATION.cff](CITATION.cff). Archival DOI: [10.5281/zenodo.20434570](https://doi.org/10.5281/zenodo.20434570) (concept DOI — resolves to all versions).
+
+## The Autonomy Ladder family
+
+One of six regulated-vertical reference libraries implementing the **[Autonomy Ladder](https://autonomy-ladder.io)** — family index: **[autonomy-ladder-libraries](https://github.com/linus10x/autonomy-ladder-libraries)**.
+
+- **[finserv-agent-audit](https://github.com/linus10x/finserv-agent-audit)** — cross-vertical financial services (this repo, flagship)
+- **[banking-agent-audit](https://github.com/linus10x/banking-agent-audit)** — banking (model risk · ECOA/Reg B · BSA/AML/OFAC)
+- **[payments-agent-audit](https://github.com/linus10x/payments-agent-audit)** — payments (OFAC · Reg E · rail finality)
+- **[payer-agent-audit](https://github.com/linus10x/payer-agent-audit)** — health-insurance payer (UM · prior auth · appeals)
+- **[private-capital-agent-audit](https://github.com/linus10x/private-capital-agent-audit)** — SEC-registered investment advisers (Advisers Act §206)
+- **[cre-agent-audit](https://github.com/linus10x/cre-agent-audit)** — commercial real estate
+
+This repo's primitive-to-rung mapping: [AUTONOMY_LADDER.md](AUTONOMY_LADDER.md). Anonymized enforcement-matter walkthroughs: [CASE_STUDIES.md](CASE_STUDIES.md).
+
+---
 
 ## License
 

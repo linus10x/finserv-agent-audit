@@ -451,6 +451,9 @@ def _decode_key(raw: str) -> bytes:
         if len(candidate) >= MIN_KEY_BYTES:
             decoded = candidate
     except (ValueError, binascii.Error):
+        # Not valid base64 — intentionally fall through to the hex decoder.
+        # A genuine failure (neither encoding works) surfaces via the explicit
+        # ValueError raised below, so nothing is silently swallowed.
         pass
     if decoded is None:
         try:
@@ -458,6 +461,8 @@ def _decode_key(raw: str) -> bytes:
             if len(candidate) >= MIN_KEY_BYTES:
                 decoded = candidate
         except ValueError:
+            # Not valid hex either — fall through to the explicit ValueError
+            # below, which reports the key-format requirement to the caller.
             pass
     if decoded is None:
         raise ValueError(

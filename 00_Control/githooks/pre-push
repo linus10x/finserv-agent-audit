@@ -8,11 +8,14 @@ FRE='(passport|driver.?licen|green.?card|h-?1b|eta\.?750|gratuity|separation.?ag
 while read -r lref lsha rref rsha; do
   [ -z "${lsha:-}" ] && continue
   case "$lsha" in *[!0]*) : ;; *) continue ;; esac
-  if [ "$rsha" = "$z" ]; then files=$(git ls-tree -r --name-only "$lsha")
+  # Fall back to full-tree listing when the remote tip is unknown locally
+  # (fresh branch, or a force-push after a history rewrite).
+  if [ "$rsha" = "$z" ] || ! git cat-file -e "$rsha" 2>/dev/null; then files=$(git ls-tree -r --name-only "$lsha")
   else files=$(git diff --name-only "$rsha" "$lsha"); fi
   bad=$(printf '%s\n' "$files" | grep -iE "$FRE" || true)
   [ -n "$bad" ] && { echo "PRE-PUSH BLOCK: PII-looking filename(s):"; echo "$bad"; fail=1; }
-  ssn=$(git grep -I -nE '[0-9]{3}-[0-9]{2}-[0-9]{4}' "$lsha" -- '*.md' '*.txt' '*.csv' '*.json' '*.yaml' '*.yml' '*.html' 2>/dev/null || true)
+  # Boundary guards: ISBNs in citation URLs (978-88-6969-443-1) are not SSNs.
+  ssn=$(git grep -I -nE '(^|[^0-9-])[0-9]{3}-[0-9]{2}-[0-9]{4}([^0-9-]|$)' "$lsha" -- '*.md' '*.txt' '*.csv' '*.json' '*.yaml' '*.yml' '*.html' 2>/dev/null || true)
   [ -n "$ssn" ] && { echo "PRE-PUSH BLOCK: SSN-pattern content:"; echo "$ssn" | head; fail=1; }
 done
 [ "$fail" -eq 1 ] && { echo ">>> Push blocked by PII gate. Move to a git-ignored path or redact, then retry."; exit 1; }

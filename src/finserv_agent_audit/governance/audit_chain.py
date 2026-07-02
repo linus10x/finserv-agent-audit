@@ -405,6 +405,37 @@ class AuditChain:
         """Current chain head; ``GENESIS_HASH`` for an empty chain."""
         return self._store.head_event_hash()
 
+    def _expected_chain_seed(self) -> str:
+        """The ``prev_hash`` the FIRST event must carry — the chain's seed.
+
+        CR-7 consistency fix. ``verify`` / ``verify_strict`` walk from this
+        seed instead of hard-coding the legacy sentinel, so a deployer-keyed
+        chain (whose genesis ``prev_hash`` is the deployer seed, not
+        ``"0"*64``) verifies as honest rather than tripping a false
+        prev_hash-mismatch at index 0.
+
+          - empty chain                -> the legacy GENESIS sentinel;
+          - deployer-keyed genesis     -> the seed RECOMPUTED from the genesis
+            event's declared ``deployer_id`` + ``chain_creation_iso`` (so a
+            genesis whose seed was altered to disagree with its declared
+            deployer identity is caught — an added check, not a relaxation);
+          - legacy first event         -> the GENESIS sentinel.
+        """
+        first = next(iter(self._store), None)
+        if first is None:
+            return GENESIS_HASH
+        if (
+            first.event_type is AuditEventType.AGENT_STARTED
+            and first.agent_id == GENESIS_AGENT_ID
+            and "deployer_id" in first.payload
+            and "chain_creation_iso" in first.payload
+        ):
+            return _compute_genesis_hash(
+                str(first.payload["deployer_id"]),
+                str(first.payload["chain_creation_iso"]),
+            )
+        return GENESIS_HASH
+
     # ------------------------------------------------------------------ #
     # Append + verify                                                    #
     # ------------------------------------------------------------------ #
@@ -531,9 +562,16 @@ class AuditChain:
         (e.g. ``anchor_to_witness``).
         """
         with self._append_lock:
-            prev = GENESIS_HASH
+            prev = self._expected_chain_seed()
             for event in self._store:
-                expected = event._compute_hash()
+                # A forged event whose payload cannot be canonicalized to JSON
+                # (e.g. a non-serializable object planted by a storage-layer
+                # attacker) is a tamper, not a crash: verify()'s contract is
+                # "returns False if tampered", so a hashing failure is False.
+                try:
+                    expected = event._compute_hash()
+                except (TypeError, ValueError):
+                    return False
                 if event.event_hash != expected:
                     return False
                 if event.prev_hash != prev:
@@ -575,9 +613,19 @@ class AuditChain:
         # an in-flight append can't tear the iteration. See
         # ``verify`` for the soft-failure variant.
         with self._append_lock:
-            prev = GENESIS_HASH
+            prev = self._expected_chain_seed()
             for index, event in enumerate(self._store):
-                expected = event._compute_hash()
+                # A non-serializable forged payload is a tamper verdict, not an
+                # uncaught TypeError (which would turn a tamper attempt into a
+                # verifier crash / DoS).
+                try:
+                    expected = event._compute_hash()
+                except (TypeError, ValueError) as exc:
+                    raise AuditChainTamperError(
+                        f"event at index {index} (event_id={event.event_id!r}) "
+                        "has a payload that cannot be canonicalized to JSON; "
+                        "its hash cannot be recomputed — treated as tampered"
+                    ) from exc
                 if event.event_hash != expected:
                     raise AuditChainTamperError(
                         f"event_hash mismatch at index {index} (event_id={event.event_id!r})"
