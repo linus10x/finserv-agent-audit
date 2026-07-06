@@ -10,7 +10,7 @@
 
 The Shared Assessments **Standardized Information Gathering (SIG)** questionnaire is the most widely-used third-party vendor-risk-management questionnaire in US financial services. **SIG Lite** is the lighter-weight (~125-question) version that most Tier-1 buyers send to suppliers in the discovery / scope-assessment phase before they send the full SIG Core (~850 questions) for higher-risk engagements.
 
-The framework's commercial-advisory practice will receive SIG Lite from any Tier-1 FSI buyer (JPMorgan Chase, Goldman Sachs, Capital One, Wells Fargo, BNY Mellon, Morgan Stanley, State Street, Bank of America, Citi, US Bank, PNC). The pre-fills below cover ~20 representative controls demonstrating the framework's discipline; the full questionnaire is completed per engagement.
+The framework's commercial-advisory practice will receive SIG Lite from any Tier-1 FSI buyer. The pre-fills below cover ~20 representative controls demonstrating the framework's discipline; the full questionnaire is completed per engagement.
 
 ---
 

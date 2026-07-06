@@ -120,7 +120,7 @@ still be high-risk under other Annex III sections, but not 5(c).
 
 **US-FSI population in scope.** US life insurers (Prudential
 Financial, MetLife, New York Life, MassMutual, Northwestern Mutual,
-TIAA, Lincoln Financial) with EU policyholders; US health insurers
+TIAA, Guardian Life) with EU policyholders; US health insurers
 with EU expatriate-coverage products; US reinsurers (Berkshire
 Hathaway Re, RGA) on EU-ceded business.
 

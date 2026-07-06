@@ -70,7 +70,7 @@ Documentation release: README rebuilt to the conversion standard (badge row, pro
 
 ## [2.1.0] — 2026-05-28
 
-**Tier-1 FSI-buyer hardening release.** Closes all 12 Critical findings from the May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) targeting the questionnaire bar that JPMC Tech Risk, BoA AppSec, Schwab Compliance Tech, BNY Mellon Trust Architecture, Fidelity Risk, Citi Model Risk, UBS Group Information Security, Broadridge InfoSec, and First Data review boards apply to an OSS package before authorizing inbound supply-chain inclusion. Test count 532 → 630 (+98); coverage 91.74% → 93.47%; `mypy --strict` clean across 46 source files; ruff + format + banned-term + tamper-language drift lints clean; CI now SHA-pins every GitHub Action and runs CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner per push.
+**Tier-1 FSI-buyer hardening release.** Closes all 12 Critical findings from the May 2026 6-chamber adversarial deep-dive (architecture · code · security · test strategy · DevOps · deployment lenses) targeting the questionnaire bar that the security and model-risk review boards at major financial institutions apply to an OSS package before authorizing inbound supply-chain inclusion. Test count 532 → 630 (+98); coverage 91.74% → 93.47%; `mypy --strict` clean across 46 source files; ruff + format + banned-term + tamper-language drift lints clean; CI now SHA-pins every GitHub Action and runs CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner per push.
 
 ### Security + correctness (CR-1 through CR-12)
 - **CR-1 — Consolidate duplicate `AuditChainTamperError`.** Both `governance.audit_chain` and `agents.base` defined the exception independently; adopter `except` clauses silently failed to catch the sibling. Single canonical class in `governance.audit_chain`; `agents.base` re-imports. New `tests/test_tamper_error_identity.py` asserts class identity across import paths.
@@ -103,8 +103,8 @@ Documentation release: README rebuilt to the conversion standard (badge row, pro
 
 ### Author-action drafts (H2.A — `MANUAL_REMEDIATION_AUTHOR.md` index)
 The following 11 documents land as DRAFTS for author review — they are not in-effect by virtue of landing in the repo. Each carries an "Author Action Required" preamble naming the decision, the recommendation, and the consequence of inaction.
-- `LICENSE-APACHE-2.0` — full Apache 2.0 text staged alongside MIT (does not replace). Tier-1 bank legal review at JPMC / BoA / Schwab / BNY routinely declines MIT projects for inbound supply-chain inclusion because MIT lacks an explicit patent grant; Apache 2.0 §3's express patent license is the standard they ask for. Author decision: keep MIT · dual-license · replace with Apache 2.0. Default recommendation: dual-license at adopter election.
-- `docs/ETHICS_WALL.md` — formalizes the information barrier between NTCI research lab (builder of APEX et al — buy-side surface) and NTCI Consulting LLC (advisory entity that delivers paid Diagnostics + Audits using this framework). Required disclosure for any Tier-1 buyer asking "do you trade against your clients."
+- `LICENSE-APACHE-2.0` — full Apache 2.0 text staged alongside MIT (does not replace). Tier-1 bank legal review at major financial institutions routinely declines MIT projects for inbound supply-chain inclusion because MIT lacks an explicit patent grant; Apache 2.0 §3's express patent license is the standard they ask for. Author decision: keep MIT · dual-license · replace with Apache 2.0. Default recommendation: dual-license at adopter election.
+- `docs/ETHICS_WALL.md` — formalizes the information barrier between the research lab's separate work streams and NTCI Consulting LLC (the advisory entity that delivers paid Diagnostics + Audits using this framework). A standard conflict-of-interest disclosure for Tier-1 buyers.
 - `docs/SOC2_ENGAGEMENT_RFP.md` — RFP template for Schellman / A-LIGN / Coalfire engaging a SOC 2 Type I (point-in-time, 4-6 weeks, $25-40K) as the first attestation artifact, then a Type II (observation window, 6-12 months, $60-100K) gated on Cohort-Zero customers.
 - `docs/TRADEMARK.md` — "Autonomy Ladder" + "ALO" usage guidelines pending the USPTO classes 9/35/41/42 filing scheduled for 2026-06-15 per the AL v3 LOCKED plan.
 - `docs/CO_MAINTAINER_RECRUITMENT_DRAFT.md` — LinkedIn post draft (under 300 words, voice-rules compliant) recruiting 1-2 co-maintainers from the 8K-follower base.
@@ -366,7 +366,7 @@ The following 11 documents land as DRAFTS for author review — they are not in-
 
 ### Fixed — Voice + brand discipline
 - Tamper-detecting hash-chain (within-trust-boundary) hedging propagated across README, CHANGELOG, defcon module, ADRs 0003/0014/0015, mapping docs (per [audit](https://github.com/linus10x/finserv-agent-audit/issues) D8.1).
-- APEX framing restored to "private quantitative options research program with Marcos López de Prado as named advisor on adjacent work" per author's CLAUDE.md rule (audit D5.3 + D5.4).
+- Trading-program provenance kept to its public-safe description ("a private quantitative options research program") per the author's public-safe rule (audit D5.3 + D5.4).
 - Colorado AI Act citation reconciled to leg.colorado.gov primary source: SB 24-205, signed 2024-05-17, substantive high-risk AI requirements effective 2026-02-01 (audit D4.3).
 - *U.S. v. RealPage* consistently described as ongoing antitrust litigation (M.D.N.C., filed Aug 23, 2024) — corrected from false "settled cases of record" framing in `docs/workbook_v0_outline.md`.
 - Shadow Mode row removed from patterns table during Tranche 1 (file didn't exist at v1.0); re-added in v1.1 patterns table now that `shadow_mode.py` ships.

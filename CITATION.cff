@@ -56,9 +56,8 @@ abstract: >-
   RMF, ISO/IEC 42001, COSO ICAIR, EU AI Act 2024/1689, DORA
   (Regulation (EU) 2022/2554), PCAOB AS 2201 amendments, and multiple
   state-AG AI enforcement matters. Patterns were extracted from a
-  multi-year private quantitative options research program with Marcos
-  López de Prado as named advisor on adjacent work; the source program
-  operates in paper-trading Phase 0 — no live capital has been deployed.
+  multi-year private quantitative options research program that operates
+  in paper-trading Phase 0 — no live capital has been deployed.
 keywords:
   - AI governance
   - autonomous agents
