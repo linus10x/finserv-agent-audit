@@ -13,7 +13,13 @@ Exemptions:
   * ADR pages that explicitly recite the banned-names list as a
     discipline reference (``docs/adr/*BANNED_NAMES*``, ``docs/adr/*Voice*``).
 
-Gracefully passes (exit 0) when the names file is absent.
+Exit codes:
+  * 0 — clean (or names file absent/empty in opt-in mode)
+  * 1 — one or more banned names found in framework prose
+  * 2 — FAIL-CLOSED config error: ``CI_REQUIRE_BANNED_NAMES`` is set (truthy) but
+        the names file is absent or empty. Set this in CI so a missing
+        ``BANNED_NAMES`` secret breaks the build loudly instead of passing
+        vacuously — the fail-open that let a live leak through the gate.
 """
 
 from __future__ import annotations
@@ -111,19 +117,47 @@ def lint_file(
     return hits
 
 
+def _require_names() -> bool:
+    """Fail-closed switch. When CI_REQUIRE_BANNED_NAMES is truthy, an absent or
+    empty names file is a CONFIGURATION ERROR (exit 2), not a silent pass — so a
+    CI run that forgot to provision the names secret breaks loudly instead of
+    passing vacuously (the defect that let a live leak through the gate)."""
+    return os.environ.get("CI_REQUIRE_BANNED_NAMES", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
+    require = _require_names()
     names_path_str = os.environ.get("BANNED_NAMES_FILE", ".banned-names.txt")
     names_path = Path(names_path_str)
     if not names_path.is_absolute():
         names_path = repo_root / names_path
 
     if not names_path.exists():
+        if require:
+            print(
+                f"banned_names_lint: FAIL-CLOSED — CI_REQUIRE_BANNED_NAMES is set but no "
+                f"names file at {names_path}. Provision the BANNED_NAMES secret in CI.",
+                file=sys.stderr,
+            )
+            return 2
         print(f"banned_names_lint: no names file at {names_path} -> skipping (opt-in lint)")
         return 0
 
     banned = load_banned_names(names_path)
     if not banned:
+        if require:
+            print(
+                f"banned_names_lint: FAIL-CLOSED — CI_REQUIRE_BANNED_NAMES is set but "
+                f"{names_path} is empty. Provision the BANNED_NAMES secret in CI.",
+                file=sys.stderr,
+            )
+            return 2
         print(f"banned_names_lint: {names_path} is empty -> nothing to check")
         return 0
 

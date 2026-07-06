@@ -67,9 +67,20 @@ jobs:
         run: python3 scripts/banned_term_lint.py
 
       - name: Lint (banned names)
-        run: python3 scripts/banned_names_lint.py
+        # Materialize the names file from the BANNED_NAMES secret's CONTENT (the
+        # list is never committed — it would itself enumerate the firewalled
+        # entities). CI_REQUIRE_BANNED_NAMES is driven by a repo VARIABLE so the
+        # owner can flip fail-closed ON atomically when provisioning the secret;
+        # until then the lint stays backward-compatible (opt-in) and this stays green.
+        run: |
+          if [ -n "${BANNED_NAMES}" ]; then
+            printf '%s\n' "${BANNED_NAMES}" > .banned-names.txt
+          fi
+          python3 scripts/banned_names_lint.py
         env:
-          BANNED_NAMES_FILE: ${{ secrets.BANNED_NAMES_FILE_PATH || '.banned-names.txt' }}
+          BANNED_NAMES: ${{ secrets.BANNED_NAMES }}
+          BANNED_NAMES_FILE: .banned-names.txt
+          CI_REQUIRE_BANNED_NAMES: ${{ vars.CI_REQUIRE_BANNED_NAMES }}
 
       - name: Lint (tamper language)
         run: python3 scripts/tamper_language_lint.py
