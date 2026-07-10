@@ -68,6 +68,7 @@ Demotion-gated authority lifecycle + external-anchor verification + a runnable, 
 ### Changed
 - **P5 — effective-challenge now REJECTS a self-challenge (always-on; potentially breaking for one misuse).** `EffectiveChallengeHarness.__init__` raises `ValueError` when `challenger_model is primary_model`: a model cannot be its own challenger (SR 11-7 §V.1). This is the one always-on contract narrowing in this release (the production modes above are opt-in). It rejects a previously-accepted construction that produced a rubber-stamp `accept_primary` — an insecure misuse, not a supported path. **Migration:** if you passed the same callable as both `primary_model` and `challenger_model`, supply two distinct callables (an independent challenger is the whole point). No other observable contract changed; all mode defaults preserved. We bump MINOR (not MAJOR) because this fixes an insecure-by-design configuration rather than breaking a supported API (SemVer 2.0.0 §9); an owner preferring strict-literal SemVer may elect 3.0.0 — but the repo roadmap reserves v3.0.0 for the planned async-native / multi-region / WASM major.
 - **Claim reconciliation.** README (new "Claim scope" section), `ASSURANCE-GUIDE.md`, and `FAILURE-MODES.md` now state plainly that **SEC Rule 15c3-5 and OFAC sanctions screening are documented design patterns, NOT implemented controls** (no validator ships).
+- Test suite: 724 passing (was 661), `mypy --strict` clean across 47 source files (was 46), 94% coverage.
 
 ## [2.1.3] — 2026-06-09
 
