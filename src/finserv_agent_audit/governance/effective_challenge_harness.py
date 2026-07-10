@@ -131,6 +131,56 @@ class ChallengeReport:
     recommendation: Recommendation = "accept_primary"
 
 
+@dataclass(frozen=True)
+class ChallengerIndependence:
+    """Operator-supplied attestation that the challenger is independent (P5).
+
+    SR 11-7 §V.1 effective challenge is meaningless unless the
+    challenger is independent of the primary. Two kinds of independence
+    matter, and they are enforced differently:
+
+    - **Code-enforced** — the challenger callable is not the SAME object
+      as the primary. ``EffectiveChallengeHarness`` rejects
+      ``challenger_model is primary_model`` outright; that check is in
+      code and cannot be attested away.
+    - **Attested, NOT code-detected** — that the challenger is not the
+      same model owner, vendor family, or prompt template as the
+      primary. The framework CANNOT introspect a frontier-API callable
+      to prove this, so it is recorded as an operator attestation, with
+      WHO chose the challenger and WHEN, written to the audit chain. A
+      false attestation is the operator's accountability, captured in
+      the hash-chain ledger's tamper-evident mechanism — the harness
+      does not fabricate a vendor-family detector it does not have.
+
+    Fields:
+        challenger_id: Stable identifier for the challenger model.
+        chosen_by: Identity of the (independent, ideally second-line
+            MRM) party who SELECTED the challenger — not the model owner.
+        chosen_at: ISO-8601 timestamp of the selection.
+        not_same_owner: Attested: challenger is not owned by the team
+            that owns the primary.
+        not_same_vendor_family: Attested: challenger is not the same
+            vendor/model family as the primary.
+        not_same_prompt_template: Attested: challenger does not share
+            the primary's prompt template.
+        basis: Free-text basis for the independence claim (e.g. the
+            vendor + family of each model).
+    """
+
+    challenger_id: str
+    chosen_by: str
+    chosen_at: str
+    not_same_owner: bool
+    not_same_vendor_family: bool
+    not_same_prompt_template: bool
+    basis: str = ""
+
+    @property
+    def is_fully_independent(self) -> bool:
+        """True only when all three independence dimensions are attested."""
+        return self.not_same_owner and self.not_same_vendor_family and self.not_same_prompt_template
+
+
 class EffectiveChallengeHarness:
     """SR 11-7 effective-challenge harness for frontier-API primaries (ADR-0022).
 
@@ -152,7 +202,47 @@ class EffectiveChallengeHarness:
         accept_threshold: float = _DEFAULT_ACCEPT_THRESHOLD,
         investigate_threshold: float = _DEFAULT_INVESTIGATE_THRESHOLD,
         autonomy_level: AutonomyLevel = AutonomyLevel.A2,
+        independence: ChallengerIndependence | None = None,
+        require_independence: bool = False,
     ) -> None:
+        """Construct the harness.
+
+        P5 — challenger independence is enforced two ways:
+
+        - **Code-enforced (always on):** ``challenger_model is
+          primary_model`` is rejected with ``ValueError``. A model owner
+          cannot pass the same callable as its own challenger to
+          manufacture ``disagreement_rate == 0`` and a rubber-stamp
+          ``accept_primary``.
+        - **Attested + recorded:** pass ``independence`` (a
+          :class:`ChallengerIndependence`) to record WHO chose the
+          challenger, WHEN, and the not-same-owner / vendor-family /
+          prompt-template claims onto the audit chain. Vendor-family
+          independence is ATTESTED, not code-detected — the framework
+          does not fabricate a detector it lacks.
+        - ``require_independence`` — a strict opt-in (default off,
+          backward compatible). When ``True``, the harness refuses to
+          construct unless a FULLY independent attestation is supplied
+          (all three dimensions attested). Use this at the second-line
+          MRM boundary to fail closed on an un-attested challenger.
+        """
+        # P5(a) — code-level independence: reject self-challenge.
+        if challenger_model is primary_model:
+            raise ValueError(
+                "challenger_model must not be the same object as primary_model: "
+                "a model cannot be its own effective challenger (SR 11-7 §V.1). "
+                "Supplying the same callable forces disagreement_rate=0 and a "
+                "rubber-stamp 'accept_primary' — the exact failure mode this "
+                "harness exists to prevent."
+            )
+        # P5(b) — strict opt-in: fail closed without a full attestation.
+        if require_independence and (independence is None or not independence.is_fully_independent):
+            raise ValueError(
+                "require_independence=True demands a ChallengerIndependence "
+                "attestation with not_same_owner, not_same_vendor_family, and "
+                "not_same_prompt_template all True, plus chosen_by/chosen_at. "
+                "Refusing to start fail-closed."
+            )
         self.primary_model = primary_model
         self.challenger_model = challenger_model
         self.eval_set = eval_set
@@ -160,6 +250,7 @@ class EffectiveChallengeHarness:
         self.accept_threshold = accept_threshold
         self.investigate_threshold = investigate_threshold
         self.autonomy_level = autonomy_level
+        self.independence = independence
 
     # ------------------------------------------------------------------ #
     # Public surface                                                     #
@@ -274,6 +365,24 @@ class EffectiveChallengeHarness:
                 for (i, p, c) in report.disagreement_examples
             ],
         }
+        # P5(b) — record the challenger-independence attestation (or its
+        # absence) on the chain so a regulator can see WHO chose the
+        # challenger, WHEN, and on what independence basis the
+        # validation artifact rests.
+        if self.independence is not None:
+            payload["challenger_independence"] = {
+                "attested": True,
+                "challenger_id": self.independence.challenger_id,
+                "chosen_by": self.independence.chosen_by,
+                "chosen_at": self.independence.chosen_at,
+                "not_same_owner": self.independence.not_same_owner,
+                "not_same_vendor_family": self.independence.not_same_vendor_family,
+                "not_same_prompt_template": self.independence.not_same_prompt_template,
+                "fully_independent": self.independence.is_fully_independent,
+                "basis": self.independence.basis,
+            }
+        else:
+            payload["challenger_independence"] = {"attested": False}
         if self.audit_chain is None:
             return
         self.audit_chain.append(
@@ -287,6 +396,7 @@ class EffectiveChallengeHarness:
 
 __all__ = [
     "ChallengeReport",
+    "ChallengerIndependence",
     "EffectiveChallengeHarness",
     "ModelCallable",
     "Recommendation",

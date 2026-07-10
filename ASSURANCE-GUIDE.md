@@ -12,6 +12,17 @@ It is organized around three audit lenses commonly applied to FSI deployments: *
 
 ---
 
+## Claim scope — implemented controls vs documented patterns
+
+Before an examiner reads the evidence below, two obligations referenced in the mapping docs are **documented design patterns, NOT implemented controls** in this package — there is no validator to test for either:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — documented pattern, not implemented. No pre-trade 15c3-5 risk-check validator ships here; the DEFCON ladder and audit chain are scaffolding an adopter wires to their own 15c3-5 controls.
+- **OFAC sanctions screening** — documented pattern, not implemented. No OFAC list ingestion / name-matching / screening validator ships here; the vendor-score gate governs a screening **vendor's** output and maps the obligation, but performs no screening.
+
+Do not record a test result for a 15c3-5 or OFAC *control* against this library — there is none to exercise. See [`FAILURE-MODES.md`](FAILURE-MODES.md) § "Documented-pattern obligations".
+
+---
+
 ## Part 1 — Using the audit chain as evidence
 
 ### Chain integrity

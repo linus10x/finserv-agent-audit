@@ -3,8 +3,8 @@
 **Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready by design** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
-[![Tests](https://img.shields.io/badge/tests-661%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
+[![Tests](https://img.shields.io/badge/tests-724%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20434570.svg)](https://doi.org/10.5281/zenodo.20434570)
@@ -42,7 +42,7 @@ pytest tests/ -q                               # full suite · mypy --strict cle
 
 The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
 
-> **Receipts:** 661 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.2.0**.
+> **Receipts:** 724 tests · 94% coverage (≥90% CI gate) · `mypy --strict` clean across 47 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.3.0**.
 
 ## Read me first
 
@@ -83,7 +83,7 @@ The controls in this library are **domain-agnostic**. The DEFCON state machine, 
 - **Framework + whitepaper:** [autonomy-ladder.io](https://autonomy-ladder.io)
 - **Non-financial demo (under 60s):** [`finserv-agent-audit/examples/agent_coordination`](https://github.com/linus10x/finserv-agent-audit/tree/main/examples/agent_coordination) — the same veto / envelope / audit-chain / demotion primitives on a generic agent swarm.
 
-> **For reviewers & safety teams:** every control here is falsifiable — the test suite (661 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
+> **For reviewers & safety teams:** every control here is falsifiable — the test suite (724 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
 
 
 ## Part of the Autonomy Ladder™ family
@@ -211,7 +211,7 @@ Governance code that cannot itself be trusted is theater. The assurance posture 
 
 - **Hardened to a Tier-1 buyer bar.** v2.1 closed all 12 Critical findings (CR-1..CR-12) from a May 2026 six-chamber adversarial deep-dive (architecture · code · security · test-strategy · DevOps · deployment), calibrated to the questionnaire bar Tier-1 FSI buyer review boards apply: a consolidated `AuditChainTamperError`; a frozen, self-verifying `AuditEvent`; TSA pre-digest bound to event content; a thread- and process-safe `AuditChain`; a domain-separated genesis hash; PII handled via `HashedSubjectId` + `SubjectIdHasher`; a bounded RFC 3161 DER codec with a structural ASN.1 walk and Hypothesis fuzz; an `Authorizer` Protocol with a self-clearing rule; and a deploy-time-pinned `BaselineMIProxy` scaffold. Per-CR detail in [CHANGELOG.md § 2.1.0](CHANGELOG.md).
 - **Zero runtime dependencies.** The base wheel declares `dependencies = []`. Every optional integration (FastAPI, the four agentic-runtime adapters, OTel, MCP, Sigstore/OpenTimestamps witnesses) is import-guarded behind an `HAS_X` flag and a named install extra, so the governance core never pulls a transitive supply-chain surface you did not ask for.
-- **Receipts, run locally:** 661 tests passing · 93% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 46 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
+- **Receipts, run locally:** 724 tests passing · 94% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 47 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
 - **Supply-chain CI on every push:** CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner, with every third-party GitHub Action **SHA-pinned**. PyPI Trusted Publishing with PEP 740 Sigstore-attested wheels.
 - **Built for examination** (no examination completed — see [LIMITATIONS.md](LIMITATIONS.md) §9a). [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) is a Big-4 audit-evidence walkthrough (v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_2026_appendix.md](docs/pcaob_as_2201_amendments_2026_appendix.md)); [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) ships pre-filled SIG Lite, CSA CAIQ v4.0.3, and BITS Shared Assessments AUP questionnaires.
 
@@ -308,7 +308,16 @@ Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-
 
 ### Governance surfaces
 
-[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough; v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_appendix.md](docs/pcaob_as_2201_amendments_appendix.md)) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 
@@ -358,6 +367,17 @@ For *illustrative* walkthroughs of how a given primitive would have engaged with
 - **Risk architects** designing kill-switch and override mechanisms for AI systems
 - **Compliance teams** mapping AI agent behavior to EU AI Act, SEC Rule 15c3-5, MiFID II, or SOC 2 requirements
 - **CTOs and Chief AI Officers** establishing governance frameworks before regulators ask for them
+
+---
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 

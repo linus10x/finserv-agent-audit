@@ -57,6 +57,15 @@ The framework is **fail-closed for verify-side checks** and **best-effort with e
 - **Not a substitute for the operational runbook.** Recovery actions are framework defaults; the deployer's incident-response procedure is where the actual response lives.
 - **Not exhaustive.** The matrix names eight classes the framework addresses today. Threat surfaces outside these (denial-of-service against the TSA, regulator subpoena for the signing key, insider revocation of the audit role) are deployer responsibilities by design.
 
+## Documented-pattern obligations (NOT implemented controls)
+
+Two regulatory obligations are referenced across the mapping docs but are **documented design patterns, not implemented validators** — stated here so no auditor or reader infers a control that does not ship:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — NOT implemented. No pre-trade risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) exists in this package. The DEFCON ladder + audit chain are governance scaffolding for an adopter's own 15c3-5 controls.
+- **OFAC sanctions screening** — NOT implemented. No OFAC list ingestion, name-matching, or screening validator exists here. The vendor-score gate governs a screening **vendor's** output and maps the obligation; it does not perform screening.
+
+These are deliberately absent (an adopter wires their own), not deferred build items — so they carry no `NOT YET IMPLEMENTED · tracking: ADR-XXXX` matrix marker.
+
 ## Related
 
 - ADR-0003 — Internally-consistent hash-chained audit ledger
