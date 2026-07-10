@@ -78,14 +78,18 @@ MATTERS: tuple[Matter, ...] = (
             "ECOA, 15 U.S.C. § 1691 et seq.",
             "Consumer Financial Protection Act",
         ),
-        remedy="~$9M combined: $3.85M loan-subsidy fund + outreach + $5M CMP ($4M to OCC, $1M to CFPB; OCC NR 2021-109)",
+        remedy=(
+            "~$9M combined: $3.85M loan-subsidy fund + outreach + $5M CMP "
+            "($4M to OCC, $1M to CFPB; OCC NR 2021-109)"
+        ),
         failure_shape=(
             "Only 4 of 25 Memphis-area branches in majority-nonwhite neighborhoods, none with an "
             "assigned mortgage loan officer; failed to market/offer/originate in those tracts."
         ),
         governance_primitive="equity_audit",
         primary_source_url="https://www.justice.gov/crt/case/consent-order-united-states-v-trustmark-national-bank-wd-tenn",
-        verification="VERIFIED",  # CMP confirmed via OCC News Release 2021-109 (2026-06-05 Chrome primary-source pass)
+        # CMP confirmed via OCC News Release 2021-109 (2026-06-05 Chrome primary-source pass)
+        verification="VERIFIED",
     ),
     Matter(
         matter_id="fnb-pennsylvania-redlining-2024",

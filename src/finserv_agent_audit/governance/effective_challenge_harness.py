@@ -149,8 +149,8 @@ class ChallengerIndependence:
       to prove this, so it is recorded as an operator attestation, with
       WHO chose the challenger and WHEN, written to the audit chain. A
       false attestation is the operator's accountability, captured in
-      the tamper-evident ledger — the harness does not fabricate a
-      vendor-family detector it does not have.
+      the hash-chain ledger's tamper-evident mechanism — the harness
+      does not fabricate a vendor-family detector it does not have.
 
     Fields:
         challenger_id: Stable identifier for the challenger model.

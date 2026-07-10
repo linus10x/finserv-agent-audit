@@ -248,13 +248,13 @@ class AuditChain:
                 )
             if witness_register is None:
                 raise ValueError(
-                    "AuditChain(production=True) requires a witness_register: the "
-                    "hash chain is internally consistent but NOT adversarially "
-                    "tamper-evident on its own — an attacker with write access can "
-                    "regenerate the entire chain and it will pass verify(). An "
-                    "external witness anchor (OpenTimestamps / Rekor / regulator "
-                    "log) is the control that makes end-to-end regeneration "
-                    "detectable (ADR-0014). Refusing to start fail-closed."
+                    "AuditChain(production=True) requires a witness_register: a "
+                    "hash chain is internally consistent but not adversarially tamper-evident "
+                    "on its own — an attacker with write access can regenerate the "
+                    "entire chain and it will pass verify(). An external witness anchor "
+                    "(OpenTimestamps / Rekor / regulator log) is the control that makes "
+                    "end-to-end regeneration detectable (ADR-0014). Refusing to start "
+                    "fail-closed."
                 )
 
         # CR-4 — serialize append + verify against TOCTOU on head_event_hash.
