@@ -123,8 +123,6 @@ For applicants the author declines:
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution flow (the normal-contributor path applicants can use regardless of co-maintainer outcome)
 - [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) — code of conduct (TSC enforcement role)
 - [`../OWNERSHIP.md`](../OWNERSHIP.md) — current single-maintainer posture (this recruitment changes that)
-- [`../MANUAL_REMEDIATION_AUTHOR.md`](../MANUAL_REMEDIATION_AUTHOR.md) — Item 7 (this recruitment workstream)
-- [`LFAI_SANDBOX_APPLICATION_DRAFT.md`](LFAI_SANDBOX_APPLICATION_DRAFT.md) — LF Sandbox application (downstream of TSC formation)
 
 ---
 

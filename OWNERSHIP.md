@@ -2,7 +2,7 @@
 
 **Status:** v1.1.0 · Last reviewed: 2026-05-28.
 
-This document exists because the Hostile Acquirer chamber of the council asked it to. Adopters and prospective enterprise partners considering deeper engagement (commercial license, support contract, joint development, acquisition of the IP estate) need a clear view of who holds the IP, how contributions flow, and what assignment / acquisition posture the IP-holding entity maintains.
+Adopters and prospective partners considering deeper engagement (commercial license, support contract, joint development) need a clear view of who holds the IP, how contributions flow, and what assignment posture the IP holder maintains.
 
 > Companion to [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CITATION.cff`](CITATION.cff).
 
@@ -17,12 +17,6 @@ This document exists because the Hostile Acquirer chamber of the council asked i
 The framework is authored as an individual research and pattern-publication effort. Contribution credits are recorded in commit history and in the contributor-acknowledgments section of release notes.
 
 ---
-
-## IP-holding entity
-
-**Entity:** *[PLACEHOLDER — flag for author to fill: Individual / NTCI LLC / Delaware C-corp / other formed entity]*
-
-The IP-holding entity is the legal person that owns the copyright in the source code and documentation, holds the trademark filings, and is the counterparty for any commercial license or acquisition discussion. The placeholder above reflects that the author maintains optionality between individual ownership and a formed entity until the commercial path crystallizes.
 
 For the avoidance of doubt: the MIT license in [`LICENSE`](LICENSE) governs the framework's use regardless of how the IP-holding entity is constituted. Changes to the IP-holding entity do not change the rights granted under the existing MIT license to existing adopters.
 
