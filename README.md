@@ -1,6 +1,6 @@
 # finserv-agent-audit
 
-**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready by design** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
+**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, designed to produce the records an examination would ask for** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
@@ -67,7 +67,7 @@ You ship an autonomous agent into a regulated workflow. It runs fine for weeks. 
 
 AI-safety research answers alignment. Compliance frameworks govern humans. Neither addresses the operational reality of an agent making hundreds of decisions a day inside a risk-managed financial system.
 
-This repository is that missing layer — battle-tested governance patterns extracted from a multi-year build of a six-agent autonomous program, not academic proposals, for teams whose agents must survive a regulatory audit, a risk committee, and a 3am incident.
+This repository is that missing layer — governance patterns from a multi-year build of my own six-agent research program, for teams whose agents must survive a regulatory audit, a risk committee, and a 3am incident.
 
 ### What this is — and what it is not
 
@@ -78,7 +78,7 @@ This repository is that missing layer — battle-tested governance patterns extr
 
 ## Why this exists for frontier autonomy stacks
 
-The controls in this library are **domain-agnostic**. The DEFCON state machine, the non-overridable **sovereign veto** (a separate-process control the agent cannot switch off), the **hash-chain audit ledger** (it detects tampering within its trust boundary), the **hard envelopes with mechanical escalation**, the **sampled-review tripwires**, and **monitor-led promotion** were forged in real multi-agent production systems under consequence — and they apply directly to any high-stakes coordinated autonomy (vehicles, robots, agent swarms) where *invisible promotion* or *cascade failure* is unacceptable. The decision class is a parameter: this repo encodes it for **cross-vertical financial services**, but the same A0→A4 deployment-authority structure lifts into any decision class without inheriting financial-services assumptions.
+The controls in this library are **domain-agnostic**. The DEFCON state machine, the non-overridable **sovereign veto** (a separate-process control the agent cannot switch off), the **hash-chain audit ledger** (it detects tampering within its trust boundary), the **hard envelopes with mechanical escalation**, the **sampled-review tripwires**, and **monitor-led promotion** were developed in my own multi-agent research systems — and they apply directly to any high-stakes coordinated autonomy (vehicles, robots, agent swarms) where *invisible promotion* or *cascade failure* is unacceptable. The decision class is a parameter: this repo encodes it for **cross-vertical financial services**, but the same A0→A4 deployment-authority structure lifts into any decision class without inheriting financial-services assumptions.
 
 - **Framework + whitepaper:** [autonomy-ladder.io](https://autonomy-ladder.io)
 - **Non-financial demo (under 60s):** [`finserv-agent-audit/examples/agent_coordination`](https://github.com/linus10x/finserv-agent-audit/tree/main/examples/agent_coordination) — the same veto / envelope / audit-chain / demotion primitives on a generic agent swarm.
