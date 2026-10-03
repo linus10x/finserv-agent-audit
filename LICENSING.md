@@ -43,7 +43,7 @@ We require Developer Certificate of Origin (DCO) sign-off on every commit (`Sign
 
 ## Trademark
 
-"Autonomy Ladder" and "ALO" are trademarks of NTCI Consulting, LLC (post-formation) and are governed separately from the source-code license per Apache 2.0 §6. See [docs/TRADEMARK.md](docs/TRADEMARK.md) for the full trademark posture including the irrevocable nominative-use carve-out for OSS forks, academic citation, and conformance attestation.
+"Autonomy Ladder" and "ALO" are trademarks of Kunjar Bhaduri and are governed separately from the source-code license per Apache 2.0 §6. See [docs/TRADEMARK.md](docs/TRADEMARK.md) for the full trademark posture including the irrevocable nominative-use carve-out for OSS forks, academic citation, and conformance attestation.
 
 ## Questions
 
