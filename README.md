@@ -431,13 +431,13 @@ If these patterns save you time in a compliance review or prevent a production i
 
 ## Limitations
 
-This library constrains, records, and proves agent decisions; it does not make them, and it is not legal advice. The audit chain is a within-trust-boundary tamper-detection mechanism, not chain-of-custody on its own — pair it with an external witness (Rekor / OpenTimestamps) and a deployer-controlled verifier for chain-of-custody claims. The source autonomous program operates in paper-trading Phase 0; no live capital has been deployed. Full scope and non-goals in [LIMITATIONS.md](LIMITATIONS.md), [DISCLAIMER.md](DISCLAIMER.md), and [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md).
+This library constrains, records, and proves agent decisions; it does not make them, and it is not legal advice. The audit chain is a within-trust-boundary tamper-detection mechanism, not chain-of-custody on its own — pair it with an external witness (Rekor / OpenTimestamps) and a deployer-controlled verifier for chain-of-custody claims. Full scope and non-goals in [LIMITATIONS.md](LIMITATIONS.md), [DISCLAIMER.md](DISCLAIMER.md), and [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md).
 
 ---
 
 ## Author & disclosures
 
-**Kunjar Bhaduri** — 25+ year financial-services technology executive. Author of the Autonomy Ladder (A0→A4) AI-governance framework and its six open regulated-vertical reference libraries; founder of North Texas Capital Investments, a self-funded AI-governance research lab. Earlier in his career he rebuilt a regulated production platform on Azure through a 12-day ransomware hard-down with no disaster recovery available; the MVP was restored in 50 days against a six-month plan, with full migration in 75 days. The recovered platform was subsequently certified to SOC 2 Type 2 and ISO 27001. The governance patterns in this library trace to that regulated-production experience and to the operational discipline of a private quantitative options research program (a multi-year, multi-hundred-session solo build that runs in paper-trading Phase 0, with no live capital deployed).
+**Kunjar Bhaduri** — 25+ year financial-services technology executive. Author of the Autonomy Ladder (A0→A4) AI-governance framework and its six open regulated-vertical reference libraries; founder of North Texas Capital Investments, a self-funded AI-governance research lab. Earlier in his career he rebuilt a regulated production platform on Azure through a 12-day ransomware hard-down with no disaster recovery available; the MVP was restored in 50 days against a six-month plan, with full migration in 75 days. The recovered platform was subsequently certified to SOC 2 Type 2 and ISO 27001. The governance patterns in this library trace to that regulated-production experience.
 
 This is independent research. It is not produced on behalf of, and does not represent the views of, any employer or client, and contains no employer- or client-confidential material. The regulatory content is reference mapping, not legal advice. See [DISCLAIMER.md](DISCLAIMER.md).
 
