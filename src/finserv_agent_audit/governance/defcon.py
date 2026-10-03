@@ -9,8 +9,7 @@ consecutive evaluations at a lower risk level before de-escalating, preventing
 flapping under volatile conditions.
 
 This module is a REFERENCE IMPLEMENTATION derived from patterns used in
-a multi-year autonomous trading system build. The source system operates
-in paper-trading Phase 0 — no live capital has been deployed.
+a multi-year autonomous trading system build.
 
 IMPORTANT — ILLUSTRATIVE THRESHOLD VALUES:
     All numeric thresholds below are EXAMPLES ONLY — not drawn from any
