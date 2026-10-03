@@ -11,7 +11,7 @@ This document exists because the Hostile Acquirer chamber of the council asked i
 ## Authorship
 
 **Author:** Kunjar Bhaduri
-**Contact:** kunjarbhaduri@gmail.com
+**Contact:** https://autonomy-ladder.io
 **Location:** Dallas, TX, USA
 
 The framework is authored as an individual research and pattern-publication effort. Contribution credits are recorded in commit history and in the contributor-acknowledgments section of release notes.
@@ -54,18 +54,6 @@ All contributions flow through the [`CONTRIBUTING.md`](CONTRIBUTING.md) PR / iss
 **Trademark filing target:** USPTO classes 9 / 35 / 41 / 42, filing target **June 15, 2026** via `tmsearch.uspto.gov`. The filing is a parallel author workstream and not tracked in this repo's issues.
 
 Until registration completes, the term is used as a common-law mark with consistent use across the author's published surfaces.
-
----
-
-## Acquisition / assignment readiness
-
-*[PLACEHOLDER — flag for author to fill: explicit posture on acquisition / assignment readiness, including:*
-*- whether the IP-holding entity is open to discussion of acquisition / license / joint-venture*
-*- preferred deal shape (asset purchase of the IP estate, equity in a formed entity, exclusive license, etc.)*
-*- contact point for acquisition discussions distinct from the general kunjarbhaduri@gmail.com address*
-*- any standing constraints (right-of-first-refusal commitments, prior licensee obligations, etc.)]*
-
-For prospective adopters whose interest in the framework rises to the level of a commercial conversation (enterprise support, custom development, joint-development, acquisition), the author's preferred posture is a preliminary conversation under NDA before any formal commercial process. Contact through the author's published channels.
 
 ---
 
