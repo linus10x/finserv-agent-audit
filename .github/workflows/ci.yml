@@ -40,7 +40,7 @@ jobs:
           # `unused-ignore` errors in strict mode (the imports fail silently before
           # the comment can be evaluated, so mypy concludes the comment was
           # unnecessary).
-          pip install -e ".[dev,api,all-agentic,mcp,otel,test-property]"
+          pip install -c ci/constraints-ci.txt -e ".[dev,api,all-agentic,mcp,otel,test-property]"
 
       - name: Lint (ruff)
         run: ruff check .
