@@ -109,7 +109,7 @@ For uses not covered by P1-P5 (permitted) or F1-F4 (fair use), contact:
 
 - **General trademark inquiry:** trademark@autonomy-ladder.io (placeholder — author to provision)
 - **License inquiry (commercial / certification / product-naming):** trademark@autonomy-ladder.io with subject prefix **`[LICENSE INQUIRY]`**
-- **Acquisition discussion (including trademark estate):** kunjarbhaduri@gmail.com with subject prefix **`[ACQUISITION]`** (per `OWNERSHIP.md`)
+- **Trademark questions:** see https://autonomy-ladder.io
 
 The trademark holder confirms receipt within 5 business days. Standard licensing terms are not yet published; license inquiries are handled on a case-by-case basis pending counsel-developed license form templates.
 
