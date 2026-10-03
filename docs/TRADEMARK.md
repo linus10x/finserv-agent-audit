@@ -1,9 +1,9 @@
 # TRADEMARK.md — Trademark usage guidelines
 
 **Status:** v1.0 · Draft pending counsel review · Last reviewed: 2026-05-28
-**Companion to:** [`../OWNERSHIP.md`](../OWNERSHIP.md), [`../MANUAL_REMEDIATION_AUTHOR.md`](../MANUAL_REMEDIATION_AUTHOR.md) Item 6
-**Trademark holder:** NTCI Consulting, LLC (per `OWNERSHIP.md`, post-formation)
-**Contact:** trademark@autonomy-ladder.io (placeholder — author to provision)
+**Companion to:** [`../OWNERSHIP.md`](../OWNERSHIP.md)
+**Trademark holder:** Kunjar Bhaduri
+**Contact:** https://autonomy-ladder.io
 
 > **Counsel review required.** This document is the author's drafted policy on permitted and prohibited uses of the "Autonomy Ladder" mark. The operative legal status of every claim below is subject to IP-counsel review before public reliance. Adopters should treat this as the published policy and consult their own counsel for specific use cases.
 
@@ -15,7 +15,7 @@
 
 "Autonomy Ladder" is the framework's headline term and the brand under which the cross-vertical discipline (this repository `finserv-agent-audit`, the sibling repository `cre-agent-audit`, and future vertical-specific siblings) is published.
 
-**Filing status:** Application in preparation for USPTO classes 9 (downloadable software) and 42 (Software-as-a-Service for AI-agent governance), both §1(a) use-based. Filing target: **June 5, 2026** via the USPTO Trademark Center (`trademarks.uspto.gov`). Classes 35 (business consulting services) and 41 (educational services) deferred 12-18 months until paying-client / cohort revenue supports a §1(a) basis or a §1(b) intent-to-use filing becomes economically justified. Clearance is conducted via `tmsearch.uspto.gov` (the legacy TESS interface was retired in 2023; `tmsearch.uspto.gov` is the post-TESS successor). The historical TEAS Plus / TEAS Standard bifurcated filing system was retired 2025-01-18 in favor of a single unified base application at $350/class. The mark is asserted as a common-law mark until registration completes. Full filing-prep package: `Applications-May-2026/v2-Refresh/Memos/USPTO_Autonomy_Ladder_Trademark_Filing_Package_2026-06-05.md`.
+**Filing status:** Application in preparation for USPTO classes 9 (downloadable software) and 42 (Software-as-a-Service for AI-agent governance), both §1(a) use-based. Filing target: **June 5, 2026** via the USPTO Trademark Center (`trademarks.uspto.gov`). Classes 35 (business consulting services) and 41 (educational services) deferred 12-18 months until paying-client / cohort revenue supports a §1(a) basis or a §1(b) intent-to-use filing becomes economically justified. Clearance is conducted via `tmsearch.uspto.gov` (the legacy TESS interface was retired in 2023; `tmsearch.uspto.gov` is the post-TESS successor). The historical TEAS Plus / TEAS Standard bifurcated filing system was retired 2025-01-18 in favor of a single unified base application at $350/class. The mark is asserted as a common-law mark until registration completes.
 
 **Designation:**
 
@@ -107,9 +107,7 @@ The following fair-use exceptions apply notwithstanding the prohibitions above:
 
 For uses not covered by P1-P5 (permitted) or F1-F4 (fair use), contact:
 
-- **General trademark inquiry:** trademark@autonomy-ladder.io (placeholder — author to provision)
-- **License inquiry (commercial / certification / product-naming):** trademark@autonomy-ladder.io with subject prefix **`[LICENSE INQUIRY]`**
-- **Trademark questions:** see https://autonomy-ladder.io
+- **Trademark and license questions (commercial use, certification, product naming):** see https://autonomy-ladder.io
 
 The trademark holder confirms receipt within 5 business days. Standard licensing terms are not yet published; license inquiries are handled on a case-by-case basis pending counsel-developed license form templates.
 
@@ -125,7 +123,6 @@ All rights in the mark not expressly granted in this document are reserved by th
 
 - [`../OWNERSHIP.md`](../OWNERSHIP.md) — IP-holding entity (the trademark holder)
 - [`../LICENSE`](../LICENSE) — copyright license (separate from trademark)
-- [`../MANUAL_REMEDIATION_AUTHOR.md`](../MANUAL_REMEDIATION_AUTHOR.md) — Item 6 (USPTO filing workstream)
 
 ---
 
