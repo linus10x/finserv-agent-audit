@@ -186,6 +186,7 @@ class AuditChain:
         mi_proxy: MIProxy | None = None,
         deployer_id: str | None = None,
         chain_creation_iso: str | None = None,
+        production: bool = False,
     ) -> None:
         """CR-7 — chains are seeded with a deployer-keyed genesis event.
 
@@ -227,6 +228,34 @@ class AuditChain:
         self._timestamp_source: TimestampSource = timestamp_source or LocalClock()
         self._witness_register: WitnessRegister | None = witness_register
         self._mi_proxy: MIProxy | None = mi_proxy
+        self._production: bool = production
+
+        # P3 — PRODUCTION MODE is a named strict opt-in. The default
+        # (production=False) preserves the v1.x advisory contract
+        # exactly. When the deployer opts in, the chain FAILS CLOSED
+        # (refuses to construct) unless it is both deployer-keyed AND
+        # anchored to an external witness register — because end-to-end
+        # regeneration is only DETECTABLE via an out-of-band witness
+        # (OpenTimestamps / Rekor / regulator log), not by the
+        # internally-consistent hash chain alone (see module docstring,
+        # ADR-0014). This is an OPT-IN; it does NOT change the default.
+        if production:
+            if deployer_id is None:
+                raise ValueError(
+                    "AuditChain(production=True) requires an explicit deployer_id "
+                    "so event #0 is deployer-keyed; the legacy '0'*64 genesis "
+                    "sentinel is advisory-only and cannot be used in production mode."
+                )
+            if witness_register is None:
+                raise ValueError(
+                    "AuditChain(production=True) requires a witness_register: a "
+                    "hash chain is internally consistent but not adversarially tamper-evident "
+                    "on its own — an attacker with write access can regenerate the "
+                    "entire chain and it will pass verify(). An external witness anchor "
+                    "(OpenTimestamps / Rekor / regulator log) is the control that makes "
+                    "end-to-end regeneration detectable (ADR-0014). Refusing to start "
+                    "fail-closed."
+                )
 
         # CR-4 — serialize append + verify against TOCTOU on head_event_hash.
         # An ``RLock`` is used (not a plain ``Lock``) because

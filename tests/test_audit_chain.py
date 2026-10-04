@@ -145,7 +145,7 @@ class TestAuditChain:
         chain.append(
             event_type=AuditEventType.HALT_TRIGGERED,
             autonomy_level=AutonomyLevel.A4,
-            agent_id="apex",
+            agent_id="agent-01",
             payload={"reason": "drawdown"},
         )
         assert log_file.exists()

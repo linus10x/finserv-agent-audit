@@ -24,6 +24,7 @@ Compliance notes:
 from __future__ import annotations
 
 import logging
+import threading
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -133,25 +134,72 @@ class SovereignVeto:
         on_veto: Callable[[VetoRecord], None] | None = None,
         on_clear: Callable[[VetoRecord], None] | None = None,
         authorizer: Authorizer | None = None,
+        production: bool = False,
     ) -> None:
+        """Construct a sovereign-veto gate.
+
+        ``production`` — PRODUCTION MODE is a named strict opt-in (P2).
+        When ``True`` the gate FAILS CLOSED: a wired ``authorizer`` is
+        MANDATORY (``ValueError`` if absent), so ``clear()`` cannot be
+        called by an unauthenticated principal and the ``operator_id``
+        recorded against a clear is bound to an identity the Authorizer
+        authenticated (IdP/KMS), never a free string. The default
+        (``production=False``) preserves the v1.x advisory contract
+        exactly — a missing Authorizer logs a WARNING and the gate
+        still runs, but the recorded ``operator_id`` is an
+        UNAUTHENTICATED assertion. This is an OPT-IN; it does NOT change
+        the default.
+
+        **Veto-state persistence (deployer responsibility — read this).**
+        Veto state lives in memory for the life of this object (the
+        ``_vetos`` list). This class does NOT auto-persist or auto-rehydrate
+        it: on process restart the in-memory ``_vetos`` set starts empty, so
+        a deployer who does nothing WILL lose active vetos across a restart.
+        That loss is documented, not silent-by-omission — but the recovery is
+        the deployer's to wire, and it is not shipped here. The supported
+        recovery pattern: mirror every trigger/clear to the hash-chained audit
+        ledger (wire ``on_veto`` / ``on_clear`` to ``AuditChain.append``), then
+        on startup reconstruct the active-veto set by replaying the ledger's
+        last unmatched trigger/clear pair into ``_vetos`` before serving
+        traffic. The library provides the hooks; the deployer provides the
+        durable store and the replay-on-boot. See ADR-0002 for the
+        persistence/recovery posture.
+        """
         self.agent_id = agent_id
         self._vetos: list[VetoRecord] = []
         self._on_veto = on_veto
         self._on_clear = on_clear
         self._authorizer = authorizer
+        self._production = production
+        # Serialize trigger/clear/read against the shared ``_vetos`` list.
+        # The veto's purpose is concurrent operation — a risk-monitor thread
+        # triggers while a human-operator thread clears — so an unguarded list
+        # iteration in clear() could collide with a trigger() append (TOCTOU).
+        # An RLock (re-entrant) mirrors AuditChain's concurrency discipline and
+        # lets the read properties be called from within a locked section.
+        self._lock = threading.RLock()
+        if production and authorizer is None:
+            raise ValueError(
+                "SovereignVeto(production=True) requires a wired Authorizer: "
+                "in production mode clear() must be gated by an authenticated "
+                "principal (IdP/KMS), and operator_id on the audit chain must be "
+                "bound to that authenticated identity rather than accepted as a "
+                "free string. Refusing to start fail-closed."
+            )
         if authorizer is None:
             logger.warning(
                 "SovereignVeto(agent_id=%r) constructed with no Authorizer wired; "
                 "operator_id on the audit chain is an UNAUTHENTICATED assertion. "
                 "Inject an Authorizer to gate clear() and trust the recorded "
-                "operator identity (CR-12).",
+                "operator identity (CR-12), or pass production=True to fail closed.",
                 agent_id,
             )
 
     @property
     def is_vetoed(self) -> bool:
         """True if any active veto exists."""
-        return any(v.is_active for v in self._vetos)
+        with self._lock:
+            return any(v.is_active for v in self._vetos)
 
     def allow_execution(self) -> bool:
         """Gate check — call this before every agent action."""
@@ -170,7 +218,8 @@ class SovereignVeto:
             triggered_by=triggered_by,
             description=description,
         )
-        self._vetos.append(record)
+        with self._lock:
+            self._vetos.append(record)
 
         logger.critical(
             "SOVEREIGN VETO triggered | agent: %s | reason: %s | by: %s | %s",
@@ -244,28 +293,35 @@ class SovereignVeto:
                 )
         now = datetime.now(UTC).isoformat()
         cleared = []
-        for v in self._vetos:
-            if v.is_active and (veto_id is None or v.veto_id == veto_id):
-                v.cleared_by = operator_id
-                v.cleared_at = now
-                v.clear_reason = reason
-                cleared.append(v)
-                logger.info(
-                    "VETO CLEARED | agent: %s | veto_id: %s | by: %s | reason: %s",
-                    _scrub(self.agent_id),
-                    _scrub(v.veto_id),
-                    _scrub(operator_id),
-                    _scrub(reason),
-                )
-                if self._on_clear:
-                    self._on_clear(v)
+        # Hold the lock for the mutation walk so a concurrent trigger()
+        # append cannot collide with this iteration (the Authorizer check
+        # above runs OUTSIDE the lock so a slow IdP call does not serialize
+        # the whole gate).
+        with self._lock:
+            for v in self._vetos:
+                if v.is_active and (veto_id is None or v.veto_id == veto_id):
+                    v.cleared_by = operator_id
+                    v.cleared_at = now
+                    v.clear_reason = reason
+                    cleared.append(v)
+                    logger.info(
+                        "VETO CLEARED | agent: %s | veto_id: %s | by: %s | reason: %s",
+                        _scrub(self.agent_id),
+                        _scrub(v.veto_id),
+                        _scrub(operator_id),
+                        _scrub(reason),
+                    )
+                    if self._on_clear:
+                        self._on_clear(v)
         return cleared
 
     def active_vetos(self) -> list[VetoRecord]:
-        return [v for v in self._vetos if v.is_active]
+        with self._lock:
+            return [v for v in self._vetos if v.is_active]
 
     def history(self) -> list[VetoRecord]:
-        return list(self._vetos)
+        with self._lock:
+            return list(self._vetos)
 
 
 class VetoBlockedError(RuntimeError):

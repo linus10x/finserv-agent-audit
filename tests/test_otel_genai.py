@@ -156,13 +156,13 @@ class TestAttributeMapping:
 
     def test_gen_ai_system_default_is_service_name(self) -> None:
         tracer = _SpyTracer()
-        emitter = OTELGenAIEmitter(tracer=tracer, service_name="apex")
+        emitter = OTELGenAIEmitter(tracer=tracer, service_name="svc-01")
         event = _make_event(payload={"model": "claude-3-opus"})
         emitter.emit(event)
         span = tracer.started[0]
         # gen_ai.system identifies the GenAI product / service producing
         # the request — service_name is the audit-side equivalent.
-        assert span.attributes["gen_ai.system"] == "apex"
+        assert span.attributes["gen_ai.system"] == "svc-01"
 
     def test_vendor_score_recorded_maps_provider_from_payload(self) -> None:
         tracer = _SpyTracer()

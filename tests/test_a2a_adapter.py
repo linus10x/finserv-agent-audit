@@ -141,13 +141,13 @@ class TestEventCapture:
         adapter = A2AAuditAdapter(audit_chain=chain, agent_id="zeus:a2a")
         adapter.record_message(
             task_id="task-001",
-            peer_agent_id="apex:a2a",
+            peer_agent_id="peer-agent:a2a",
             direction="outbound",
             message_classification="settlement-request",
             payload_size=512,
         )
         entry = chain.appended[0]
-        assert entry["payload"]["a2a_peer_agent_id"] == "apex:a2a"
+        assert entry["payload"]["a2a_peer_agent_id"] == "peer-agent:a2a"
         assert entry["payload"]["a2a_direction"] == "outbound"
         assert entry["payload"]["payload_size"] == 512
 
