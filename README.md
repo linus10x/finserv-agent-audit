@@ -1,10 +1,10 @@
 # finserv-agent-audit
 
-**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, examination-ready by design** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
+**Audit-trail, kill-switch, and model-risk governance for autonomous AI agents in regulated financial services — zero runtime dependencies, designed to produce the records an examination would ask for** (no examination completed; see [LIMITATIONS.md](LIMITATIONS.md) §9a).
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
-[![Tests](https://img.shields.io/badge/tests-661%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
+[![Tests](https://img.shields.io/badge/tests-722%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20434570.svg)](https://doi.org/10.5281/zenodo.20434570)
@@ -42,7 +42,7 @@ pytest tests/ -q                               # full suite · mypy --strict cle
 
 The DEFCON demo writes a JSON audit trail; the coordination demo prints a hash-chained ledger that ends in `verify() = True`.
 
-> **Receipts:** 661 tests · 93% coverage (≥90% CI gate) · `mypy --strict` clean across 46 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.2.0**.
+> **Receipts:** 724 tests · 94% coverage (≥90% CI gate) · `mypy --strict` clean across 47 source files · 0 runtime dependencies · 34 governance ADRs · 46 regulatory mapping docs · CI runs CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner on every push, every third-party Action SHA-pinned. Current version: **v2.3.0**.
 
 ## Read me first
 
@@ -67,7 +67,7 @@ You ship an autonomous agent into a regulated workflow. It runs fine for weeks. 
 
 AI-safety research answers alignment. Compliance frameworks govern humans. Neither addresses the operational reality of an agent making hundreds of decisions a day inside a risk-managed financial system.
 
-This repository is that missing layer — battle-tested governance patterns extracted from a multi-year build of a six-agent autonomous program, not academic proposals, for teams whose agents must survive a regulatory audit, a risk committee, and a 3am incident.
+This repository is that missing layer — governance patterns from a multi-year build of my own six-agent research program, for teams whose agents must survive a regulatory audit, a risk committee, and a 3am incident.
 
 ### What this is — and what it is not
 
@@ -78,12 +78,12 @@ This repository is that missing layer — battle-tested governance patterns extr
 
 ## Why this exists for frontier autonomy stacks
 
-The controls in this library are **domain-agnostic**. The DEFCON state machine, the non-overridable **sovereign veto** (a separate-process control the agent cannot switch off), the **hash-chain audit ledger** (it detects tampering within its trust boundary), the **hard envelopes with mechanical escalation**, the **sampled-review tripwires**, and **monitor-led promotion** were forged in real multi-agent production systems under consequence — and they apply directly to any high-stakes coordinated autonomy (vehicles, robots, agent swarms) where *invisible promotion* or *cascade failure* is unacceptable. The decision class is a parameter: this repo encodes it for **cross-vertical financial services**, but the same A0→A4 deployment-authority structure lifts into any decision class without inheriting financial-services assumptions.
+The controls in this library are **domain-agnostic**. The DEFCON state machine, the non-overridable **sovereign veto** (a separate-process control the agent cannot switch off), the **hash-chain audit ledger** (it detects tampering within its trust boundary), the **hard envelopes with mechanical escalation**, the **sampled-review tripwires**, and **monitor-led promotion** were developed in my own multi-agent research systems — and they apply directly to any high-stakes coordinated autonomy (vehicles, robots, agent swarms) where *invisible promotion* or *cascade failure* is unacceptable. The decision class is a parameter: this repo encodes it for **cross-vertical financial services**, but the same A0→A4 deployment-authority structure lifts into any decision class without inheriting financial-services assumptions.
 
 - **Framework + whitepaper:** [autonomy-ladder.io](https://autonomy-ladder.io)
 - **Non-financial demo (under 60s):** [`finserv-agent-audit/examples/agent_coordination`](https://github.com/linus10x/finserv-agent-audit/tree/main/examples/agent_coordination) — the same veto / envelope / audit-chain / demotion primitives on a generic agent swarm.
 
-> **For reviewers & safety teams:** every control here is falsifiable — the test suite (661 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
+> **For reviewers & safety teams:** every control here is falsifiable — the test suite (724 tests · mypy --strict · zero runtime deps) turns each rule into a runnable check, and the veto and ledger are infrastructure with operational properties (separate process boundary, distinct credentials, a gate the agent cannot reach; write-once retention). These are reference implementations for adoption, not deployed production controls.
 
 
 ## Part of the Autonomy Ladder™ family
@@ -211,7 +211,7 @@ Governance code that cannot itself be trusted is theater. The assurance posture 
 
 - **Hardened to a Tier-1 buyer bar.** v2.1 closed all 12 Critical findings (CR-1..CR-12) from a May 2026 six-chamber adversarial deep-dive (architecture · code · security · test-strategy · DevOps · deployment), calibrated to the questionnaire bar Tier-1 FSI buyer review boards apply: a consolidated `AuditChainTamperError`; a frozen, self-verifying `AuditEvent`; TSA pre-digest bound to event content; a thread- and process-safe `AuditChain`; a domain-separated genesis hash; PII handled via `HashedSubjectId` + `SubjectIdHasher`; a bounded RFC 3161 DER codec with a structural ASN.1 walk and Hypothesis fuzz; an `Authorizer` Protocol with a self-clearing rule; and a deploy-time-pinned `BaselineMIProxy` scaffold. Per-CR detail in [CHANGELOG.md § 2.1.0](CHANGELOG.md).
 - **Zero runtime dependencies.** The base wheel declares `dependencies = []`. Every optional integration (FastAPI, the four agentic-runtime adapters, OTel, MCP, Sigstore/OpenTimestamps witnesses) is import-guarded behind an `HAS_X` flag and a named install extra, so the governance core never pulls a transitive supply-chain surface you did not ask for.
-- **Receipts, run locally:** 661 tests passing · 93% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 46 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
+- **Receipts, run locally:** 722 tests passing · 94% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 47 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
 - **Supply-chain CI on every push:** CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner, with every third-party GitHub Action **SHA-pinned**. PyPI Trusted Publishing with PEP 740 Sigstore-attested wheels.
 - **Built for examination** (no examination completed — see [LIMITATIONS.md](LIMITATIONS.md) §9a). [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) is a Big-4 audit-evidence walkthrough (v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_2026_appendix.md](docs/pcaob_as_2201_amendments_2026_appendix.md)); [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) ships pre-filled SIG Lite, CSA CAIQ v4.0.3, and BITS Shared Assessments AUP questionnaires.
 
@@ -277,7 +277,7 @@ Governance code that cannot itself be trusted is theater. The assurance posture 
 | MAF Audit Adapter | `maf_adapter.py` | Microsoft Agent Framework agent-step + tool-call + orchestrator-handoff hooks ([ADR-0029](docs/adr/0029-maf-adapter.md)) | `pip install finserv-agent-audit[maf]` |
 | CrewAI Audit Adapter | `crewai_adapter.py` | CrewAI Crew / Agent / Task lifecycle hooks + tool-invocation events ([ADR-0030](docs/adr/0030-crewai-adapter.md)) | `pip install finserv-agent-audit[crewai]` |
 
-Convenience bundle: `pip install finserv-agent-audit[all-agentic]` installs all four adapters at once.
+Convenience bundle: `pip install finserv-agent-audit[all-agentic]` pulls in all four adapters. CI tests the bundle against the pinned versions in `ci/constraints-ci.txt`; from a clone of this repo, add `-c ci/constraints-ci.txt` to install that exact tested set.
 
 **Platform surfaces**
 
@@ -308,7 +308,16 @@ Sales-tool-grade vendor-contract addenda for 6 FSI vendor classes: [KYC](vendor-
 
 ### Governance surfaces
 
-[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+[ARCHITECTURE.md](ARCHITECTURE.md) · [FAILURE-MODES.md](FAILURE-MODES.md) (matrix-as-contract, 8 classes) · [LIMITATIONS.md](LIMITATIONS.md) · [DISCLAIMER.md](DISCLAIMER.md) · [SHIP-RECEIPT.md](SHIP-RECEIPT.md) · [VERSIONING.md](VERSIONING.md) · [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md) · [RESEARCH.md](RESEARCH.md) · [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) (Big-4 audit-evidence walkthrough; v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_appendix.md](docs/pcaob_as_2201_amendments_appendix.md)) · [DEPLOY-CHECKLIST.md](DEPLOY-CHECKLIST.md) · [OWNERSHIP.md](OWNERSHIP.md) · [docs/adr/](docs/adr/) (34 governance ADRs)
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 
@@ -339,13 +348,10 @@ These patterns are not academic. They were extracted from an operational autonom
 **1. Ransomware recovery — no DR, 12-day window**
 When production infrastructure was hard-downed with no disaster recovery available, the Audit Chain and DEFCON patterns provided a verifiable trail of every system decision during the reconstruction period — essential for post-incident regulatory reporting.
 
-**2. Autonomous agent — Phase 0 paper trading**
-The DEFCON state machine governs a six-agent pipeline. It has prevented over 40 simulated runaway conditions during the paper-trading phase by halting execution before loss thresholds were breached.
+**2. EU AI Act readiness assessment**
+The EU AI Act mapping document was used as a pre-audit checklist for a large wealth-management platform, mapping each automated decision point to the relevant Article requirements.
 
-**3. EU AI Act readiness assessment**
-The EU AI Act mapping document was used as a pre-audit checklist for a wealth management platform serving $750M+ AUM, mapping each automated decision point to the relevant Article requirements.
-
-**4. Compliance team onboarding**
+**3. Compliance team onboarding**
 The Autonomy Ladder (A0→A4) framework has been used to onboard compliance teams new to AI agent governance — it provides a vocabulary that bridges engineering and regulatory language.
 
 For *illustrative* walkthroughs of how a given primitive would have engaged with the failure mode in named, on-record FSI enforcement matters (Wells Fargo · Schwab Intelligent Portfolios · CFPB Circular 2022-03), see [CASE_STUDIES.md](CASE_STUDIES.md) — honest reference framing, not a claim the control was deployed in any of those matters.
@@ -358,6 +364,17 @@ For *illustrative* walkthroughs of how a given primitive would have engaged with
 - **Risk architects** designing kill-switch and override mechanisms for AI systems
 - **Compliance teams** mapping AI agent behavior to EU AI Act, SEC Rule 15c3-5, MiFID II, or SOC 2 requirements
 - **CTOs and Chief AI Officers** establishing governance frameworks before regulators ask for them
+
+---
+
+## Claim scope — implemented controls vs documented patterns
+
+This library ships **implemented, tested governance primitives** (the hash-chained audit ledger, sovereign veto, DEFCON state machine, A0–A4 level-gate, effective-challenge harness, adverse-action gate, vendor-score gate). It also references regulatory obligations it does **not** implement as runtime validators. Two are worth stating plainly so no reader infers a control that is not here:
+
+- **SEC Rule 15c3-5 (market-access / pre-trade risk controls)** — a **documented design pattern and obligation mapping, NOT an implemented control.** No pre-trade 15c3-5 risk-check validator (credit/capital thresholds, erroneous-order checks, hard limits) ships in this package. The DEFCON ladder and audit chain are governance scaffolding an adopter wires to *their own* 15c3-5 controls.
+- **OFAC sanctions screening** — a **documented design pattern and obligation mapping, NOT an implemented control.** No OFAC list ingestion, name-matching, or screening validator ships here. The vendor-score gate and audit chain map the *obligation* and govern a screening **vendor's** output; they do not perform the screening.
+
+Everything else in the obligation-mapping docs (`docs/`, `vendor-clauses/`) is similarly a mapping or procurement companion, not a deployed control. See [`FAILURE-MODES.md`](FAILURE-MODES.md) for the implemented-vs-deferred matrix.
 
 ---
 
@@ -394,8 +411,6 @@ The framework is dual-licensed MIT OR Apache-2.0 — fork it, ship it, adopt it.
 
 Pricing, methodology pages, and intake form: **[autonomy-ladder.io/services](https://autonomy-ladder.io/services)** · or LinkedIn DM with subject `Diagnostic inquiry` to [Kunjar Bhaduri](https://linkedin.com/in/kunjarbhaduri).
 
-The authority moat sits on the public framework. The open artifact stays open; paid engagements adapt the framework to a buyer's specific risk surface, regulatory regime, and Big-4 audit-evidence requirements.
-
 ---
 
 ## Community
@@ -411,15 +426,17 @@ If these patterns save you time in a compliance review or prevent a production i
 
 ## Limitations
 
-This library constrains, records, and proves agent decisions; it does not make them, and it is not legal advice. The audit chain is a within-trust-boundary tamper-detection mechanism, not chain-of-custody on its own — pair it with an external witness (Rekor / OpenTimestamps) and a deployer-controlled verifier for chain-of-custody claims. The source autonomous program operates in paper-trading Phase 0; no live capital has been deployed. Full scope and non-goals in [LIMITATIONS.md](LIMITATIONS.md), [DISCLAIMER.md](DISCLAIMER.md), and [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md).
+This library constrains, records, and proves agent decisions; it does not make them, and it is not legal advice. The audit chain is a within-trust-boundary tamper-detection mechanism, not chain-of-custody on its own — pair it with an external witness (Rekor / OpenTimestamps) and a deployer-controlled verifier for chain-of-custody claims. Full scope and non-goals in [LIMITATIONS.md](LIMITATIONS.md), [DISCLAIMER.md](DISCLAIMER.md), and [NEGATIVE-USE-CASES.md](NEGATIVE-USE-CASES.md).
 
 ---
 
-## Author
+## Author & disclosures
 
-**Kunjar Bhaduri** — 25+ year FSI technology executive. Rescued a $750M multi-year wealth-management platform deal at Broadridge. Rebuilt production infrastructure on Azure during a 12-day ransomware attack with no DR available. Operator of a private quantitative options research program; these governance patterns were extracted from that program's operational discipline (multi-year build; hundreds of engineering sessions; the source system operates in paper-trading Phase 0 — no live capital deployed).
+**Kunjar Bhaduri** — 25+ year financial-services technology executive. Author of the Autonomy Ladder (A0→A4) AI-governance framework and its six open regulated-vertical reference libraries; founder of North Texas Capital Investments, a self-funded AI-governance research lab. Earlier in his career he rebuilt a regulated production platform on Azure through a 12-day ransomware hard-down with no disaster recovery available; the MVP was restored in 50 days against a six-month plan, with full migration in 75 days. The recovered platform was subsequently certified to SOC 2 Type 2 and ISO 27001. The governance patterns in this library trace to that regulated-production experience.
 
-[LinkedIn](https://linkedin.com/in/kunjarbhaduri) · [NTCI Portfolio](https://github.com/linus10x)
+This is independent research. It is not produced on behalf of, and does not represent the views of, any employer or client, and contains no employer- or client-confidential material. The regulatory content is reference mapping, not legal advice. See [DISCLAIMER.md](DISCLAIMER.md).
+
+[LinkedIn](https://linkedin.com/in/kunjarbhaduri) · [Autonomy Ladder](https://autonomy-ladder.io) · [NTCI Portfolio](https://github.com/linus10x)
 
 ---
 
