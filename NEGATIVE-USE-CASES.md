@@ -2,7 +2,7 @@
 
 **Status:** v1.1.0 · Last reviewed: 2026-05-28.
 
-This document exists because the BigLaw chamber of the council asked it to. Adopters under regulatory scrutiny will be asked, "what does this framework let you claim?" — and counsel will be asked, "what does this framework let your client claim?" The answer to both questions has limits. The list below is the deliberate enumeration of statements adopters and counsel should **not** make in reliance on this framework.
+Adopters under regulatory scrutiny will be asked, "what does this framework let you claim?" — and counsel will be asked, "what does this framework let your client claim?" The answer to both questions has limits. The list below is the deliberate enumeration of statements adopters and counsel should **not** make in reliance on this framework.
 
 Each entry names the false statement, marks it FALSE, and explains why.
 
