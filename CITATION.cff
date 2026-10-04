@@ -55,10 +55,7 @@ abstract: >-
   Insurers, NIST AI RMF, NIST AI 600-1 GenAI Profile, Treasury FS AI
   RMF, ISO/IEC 42001, COSO ICAIR, EU AI Act 2024/1689, DORA
   (Regulation (EU) 2022/2554), PCAOB AS 2201 amendments, and multiple
-  state-AG AI enforcement matters. Patterns were extracted from a
-  multi-year private quantitative options research program with Marcos
-  López de Prado as named advisor on adjacent work; the source program
-  operates in paper-trading Phase 0 — no live capital has been deployed.
+  state-AG AI enforcement matters.
 keywords:
   - AI governance
   - autonomous agents
@@ -71,14 +68,15 @@ keywords:
   - multi-agent systems
   - compliance
 license: "MIT OR Apache-2.0"
-version: "2.2.0"
-date-released: "2026-06-25"
+version: "2.3.0"
+date-released: "2026-06-05"  # STAGED — owner confirms the actual date at tag time (owner gate)
 # Concept DOI (resolves to all versions of the framework):
 #   Author action at tag time — verify the concept DOI from
 #   https://zenodo.org/records/20434570 "Cite all versions" link,
 #   then update this `doi:` field to the concept DOI value.
 # The v1.0.1 version-specific DOI is 10.5281/zenodo.20434570 and remains the
 # canonical citation for the v1 framework artifact. A new version-specific DOI
-# is auto-minted for v2.1.0 via the GitHub-Zenodo webhook on Release publish;
-# the concept DOI below is preferred for forward-resolving citations.
+# is auto-minted for each new version (incl. v2.3.0) via the GitHub-Zenodo
+# webhook on Release publish; the concept DOI below is preferred for
+# forward-resolving citations. NEVER re-tag an already-DOI'd version.
 doi: "10.5281/zenodo.20434570"  # author-action: replace with concept DOI post-Release

@@ -88,6 +88,7 @@ from finserv_agent_audit.governance.audit_chain import AuditChain, AuditChainTam
 # v1.1 Operational (ADR-0004, ADR-0006)
 from finserv_agent_audit.governance.autonomy_ladder import (
     AutonomyTier,
+    CriterionAttestation,
     PromotionGateNotMet,
     PromotionGateReport,
     PromotionRequirements,
@@ -117,6 +118,7 @@ from finserv_agent_audit.governance.deprecation_watch import (
 )
 from finserv_agent_audit.governance.effective_challenge_harness import (
     ChallengeReport,
+    ChallengerIndependence,
     EffectiveChallengeHarness,
 )
 from finserv_agent_audit.governance.equity_audit import (
@@ -286,6 +288,7 @@ __all__ = [
     # Operational
     "AutonomyTier",
     "PromotionGateNotMet",
+    "CriterionAttestation",
     "PromotionGateReport",
     "PromotionRequirements",
     "check_a2_to_a3_promotion",
@@ -303,6 +306,7 @@ __all__ = [
     "RubricScorer",
     "EffectiveChallengeHarness",
     "ChallengeReport",
+    "ChallengerIndependence",
     # v1.3 Customer-facing chatbot guardrail (ADR-0026)
     "ActionClass",
     "CustomerFacingChatbotGuardrail",
