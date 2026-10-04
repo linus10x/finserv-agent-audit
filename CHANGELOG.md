@@ -123,7 +123,7 @@ Documentation release: README rebuilt to the conversion standard (badge row, pro
 - Kyverno policies: `verify-chain-sink.yaml` nested-condition syntax fixed (was silently passing on multi-sink configurations); `require-audit-chain.yaml` + `require-sovereign-veto-armed.yaml` get `failurePolicy: Fail` + `validationFailureAction: Enforce` (was the default `Ignore`/`Audit`, which let admission-controller outages let unaudited workloads in). `match` block constrains to `linus10x.io/v1alpha1/AutonomousAgent`; `background: true` flags existing resources on policy creation.
 - OPA Gatekeeper Rego policies rewritten to fail-closed; `default allow = false` at the top of each ConstraintTemplate.
 
-### Author-action drafts (H2.A — `MANUAL_REMEDIATION_AUTHOR.md` index)
+### Author-action drafts (H2.A)
 The following 11 documents land as DRAFTS for author review — they are not in-effect by virtue of landing in the repo. Each carries an "Author Action Required" preamble naming the decision, the recommendation, and the consequence of inaction.
 - `LICENSE-APACHE-2.0` — full Apache 2.0 text staged alongside MIT (does not replace). Tier-1 bank legal review at major financial institutions routinely declines MIT projects for inbound supply-chain inclusion because MIT lacks an explicit patent grant; Apache 2.0 §3's express patent license is the standard they ask for. Author decision: keep MIT · dual-license · replace with Apache 2.0. Default recommendation: dual-license at adopter election.
 - `docs/ETHICS_WALL.md` — formalizes the information barrier between the research lab's separate work streams and NTCI Consulting LLC (the advisory entity that delivers paid Diagnostics + Audits using this framework). A standard conflict-of-interest disclosure for Tier-1 buyers.

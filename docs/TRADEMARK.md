@@ -121,7 +121,6 @@ All rights in the mark not expressly granted in this document are reserved by th
 
 ## Related
 
-- [`../OWNERSHIP.md`](../OWNERSHIP.md) — IP-holding entity (the trademark holder)
 - [`../LICENSE`](../LICENSE) — copyright license (separate from trademark)
 
 ---

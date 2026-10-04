@@ -109,7 +109,7 @@ The originally-scoped v2.1 was "Ecosystem Completion" (DSPy / LlamaIndex / Graph
 - [x] **CR-1 through CR-12 — all 12 Critical security/correctness findings closed.** See CHANGELOG.md [2.1.0] for the per-CR description.
 - [x] **CI hardening (H1.A)** — SHA-pinned every GitHub Action; new CodeQL + Bandit + pip-audit + gitleaks + OSV-Scanner workflows; pre-commit adds gitleaks/actionlint/yamllint/shellcheck; least-privilege `permissions:` defaults; `concurrency:` blocks.
 - [x] **K8s hardening (H1.D)** — multi-stage digest-pinned operator Dockerfile; `/healthz` + `/readyz` + `/metrics` endpoints; least-privilege RBAC; PDB + topology spread + priority class; fail-closed Kyverno + OPA Gatekeeper policies; `servicemonitor.yaml` + `pvc-sample.yaml` + `networkpolicy.yaml`.
-- [x] **11 Tier-2 author-action drafts (H2.A)** — `MANUAL_REMEDIATION_AUTHOR.md` index, `LICENSE-APACHE-2.0` standby, `ETHICS_WALL.md`, `SOC2_ENGAGEMENT_RFP.md`, `TRADEMARK.md`, `CO_MAINTAINER_RECRUITMENT_DRAFT.md`, `LFAI_SANDBOX_APPLICATION_DRAFT.md`, `COHORT_ZERO_PRICING_PUBLIC.md`, `SIG_LITE_PREFILL.md` + `CAIQ_PREFILL.md` + `BITS_AUP_PREFILL.md`.
+- [x] **11 Tier-2 author-action drafts (H2.A)** — `LICENSE-APACHE-2.0` standby, `ETHICS_WALL.md`, `SOC2_ENGAGEMENT_RFP.md`, `TRADEMARK.md`, `CO_MAINTAINER_RECRUITMENT_DRAFT.md`, `LFAI_SANDBOX_APPLICATION_DRAFT.md`, `COHORT_ZERO_PRICING_PUBLIC.md`, `SIG_LITE_PREFILL.md` + `CAIQ_PREFILL.md` + `BITS_AUP_PREFILL.md`.
 - [x] **Test count 532 → 630** (+98 tests across the 12 CRs); **coverage 91.74% → 93.47%**; `mypy --strict` clean on 46 source files; all linters + drift tests pass.
 
 ---

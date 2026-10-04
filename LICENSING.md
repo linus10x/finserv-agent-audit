@@ -49,4 +49,4 @@ We require Developer Certificate of Origin (DCO) sign-off on every commit (`Sign
 
 License questions: open an issue at [github.com/linus10x/finserv-agent-audit/issues](https://github.com/linus10x/finserv-agent-audit/issues) with the `licensing` label.
 
-Patent / SLAs / commercial-redistribution questions: see [SECURITY.md](SECURITY.md) for the maintainer security contact; for commercial-redistribution discussion specifically, contact `licensing@autonomy-ladder.io` (placeholder pending entity formation).
+Patent / SLAs / commercial-redistribution questions: see [SECURITY.md](SECURITY.md) for the maintainer security contact; for commercial-redistribution discussion specifically, see https://autonomy-ladder.io.
