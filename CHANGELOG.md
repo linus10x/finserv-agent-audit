@@ -388,7 +388,6 @@ The following 11 documents land as DRAFTS for author review — they are not in-
 
 ### Fixed — Voice + brand discipline
 - Tamper-detecting hash-chain (within-trust-boundary) hedging propagated across README, CHANGELOG, defcon module, ADRs 0003/0014/0015, mapping docs (per [audit](https://github.com/linus10x/finserv-agent-audit/issues) D8.1).
-- Trading-program provenance kept to its public-safe description ("a private quantitative options research program") per the author's public-safe rule (audit D5.3 + D5.4).
 - Colorado AI Act citation reconciled to leg.colorado.gov primary source: SB 24-205, signed 2024-05-17, substantive high-risk AI requirements effective 2026-02-01 (audit D4.3).
 - *U.S. v. RealPage* consistently described as ongoing antitrust litigation (M.D.N.C., filed Aug 23, 2024) — corrected from false "settled cases of record" framing in `docs/workbook_v0_outline.md`.
 - Shadow Mode row removed from patterns table during Tranche 1 (file didn't exist at v1.0); re-added in v1.1 patterns table now that `shadow_mode.py` ships.
