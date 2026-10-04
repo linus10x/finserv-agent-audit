@@ -1,7 +1,6 @@
 # CO_MAINTAINER_RECRUITMENT_DRAFT.md — Recruitment post for 2 co-maintainers
 
 **Status:** v1.0 draft · Last reviewed: 2026-05-28
-**Companion to:** [`../MANUAL_REMEDIATION_AUTHOR.md`](../MANUAL_REMEDIATION_AUTHOR.md) Item 7
 **Author:** Kunjar Bhaduri
 
 > **Author note.** This is the LinkedIn-friendly recruitment post the author publishes to find two co-maintainers for the framework's Technical Steering Committee. Cross-post to GitHub Discussions, the author's X account, and (with permission) the LF AI & Data Foundation mailing list once the LF Sandbox application is in motion.
