@@ -348,3 +348,89 @@ class TestChallengeReportDataclass:
         assert report.primary_accuracy == 0.9
         assert report.recommendation == "accept_primary"
         assert report.eval_set_hash == "abc"
+
+
+# --------------------------------------------------------------------------- #
+# P5 — challenger independence: enforce (identity) + record (attestation).
+# --------------------------------------------------------------------------- #
+
+from finserv_agent_audit.governance.effective_challenge_harness import (  # noqa: E402
+    ChallengerIndependence,
+)
+
+
+def _ident(x):  # a deterministic model callable
+    return x
+
+
+def test_self_challenge_rejected_identity() -> None:
+    """challenger_model IS primary_model must raise (no rubber stamp)."""
+    same = _ident
+    with pytest.raises(ValueError, match="not be the same object"):
+        EffectiveChallengeHarness(
+            primary_model=same,
+            challenger_model=same,
+            eval_set=[("a", "a")],
+        )
+
+
+def test_require_independence_without_attestation_fails_closed() -> None:
+    with pytest.raises(ValueError, match="require_independence"):
+        EffectiveChallengeHarness(
+            primary_model=(lambda x: x),
+            challenger_model=(lambda x: x),
+            eval_set=[("a", "a")],
+            require_independence=True,
+        )
+
+
+def test_require_independence_with_full_attestation_constructs() -> None:
+    att = ChallengerIndependence(
+        challenger_id="vendorB-small",
+        chosen_by="second-line-mrm",
+        chosen_at="2026-06-05T00:00:00+00:00",
+        not_same_owner=True,
+        not_same_vendor_family=True,
+        not_same_prompt_template=True,
+        basis="primary=VendorA/frontier; challenger=VendorB/open-weights",
+    )
+    h = EffectiveChallengeHarness(
+        primary_model=(lambda x: x),
+        challenger_model=(lambda x: "different"),
+        eval_set=[("a", "a")],
+        independence=att,
+        require_independence=True,
+    )
+    assert h.independence is att
+
+
+def test_independence_attestation_recorded_on_chain(tmp_path) -> None:
+    import warnings
+
+    from finserv_agent_audit.governance.audit_chain import AuditChain
+
+    att = ChallengerIndependence(
+        challenger_id="vendorB-small",
+        chosen_by="second-line-mrm",
+        chosen_at="2026-06-05T00:00:00+00:00",
+        not_same_owner=True,
+        not_same_vendor_family=True,
+        not_same_prompt_template=True,
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        chain = AuditChain(log_file=tmp_path / "ec.jsonl")
+        h = EffectiveChallengeHarness(
+            primary_model=(lambda x: x),
+            challenger_model=(lambda x: "diff"),
+            eval_set=[("a", "a"), ("b", "b")],
+            audit_chain=chain,
+            independence=att,
+        )
+        h.run()
+        # The MODEL_VALIDATED event payload carries the attestation.
+        last = chain._events[-1]
+        ind = last.payload["challenger_independence"]
+        assert ind["attested"] is True
+        assert ind["chosen_by"] == "second-line-mrm"
+        assert ind["fully_independent"] is True
