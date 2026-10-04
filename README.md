@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)](https://codecov.io/gh/linus10x/finserv-agent-audit)
-[![Tests](https://img.shields.io/badge/tests-724%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-722%20passing-brightgreen)](https://github.com/linus10x/finserv-agent-audit/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20434570.svg)](https://doi.org/10.5281/zenodo.20434570)
@@ -211,7 +211,7 @@ Governance code that cannot itself be trusted is theater. The assurance posture 
 
 - **Hardened to a Tier-1 buyer bar.** v2.1 closed all 12 Critical findings (CR-1..CR-12) from a May 2026 six-chamber adversarial deep-dive (architecture · code · security · test-strategy · DevOps · deployment), calibrated to the questionnaire bar Tier-1 FSI buyer review boards apply: a consolidated `AuditChainTamperError`; a frozen, self-verifying `AuditEvent`; TSA pre-digest bound to event content; a thread- and process-safe `AuditChain`; a domain-separated genesis hash; PII handled via `HashedSubjectId` + `SubjectIdHasher`; a bounded RFC 3161 DER codec with a structural ASN.1 walk and Hypothesis fuzz; an `Authorizer` Protocol with a self-clearing rule; and a deploy-time-pinned `BaselineMIProxy` scaffold. Per-CR detail in [CHANGELOG.md § 2.1.0](CHANGELOG.md).
 - **Zero runtime dependencies.** The base wheel declares `dependencies = []`. Every optional integration (FastAPI, the four agentic-runtime adapters, OTel, MCP, Sigstore/OpenTimestamps witnesses) is import-guarded behind an `HAS_X` flag and a named install extra, so the governance core never pulls a transitive supply-chain surface you did not ask for.
-- **Receipts, run locally:** 724 tests passing · 94% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 47 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
+- **Receipts, run locally:** 722 tests passing · 94% coverage (enforced ≥90% gate, CI fails below) · `mypy --strict` clean across 47 source files · ruff + format + banned-term + tamper-language drift lints clean · a Hypothesis property-based fuzz harness on the hand-rolled DER codec · an adversarial test pack ([`tests/adversarial/`](tests/adversarial/): Garak probes + Promptfoo scenarios + a Python harness coordinating both, per [ADR-0034](docs/adr/0034-adversarial-test-pack.md)).
 - **Supply-chain CI on every push:** CodeQL · Bandit · pip-audit · gitleaks · OSV-Scanner, with every third-party GitHub Action **SHA-pinned**. PyPI Trusted Publishing with PEP 740 Sigstore-attested wheels.
 - **Built for examination** (no examination completed — see [LIMITATIONS.md](LIMITATIONS.md) §9a). [ASSURANCE-GUIDE.md](ASSURANCE-GUIDE.md) is a Big-4 audit-evidence walkthrough (v2.0 PCAOB AS 2201 amendments appendix at [docs/pcaob_as_2201_amendments_2026_appendix.md](docs/pcaob_as_2201_amendments_2026_appendix.md)); [`docs/tier1_buyer_prefills/`](docs/tier1_buyer_prefills/) ships pre-filled SIG Lite, CSA CAIQ v4.0.3, and BITS Shared Assessments AUP questionnaires.
 
@@ -348,13 +348,10 @@ These patterns are not academic. They were extracted from an operational autonom
 **1. Ransomware recovery — no DR, 12-day window**
 When production infrastructure was hard-downed with no disaster recovery available, the Audit Chain and DEFCON patterns provided a verifiable trail of every system decision during the reconstruction period — essential for post-incident regulatory reporting.
 
-**2. Autonomous agent — Phase 0 paper trading**
-The DEFCON state machine governs a six-agent pipeline. It has prevented over 40 simulated runaway conditions during the paper-trading phase by halting execution before loss thresholds were breached.
-
-**3. EU AI Act readiness assessment**
+**2. EU AI Act readiness assessment**
 The EU AI Act mapping document was used as a pre-audit checklist for a large wealth-management platform, mapping each automated decision point to the relevant Article requirements.
 
-**4. Compliance team onboarding**
+**3. Compliance team onboarding**
 The Autonomy Ladder (A0→A4) framework has been used to onboard compliance teams new to AI agent governance — it provides a vocabulary that bridges engineering and regulatory language.
 
 For *illustrative* walkthroughs of how a given primitive would have engaged with the failure mode in named, on-record FSI enforcement matters (Wells Fargo · Schwab Intelligent Portfolios · CFPB Circular 2022-03), see [CASE_STUDIES.md](CASE_STUDIES.md) — honest reference framing, not a claim the control was deployed in any of those matters.
@@ -413,8 +410,6 @@ The framework is dual-licensed MIT OR Apache-2.0 — fork it, ship it, adopt it.
 - **Fractional CAIO / CTO** — 6-12 month interim engagement at FSI institutions and PE portcos; DFW-preferred, remote-friendly
 
 Pricing, methodology pages, and intake form: **[autonomy-ladder.io/services](https://autonomy-ladder.io/services)** · or LinkedIn DM with subject `Diagnostic inquiry` to [Kunjar Bhaduri](https://linkedin.com/in/kunjarbhaduri).
-
-The authority moat sits on the public framework. The open artifact stays open; paid engagements adapt the framework to a buyer's specific risk surface, regulatory regime, and Big-4 audit-evidence requirements.
 
 ---
 
