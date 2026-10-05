@@ -234,7 +234,7 @@ pillow==12.3.0
 platformdirs==4.12.3
 pluggy==1.6.0
 portalocker==2.7.0
-posthog==5.4.0
+posthog==7.62.0
 powerfx==0.0.34
 pre-commit==4.6.2
 priority==2.0.0
