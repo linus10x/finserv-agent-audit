@@ -45,7 +45,6 @@ jobs:
           cryptography>=50.0.2
           agent-framework>=1.20.0
           agent-framework-core>=1.20.0
-          posthog>=7.62.0
           agent-framework-github-copilot>=2.0.1
           agent-framework-a2a>=1.0.0b261002
           agent-framework-ag-ui>=1.5.0
@@ -79,7 +78,7 @@ jobs:
           sed -i 's/^ *//' floor.txt
           X="--extra dev --extra api --extra all-agentic --extra mcp --extra otel --extra test-property"
           printf 'crewai==1.15.23\ncrewai-core==1.15.23\ncrewai-cli==1.15.23\n' > pinC.txt
-          printf 'crewai<1.15.23.dev0\ncrewai-core<1.15.23.dev0\ncrewai-cli<1.15.23.dev0\n' > pinD.txt
+          printf '' > pinD.txt
           for v in 3.12 3.13; do
             for k in C D; do
               echo "=== $k $v BEGIN"
