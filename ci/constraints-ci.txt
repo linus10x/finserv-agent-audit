@@ -27,7 +27,7 @@ agent-framework-github-copilot==1.0.0rc3
 agent-framework-hyperlight==1.0.0b260709
 agent-framework-lab==1.0.0b260709
 agent-framework-mem0==1.0.0b260709
-agent-framework-ollama==1.0.0b260709
+agent-framework-ollama==1.0.0b261002
 agent-framework-openai==1.10.1
 agent-framework-orchestrations==1.0.0
 agent-framework-purview==1.0.0b260709
