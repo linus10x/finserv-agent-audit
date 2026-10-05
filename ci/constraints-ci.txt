@@ -6,6 +6,8 @@
 # langgraph) send pip's resolver into backtracking that does not finish.
 # Held back by upstream caps: openai <3 and posthog <6 (crewai 1.15.x via
 # chromadb 1.1.x), multidict <7 (aiohttp 3.14.x), wrapt <2 (microsoft-opentelemetry).
+# ruff and mypy stay at the versions main already used; ruff 0.16 reformats
+# code blocks in docs and should land on its own.
 # Refresh this file deliberately when dependencies are upgraded.
 a2a-sdk==1.2.2
 ag-ui-protocol==0.1.22
@@ -183,7 +185,7 @@ msal-extensions==1.3.1
 msgspec==0.22.0
 msrest==0.7.1
 multidict==6.9.1
-mypy==2.4.0
+mypy==2.2.0
 mypy-extensions==1.1.0
 nodeenv==1.11.0
 numpy==2.5.3
@@ -276,7 +278,7 @@ requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 rich==14.3.4
 rpds-py==2026.9.1
-ruff==0.16.10
+ruff==0.15.21
 s3transfer==0.19.2
 shellingham==1.5.4
 six==1.17.0
