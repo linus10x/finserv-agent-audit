@@ -9,7 +9,7 @@ updates:
       day: "monday"
       time: "06:00"
       timezone: "America/Chicago"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "python"
@@ -17,6 +17,11 @@ updates:
       prefix: "pip"
       include: "scope"
     groups:
+      # The agent-framework packages pin each other, so they have to move together.
+      agent-framework:
+        patterns:
+          - "agent-framework"
+          - "agent-framework-*"
       python-minor-patch:
         update-types:
           - "minor"
@@ -37,7 +42,6 @@ updates:
       prefix: "actions"
       include: "scope"
     groups:
-      actions-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
+      github-actions:
+        patterns:
+          - "*"
