@@ -73,7 +73,7 @@ coverage==7.15.0
 crewai==1.15.2
 crewai-cli==1.15.2
 crewai-core==1.15.2
-cryptography==49.0.0
+cryptography==50.0.2
 culsans==0.11.0
 deprecation==2.1.0
 distlib==0.4.3
