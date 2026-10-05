@@ -192,7 +192,7 @@ numpy==2.5.3
 oauthlib==4.0.0
 ollama==0.5.3
 onnxruntime==1.30.0
-openai==2.54.0
+openai==3.24.0
 openai-agents==0.20.0
 openai-chatkit==1.6.5
 openpyxl==3.1.5
