@@ -78,11 +78,12 @@ jobs:
           EOF
           sed -i 's/^ *//' floor.txt
           X="--extra dev --extra api --extra all-agentic --extra mcp --extra otel --extra test-property"
+          printf 'crewai==1.15.23\ncrewai-core==1.15.23\ncrewai-cli==1.15.23\n' > pinC.txt
+          printf 'crewai<1.15.23.dev0\ncrewai-core<1.15.23.dev0\ncrewai-cli<1.15.23.dev0\n' > pinD.txt
           for v in 3.12 3.13; do
-            echo "=== A $v BEGIN"
-            uv pip compile pyproject.toml $X -c floor.txt --python-version "$v" --python-platform x86_64-unknown-linux-gnu --no-header --no-annotate 2>&1 || echo "A $v FAILED"
-            echo "=== A $v END"
-            echo "=== B $v BEGIN"
-            uv pip compile pyproject.toml floor.txt $X --python-version "$v" --python-platform x86_64-unknown-linux-gnu --no-header --no-annotate 2>&1 || echo "B $v FAILED"
-            echo "=== B $v END"
+            for k in C D; do
+              echo "=== $k $v BEGIN"
+              uv pip compile pyproject.toml $X -c floor.txt -c pin$k.txt --python-version "$v" --python-platform x86_64-unknown-linux-gnu --no-header --no-annotate 2>&1 || echo "$k $v FAILED"
+              echo "=== $k $v END"
+            done
           done
