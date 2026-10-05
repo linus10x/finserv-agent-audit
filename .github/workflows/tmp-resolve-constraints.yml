@@ -26,8 +26,23 @@ jobs:
       - name: Resolve with uv
         run: |
           python -m pip install --upgrade pip uv
-          grep -v '^#' ci/constraints-ci.txt | sed 's/==/>=/' > floor.txt
-          cat >> floor.txt <<'EOF'
+          cat > floor.txt <<'EOF'
+          pytest>=9.1.1
+          pytest-cov>=7.1.0
+          mypy>=2.2.0
+          ruff>=0.15.21
+          pre-commit>=4.6.0
+          hypothesis>=6.156.5
+          mcp>=1.26.0
+          opentelemetry-api>=1.42.1
+          opentelemetry-sdk>=1.42.1
+          a2a-sdk>=1.1.0
+          langgraph>=1.2.9
+          crewai>=1.15.2
+          fastapi>=0.138.0
+          uvicorn>=0.51.0
+          httpx>=0.28.1
+          cryptography>=50.0.2
           agent-framework>=1.20.0
           agent-framework-core>=1.20.0
           posthog>=7.62.0
