@@ -23,7 +23,7 @@ agent-framework-devui==1.0.0b260709
 agent-framework-durabletask==1.0.0b260709
 agent-framework-foundry==1.10.1
 agent-framework-foundry-local==1.0.0b260521
-agent-framework-github-copilot==1.0.0rc3
+agent-framework-github-copilot==2.0.1
 agent-framework-hyperlight==1.0.0b260709
 agent-framework-lab==1.0.0b260709
 agent-framework-mem0==1.0.0b260709
