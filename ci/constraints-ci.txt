@@ -30,7 +30,7 @@ agent-framework-mem0==1.0.0b260709
 agent-framework-ollama==1.0.0b260709
 agent-framework-openai==1.10.1
 agent-framework-orchestrations==1.0.0
-agent-framework-purview==1.0.0b260709
+agent-framework-purview==1.0.0b261002
 agent-framework-redis==1.0.0b260521
 aiofiles==24.1.0
 aiohappyeyeballs==2.7.1
