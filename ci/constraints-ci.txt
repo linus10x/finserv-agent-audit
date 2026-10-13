@@ -11,9 +11,12 @@
 # Refresh this file deliberately when dependencies are upgraded.
 # Refreshed 2026-10-13 from the Dependabot python-minor-patch group (PR #61):
 # re-resolved with uv for 3.12 and 3.13 using the group's pins as preferences and
-# main's pins as floors. Held at main by upstream caps: agent-framework 1.21
-# (its anthropic extra needs anthropic 1.x, kept at 0.x), crewai 1.15.27's pins
-# (pydantic <2.13, regex, tomli, tomli-w, lancedb), ruff and mypy.
+# main's pins as floors; anthropic stays below 1 and the holds above still apply.
+# 30 of the group's 89 bumps stay at main's version. Among them: agent-framework
+# 1.21 (it pulls agent-framework-core[all], which needs agent-framework-anthropic
+# 1.0.0b261008 and so anthropic 1.x), crewai 1.15.27's pins (aiosqlite,
+# instructor, json-repair, json5, lancedb, pydantic <2.13, regex, tomli, tomli-w),
+# and ruff and mypy as above.
 a2a-sdk==1.2.2
 ag-ui-protocol==0.1.22
 agent-framework==1.20.0
