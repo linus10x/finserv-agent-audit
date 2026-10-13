@@ -4,8 +4,10 @@
 # 3.13 on Linux x86_64, combined. aiologic and culsans are only pulled in on 3.12.
 # Without these, the unbounded optional extras (crewai, agent-framework,
 # langgraph) send pip's resolver into backtracking that does not finish.
-# Held back by upstream caps: openai <3 and posthog <6 (crewai 1.15.x via
-# chromadb 1.1.x), multidict <7 (aiohttp 3.14.x), wrapt <2 (microsoft-opentelemetry).
+# Held back by upstream caps: openai <3 (crewai 1.15.27), multidict <7
+# (aiohttp 3.14.x), wrapt <2 (microsoft-opentelemetry). posthog stays below 6
+# by choice: the chromadb 1.1.x cap that set it is gone, and lifting it (with
+# mem0ai 2.2.1, which needs posthog 7.14 or later) should land on its own.
 # ruff and mypy stay at the versions main already used; ruff 0.16 reformats
 # code blocks in docs and should land on its own.
 # Refresh this file deliberately when dependencies are upgraded.
