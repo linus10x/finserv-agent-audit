@@ -4,16 +4,26 @@
 # 3.13 on Linux x86_64, combined. aiologic and culsans are only pulled in on 3.12.
 # Without these, the unbounded optional extras (crewai, agent-framework,
 # langgraph) send pip's resolver into backtracking that does not finish.
-# Held back by upstream caps: openai <3 and posthog <6 (crewai 1.15.x via
-# chromadb 1.1.x), multidict <7 (aiohttp 3.14.x), wrapt <2 (microsoft-opentelemetry).
+# Held back by upstream caps: openai <3 (crewai 1.15.27), multidict <7
+# (aiohttp 3.14.x), wrapt <2 (microsoft-opentelemetry). posthog stays below 6
+# by choice: the chromadb 1.1.x cap that set it is gone, and lifting it (with
+# mem0ai 2.2.1, which needs posthog 7.14 or later) should land on its own.
 # ruff and mypy stay at the versions main already used; ruff 0.16 reformats
 # code blocks in docs and should land on its own.
 # Refresh this file deliberately when dependencies are upgraded.
+# Refreshed 2026-10-13 from the Dependabot python-minor-patch group (PR #61):
+# re-resolved with uv for 3.12 and 3.13 using the group's pins as preferences and
+# main's pins as floors; anthropic stays below 1 and the holds above still apply.
+# 30 of the group's 89 bumps stay at main's version. Among them: agent-framework
+# 1.21 (it pulls agent-framework-core[all], which needs agent-framework-anthropic
+# 1.0.0b261008 and so anthropic 1.x), crewai 1.15.27's pins (aiosqlite,
+# instructor, json-repair, json5, lancedb, pydantic <2.13, regex, tomli, tomli-w),
+# and ruff and mypy as above.
 a2a-sdk==1.2.2
 ag-ui-protocol==0.1.22
 agent-framework==1.20.0
 agent-framework-a2a==1.0.0b261002
-agent-framework-ag-ui==1.5.0
+agent-framework-ag-ui==1.5.1
 agent-framework-anthropic==1.0.0b261002
 agent-framework-azure-ai-search==1.0.0b261002
 agent-framework-azure-contentunderstanding==1.0.0b261002
@@ -24,7 +34,7 @@ agent-framework-chatkit==1.0.0b261002
 agent-framework-claude==1.0.0b261002
 agent-framework-copilotstudio==1.0.0b261002
 agent-framework-core==1.20.0
-agent-framework-declarative==1.2.0
+agent-framework-declarative==1.2.1
 agent-framework-devui==1.0.0b261002
 agent-framework-durabletask==1.0.0b260922
 agent-framework-foundry==1.14.0
@@ -37,8 +47,8 @@ agent-framework-mem0==1.0.0b261002
 agent-framework-mistral==1.0.0b260918
 agent-framework-monty==1.0.0b261008
 agent-framework-ollama==1.0.0b261002
-agent-framework-openai==1.15.0
-agent-framework-orchestrations==1.3.0
+agent-framework-openai==1.16.0
+agent-framework-orchestrations==1.3.1
 agent-framework-purview==1.0.0b261002
 agent-framework-redis==1.0.0b261002
 agent-framework-tools==1.0.0b261002
@@ -69,27 +79,27 @@ azure-cosmos==4.17.1
 azure-functions==1.25.0
 azure-functions-durable==1.7.0
 azure-identity==1.26.0
-azure-monitor-opentelemetry-exporter==1.0.0b57
+azure-monitor-opentelemetry-exporter==1.0.0b58
 azure-search-documents==12.0.0
 azure-storage-blob==12.31.0
 backoff==2.2.1
 bcrypt==5.0.0
-boto3==1.43.108
-botocore==1.43.108
+boto3==1.43.111
+botocore==1.43.111
 build==1.6.1
 cel-python==0.5.0
 certifi==2026.7.22
 cffi==2.0.0
 cfgv==3.5.0
 charset-normalizer==3.5.2
-chromadb==1.1.1
-claude-agent-sdk==0.2.163
+chromadb==1.5.9
+claude-agent-sdk==0.2.165
 click==8.5.0
 clr-loader==0.2.10
 coverage==7.16.2
-crewai==1.15.23
-crewai-cli==1.15.23
-crewai-core==1.15.23
+crewai==1.15.27
+crewai-cli==1.15.27
+crewai-core==1.15.27
 cryptography==50.0.2
 culsans==0.11.0
 deprecation==2.1.0
@@ -102,7 +112,7 @@ durationpy==0.11
 et-xmlfile==2.0.0
 eval-type-backport==0.4.0
 fastapi==0.141.1
-filelock==4.0.12
+filelock==4.1.0
 filetype==1.2.0
 flatbuffers==25.12.19
 foundry-local-sdk==0.5.1
@@ -110,20 +120,20 @@ frozenlist==1.8.0
 fsspec==2026.9.0
 furl==2.1.4
 github-copilot-sdk==1.0.11
-google-api-core==2.41.0
-google-auth==2.60.0
-google-genai==2.28.0
+google-api-core==2.42.0
+google-auth==2.61.0
+google-genai==2.29.0
 google-re2==1.1.20251105
 googleapis-common-protos==1.75.5
-griffelib==2.3.0
+griffelib==2.3.2
 grpcio==1.84.0
 h11==0.16.0
 h2==4.4.1
-hf-xet==1.6.0
+hf-xet==1.7.0
 hpack==4.2.0
 httpcore==1.0.9
 httpcore2==2.13.1
-httptools==0.8.0
+httptools==0.9.0
 httpx==0.28.1
 httpx-sse==0.4.3
 httpx2==2.13.1
@@ -133,11 +143,11 @@ hyperframe==6.1.0
 hyperlight-sandbox==0.7.0
 hyperlight-sandbox-backend-wasm==0.7.0
 hyperlight-sandbox-python-guest==0.7.0
-hypothesis==6.168.4
+hypothesis==6.168.5
 identify==2.6.20
 idna==3.20
 importlib-resources==7.1.0
-iniconfig==2.3.0
+iniconfig==2.3.1
 instructor==1.15.4
 isodate==0.7.2
 jinja2==3.1.6
@@ -146,10 +156,10 @@ jmespath==1.1.0
 json-repair==0.60.1
 json-rpc==1.15.0
 json5==0.10.0
-jsonpatch==1.33
-jsonpath-ng==1.8.0
+jsonpatch==1.34
+jsonpath-ng==1.10.0
 jsonpath-python==1.1.6
-jsonpointer==3.1.1
+jsonpointer==3.2.1
 jsonref==1.1.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
@@ -157,13 +167,13 @@ kubernetes==36.0.3
 lance-namespace==0.13.0
 lance-namespace-urllib3-client==0.13.0
 lancedb==0.30.0
-langchain-core==1.6.6
+langchain-core==1.6.9
 langchain-protocol==0.0.19
-langgraph==1.2.13
+langgraph==1.2.14
 langgraph-checkpoint==4.2.0
 langgraph-prebuilt==1.1.0
-langgraph-sdk==0.4.5
-langsmith==0.14.4
+langgraph-sdk==0.4.6
+langsmith==0.14.7
 lark==1.3.1
 librt==0.16.0
 linkify-it-py==2.2.0
@@ -176,7 +186,7 @@ mem0ai==2.0.5
 microsoft-agents-activity==1.8.0
 microsoft-agents-copilotstudio-client==1.8.0
 microsoft-agents-hosting-core==1.8.0
-microsoft-opentelemetry==1.3.9
+microsoft-opentelemetry==1.4.0
 mistralai==2.10.1
 ml-dtypes==0.6.0
 mmh3==5.3.1
@@ -188,41 +198,43 @@ multidict==6.9.1
 mypy==2.2.0
 mypy-extensions==1.1.0
 nodeenv==1.11.0
-numpy==2.5.3
+numpy==2.5.4
 oauthlib==4.0.0
 ollama==0.5.3
-onnxruntime==1.30.0
+onnxruntime==1.31.0
 openai==2.54.0
 openai-agents==0.20.0
 openai-chatkit==1.6.5
 openpyxl==3.1.5
-opentelemetry-api==1.44.0
-opentelemetry-exporter-otlp-proto-common==1.44.0
-opentelemetry-exporter-otlp-proto-grpc==1.44.0
-opentelemetry-exporter-otlp-proto-http==1.44.0
-opentelemetry-instrumentation==0.65b0
-opentelemetry-instrumentation-asgi==0.65b0
-opentelemetry-instrumentation-dbapi==0.65b0
-opentelemetry-instrumentation-django==0.65b0
-opentelemetry-instrumentation-fastapi==0.65b0
-opentelemetry-instrumentation-flask==0.65b0
-opentelemetry-instrumentation-httpx==0.65b0
-opentelemetry-instrumentation-logging==0.65b0
+opentelemetry-api==1.45.1
+opentelemetry-exporter-http-transport==0.66b1
+opentelemetry-exporter-otlp-common==0.66b1
+opentelemetry-exporter-otlp-proto-common==1.45.1
+opentelemetry-exporter-otlp-proto-grpc==1.45.1
+opentelemetry-exporter-otlp-proto-http==1.45.1
+opentelemetry-instrumentation==0.66b1
+opentelemetry-instrumentation-asgi==0.66b1
+opentelemetry-instrumentation-dbapi==0.66b1
+opentelemetry-instrumentation-django==0.66b1
+opentelemetry-instrumentation-fastapi==0.66b1
+opentelemetry-instrumentation-flask==0.66b1
+opentelemetry-instrumentation-httpx==0.66b1
+opentelemetry-instrumentation-logging==0.66b1
 opentelemetry-instrumentation-openai-agents-v2==0.1.0
 opentelemetry-instrumentation-openai-v2==2.3b0
-opentelemetry-instrumentation-psycopg2==0.65b0
-opentelemetry-instrumentation-requests==0.65b0
-opentelemetry-instrumentation-urllib==0.65b0
-opentelemetry-instrumentation-urllib3==0.65b0
-opentelemetry-instrumentation-wsgi==0.65b0
-opentelemetry-proto==1.44.0
+opentelemetry-instrumentation-psycopg2==0.66b1
+opentelemetry-instrumentation-requests==0.66b1
+opentelemetry-instrumentation-urllib==0.66b1
+opentelemetry-instrumentation-urllib3==0.66b1
+opentelemetry-instrumentation-wsgi==0.66b1
+opentelemetry-proto==1.45.1
 opentelemetry-resource-detector-azure==0.3.0
-opentelemetry-sdk==1.44.0
-opentelemetry-semantic-conventions==0.65b0
+opentelemetry-sdk==1.45.1
+opentelemetry-semantic-conventions==0.66b1
 opentelemetry-util-genai==0.3b0
-opentelemetry-util-http==0.65b0
+opentelemetry-util-http==0.66b1
 orderedmultidict==1.0.2
-orjson==3.12.0
+orjson==3.13.0
 ormsgpack==1.12.2
 overrides==7.7.0
 packaging==26.3
@@ -231,7 +243,7 @@ pdfminer-six==20260107
 pdfplumber==0.11.10
 pendulum==3.2.0
 pillow==12.3.0
-platformdirs==4.12.3
+platformdirs==4.12.4
 pluggy==1.6.0
 portalocker==2.7.0
 posthog==5.4.0
@@ -246,7 +258,7 @@ pyarrow==26.0.0
 pyasn1==0.6.4
 pyasn1-modules==0.4.2
 pybase64==1.5.1
-pycparser==3.0
+pycparser==3.11
 pydantic==2.12.5
 pydantic-core==2.41.5
 pydantic-monty==0.0.23
@@ -261,7 +273,7 @@ pyproject-hooks==1.3.3
 pytest==9.1.1
 pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
-python-discovery==1.6.1
+python-discovery==1.6.2
 python-dotenv==1.2.4
 python-multipart==0.0.32
 python-ulid==4.0.1
@@ -284,17 +296,17 @@ shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
 sortedcontainers==2.4.0
-sqlalchemy==2.1.3
+sqlalchemy==2.1.4
 sse-starlette==3.5.0
 starlette==1.7.0
 tenacity==9.1.4
 textual==8.2.8
-tokenizers==0.23.2
+tokenizers==0.23.3
 tomli==2.0.2
 tomli-w==1.1.0
 tqdm==4.70.1
 truststore==0.10.4
-typer==0.27.2
+typer==0.27.3
 typing-extensions==4.16.0
 typing-inspection==0.4.4
 tzdata==2026.5
@@ -303,7 +315,7 @@ uuid-utils==0.17.1
 uv==0.11.33
 uvicorn==0.54.0
 uvloop==0.23.0
-virtualenv==21.14.5
+virtualenv==21.14.6
 watchfiles==1.3.0
 websocket-client==1.9.2
 websockets==16.1.1
