@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """SEO checks for the finserv docs crawl files. Exits non-zero on failure."""
+
 import re
 import sys
 from pathlib import Path
@@ -9,14 +10,14 @@ sys.path.insert(0, str(ROOT / "tools"))
 import build_llms_full  # noqa: E402
 
 BOTS = ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"]
-errors = []
+errors: list[str] = []
 
 
-def fail(msg):
+def fail(msg: str) -> None:
     errors.append(msg)
 
 
-def main():
+def main() -> int:
     robots = (ROOT / "docs" / "robots.txt").read_text()
     for bot in BOTS:
         if f"User-agent: {bot}\nAllow: /\n" not in robots:

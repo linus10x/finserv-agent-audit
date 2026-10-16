@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Write docs/llms-full.txt from each sitemap URL's opening lines. No new claims."""
+
 import re
 from pathlib import Path
 
@@ -8,7 +9,7 @@ DOCS = ROOT / "docs"
 ORIGIN = "https://linus10x.github.io/finserv-agent-audit"
 
 
-def opening(text: str) -> tuple:
+def opening(text: str) -> tuple[str, str]:
     title = ""
     paras = []
     buf = []
@@ -45,7 +46,7 @@ def render() -> str:
         "",
     ]
     for loc in locs:
-        rel = loc[len(ORIGIN):].strip("/")
+        rel = loc[len(ORIGIN) :].strip("/")
         path = DOCS / "index.md" if not rel else DOCS / f"{rel}.md"
         if not path.is_file():
             parts += [f"## {loc}", "", "(no matching markdown file)", ""]
@@ -55,7 +56,7 @@ def render() -> str:
     return "\n".join(parts).rstrip() + "\n"
 
 
-def main():
+def main() -> None:
     out = DOCS / "llms-full.txt"
     out.write_text(render(), encoding="utf-8")
     print(f"wrote {out} ({out.stat().st_size} bytes)")
