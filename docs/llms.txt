@@ -3,6 +3,7 @@
 > Governance patterns for autonomous AI agents in regulated financial services. The public docs site is generated from the docs folder of linus10x/finserv-agent-audit.
 
 Site: https://linus10x.github.io/finserv-agent-audit/
+Full page openings: https://linus10x.github.io/finserv-agent-audit/llms-full.txt
 Code: https://github.com/linus10x/finserv-agent-audit
 Author, from CITATION.cff: Kunjar Bhaduri.
 

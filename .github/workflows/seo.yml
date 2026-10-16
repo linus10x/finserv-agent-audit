@@ -1,0 +1,17 @@
+name: seo
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SEO and AI crawl files
+        run: python3 tools/check_seo.py

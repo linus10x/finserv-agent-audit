@@ -1,0 +1,465 @@
+# finserv-agent-audit
+
+> Opening lines of each docs page, copied from the markdown. This file does not add prices, customers, reviews, or a street address.
+
+## https://linus10x.github.io/finserv-agent-audit/
+
+finserv-agent-audit
+
+Governance patterns for autonomous AI agents in regulated financial services. This documentation site is a stub. Full docs are in the repository.
+
+## https://linus10x.github.io/finserv-agent-audit/CO_MAINTAINER_RECRUITMENT_DRAFT
+
+CO_MAINTAINER_RECRUITMENT_DRAFT.md — Recruitment post for 2 co-maintainers
+
+Status: v1.0 draft · Last reviewed: 2026-05-28 Author: Kunjar Bhaduri Author note. This is the LinkedIn-friendly recruitment post the author publishes to find two co-maintainers for the framework's Technical Steering Committee. Cross-post to GitHub Discussions, the author's X account, and (with permission) the LF AI & Data Foundation mailing list once the LF Sandbox application is in motion.
+
+## https://linus10x.github.io/finserv-agent-audit/DEFCON_ARCHITECTURE
+
+DEFCON Architecture — Design Decisions
+
+This document explains the architectural decisions behind the DEFCON state machine implementation and provides guidance for calibrating it to your system.
+
+## https://linus10x.github.io/finserv-agent-audit/MRM_BRIDGE_TEMPLATE
+
+MRM Bridge Whitepaper — Agentic-AI Governance Pre-RFI
+
+A forkable internal whitepaper template for second-line model-risk-management teams. This template is designed to be filled in by a bank's second-line MRM function and submitted to the firm's Model Risk Committee, Chief Risk Officer, Audit Committee chair, and (where applicable) the prudential examiner of record as the documented rationale for adopting finserv-agent-audit v1.x as the operational reference for agentic-AI workloads during the period between OCC Bulletin 2026-13
+
+## https://linus10x.github.io/finserv-agent-audit/PYPI_TRUSTED_PUBLISHING_SETUP
+
+PyPI Trusted Publishing Setup
+
+One-time configuration the maintainer performs on PyPI + TestPyPI + GitHub so that .github/workflows/publish.yml can publish wheels and sdists without long-lived API tokens, and so each artifact ships with a PEP 740 Sigstore attestation. This document is operator-facing. It is not loaded at runtime.
+
+## https://linus10x.github.io/finserv-agent-audit/TRADEMARK
+
+TRADEMARK.md — Trademark usage guidelines
+
+Status: v1.0 · Draft pending counsel review · Last reviewed: 2026-05-28 Companion to: ../OWNERSHIP.md Trademark holder: Kunjar Bhaduri Contact: https://autonomy-ladder.io Counsel review required. This document is the author's drafted policy on permitted and prohibited uses of the "Autonomy Ladder" mark. The operative legal status of every claim below is subject to IP-counsel review before public reliance. Adopters should treat this as the published policy and consult their ow
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0001-defcon-state-machine
+
+ADR-0001: DEFCON State Machine
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0002-sovereign-veto
+
+ADR-0002: Sovereign Veto
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0003-hash-chain-audit
+
+ADR-0003: Internally-Consistent Hash-Chained Audit Ledger
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0004-autonomy-ladder-a0-a4
+
+ADR-0004: Autonomy Ladder A0 to A4
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0005-eu-ai-act-mapping
+
+ADR-0005 · EU AI Act Mapping for Autonomous FSI Agents
+
+Status: Accepted Date: 2026-05-28 Decider: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0006-shadow-mode-rollout
+
+ADR-0006 · Shadow Mode Rollout for FSI Agent Capabilities
+
+Status: Accepted Date: 2026-05-28 Decider: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0007-sr-11-7-overlay
+
+ADR-0007 · SR 11-7 Three-Lines-of-Defense Overlay for Autonomous Agent Patterns
+
+Status: Accepted Date: 2026-05-28 Decider: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md. Citation update (April 17, 2026): SR 11-7 was superseded for new examination cycles and OCC Bulletin 2011-12 was rescinded by the joint OCC / FRB / FDIC issuance of April 17, 2026
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0008-glba-safeguards
+
+ADR-0008 · GLBA Safeguards Rule — Customer NPI Partitioning
+
+Status: Accepted · FSI-native Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0009-fcra-reg-v-adverse-action
+
+ADR-0009 · FCRA § 615 / Reg V — AdverseActionGate
+
+Status: Accepted · FSI-native Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0010-ecoa-reg-b-fair-lending
+
+ADR-0010 · ECOA / Reg B — EquityAudit Pre-Flight Gate
+
+Status: Accepted · FSI-native Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0011-bsa-aml-sar-workflow
+
+ADR-0011 · BSA / AML — SARWorkflowAudit
+
+Status: Accepted · FSI-native Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0012-sox-404-itgc
+
+ADR-0012: SOX 404 IT General Controls Overlay
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's internal-audit function. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0013-sec-17a-4-worm
+
+ADR-0013: SEC Rule 17a-4 WORM Persistence for the Audit Chain
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's records-retention function. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0014-persistence-witness-timestamp-pattern
+
+ADR-0014: Pluggable Persistence, Trusted Timestamps, External Witness Anchoring, and Verifier Integrity
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md. Citation update (April 17, 2026): Where this ADR references SR 11-7 / OCC Bulletin 2011-12 as the prudential MRM citation, note that those instruments were superseded for new exami
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0015-mi-proxy-module-integrity
+
+ADR-0015: MI Proxy — Module Integrity Verifier Chain-of-Custody
+
+Status: Accepted Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Pairs with: ADR-0014 (persistence / timestamps / witness anchor seams) Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's model-risk-management function. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md. Citation update (April 17, 2026): Where this ADR references SR 
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0016-vendor-score-gate
+
+ADR-0016: Vendor Score Gate for FSI Third-Party Model Adapters
+
+Status: Accepted — Design + Reference Implementation (v1.1) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's model-risk-management function. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0017-audit-chain-retention-privilege-discovery
+
+ADR-0017 · Audit-Chain Retention, Privilege & Discovery Posture (FSI)
+
+Status: Accepted · v1.1 · layered policy ADR (no separate runtime primitive) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. See repo-root DISCLAIMER.md. Citation update (April 17, 2026): Where this ADR references SR 11-7 / OCC Bulletin 2011-12 as the prudential MRM citation, note that those instruments were superseded for new examina
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0018-adversarial-agent-threat-model
+
+ADR-0018 · Adversarial Agent Threat Model
+
+Status: Accepted · v1.1 · scope-defining ADR Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 Reference pattern, not legal advice. Threat-model characterizations are summaries; readers must consult qualified security counsel and red-team practitioners. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0019-protected-class-proxy-detector-deferred
+
+ADR-0019 · Protected-Class Proxy Detector — Deferred-Implementation Tracking
+
+Status: Accepted (shipped in v1.2) · v1.1 deferral closed in v1.2 Date: 2026-05-28 (v1.1 deferral) · 2026-05-28 (v1.2 ship reconciliation) Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.1 → v1.2 Reference pattern, not legal advice. Fair-lending characterizations are summaries; readers must consult qualified counsel and qualified fair-lending statisticians. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0020-lda-search
+
+ADR-0020 · LDA Search — Less Discriminatory Alternative Harness
+
+Status: Accepted · v1.3 · ships with v1.3.0 Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Fair-lending characterizations are summaries; readers must consult qualified counsel and qualified fair-lending statisticians. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0021-llm-disparate-impact-harness
+
+ADR-0021 · LLM Disparate-Impact Harness
+
+Status: Accepted · v1.3 · ships with v1.3.0 Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Disparate-impact characterizations are summaries; readers must consult qualified counsel and qualified fair-lending / employment-discrimination statisticians. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0022-effective-challenge-harness
+
+ADR-0022 · Effective Challenge Harness for Frontier-API Models
+
+Status: Accepted · v1.3 · ships with v1.3.0 Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Model-risk-management characterizations are summaries; readers must consult qualified counsel and qualified MRM practitioners. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0023-vendor-attestation-ledger
+
+ADR-0023 · Vendor Attestation Ledger for Foundation-Model + AI-Vendor Surface
+
+Status: Accepted — Design + Reference Implementation (v1.3) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's TPRM function. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0024-retraining-cadence-monitor
+
+ADR-0024 · Retraining Cadence Monitor — Bridge Framework for Generative + Agentic AI
+
+Status: Accepted — Design + Reference Implementation (v1.3) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0025-deprecation-watch
+
+ADR-0025 · Deprecation Watch — Foundation-Model Sunset Early-Warning Harness
+
+Status: Accepted — Design + Reference Implementation (v1.3) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel. No attorney-client relationship is formed by use of this ADR. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0026-customer-facing-chatbot-guardrail
+
+ADR-0026 · Customer-Facing Chatbot Guardrail
+
+Status: Accepted (shipped in v1.3) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v1.3 Reference pattern, not legal advice. Precedent characterizations are summaries; readers must consult qualified counsel for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0027-a2a-adapter
+
+ADR-0027 · A2A (Agent2Agent) Protocol Audit Adapter
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0028-langgraph-adapter
+
+ADR-0028 · LangGraph Audit Callback Adapter
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0029-maf-adapter
+
+ADR-0029 · Microsoft Agent Framework (MAF) Audit Adapter
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0030-crewai-adapter
+
+ADR-0030 · CrewAI Audit Adapter
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0031-aibom-generator
+
+ADR-0031 · AIBOM Generator — CycloneDX 1.7 ML-BOM + SPDX 3.0 AI Profile Dual Emit
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdictional applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0032-governance-api
+
+ADR-0032 · FastAPI Governance API — OpenAPI 3.1 + SSE Streaming Chain Verification
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel for jurisdictional applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0033-kubernetes-operator
+
+ADR-0033 · Kubernetes Operator + CRDs + Admission Policies for Cluster-Native Deployment
+
+Status: Accepted — Reference CRDs + Stub Controller + Sample Admission Policies (v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Regulatory characterizations are summaries; readers must consult qualified counsel and the firm's TPRM, security, and platform-engineering functions. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/0034-adversarial-test-pack
+
+ADR-0034 · Adversarial Test Pack
+
+Status: Accepted (shipped in v2.0) Date: 2026-05-28 Author: Kunjar Bhaduri Repo: finserv-agent-audit v2.0 Reference pattern, not legal advice. Vendor characterizations and license terms are summaries; readers must consult qualified counsel and security practitioners for jurisdiction-specific applicability. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/adr/ops/OPS-001-ci-self-heal-loop
+
+OPS-001: CI Self-Healing Watch Loop
+
+Status: ACTIVE Date: 2026-05-15 Author: Kunjar Bhaduri Repo: finserv-agent-audit Scope note: This ADR records an internal CI tooling decision (the scripts/ciwatch.py self-heal loop) and is not part of the published governance pattern set. Governance ADRs live in docs/adr/ numbered 0001 onward. Operational tooling ADRs live here in docs/adr/ops/ with the OPS-NNN prefix.
+
+## https://linus10x.github.io/finserv-agent-audit/adversarial_testing_guide
+
+Adversarial Testing Guide — finserv-agent-audit v2.0
+
+Reference pattern, not legal advice. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/agentic_ai_governance_maturity_model
+
+Agentic-AI Governance Maturity Model
+
+Status: v1.2.0-draft · Last reviewed: 2026-05-28. Audience: Chief AI Officer, Chief Risk Officer, Chief Internal Auditor, Big-4 advisory partner advising an FSI client on its agentic-AI governance trajectory. Patterns are software, not legal advice. The maturity levels below are a self-assessment scaffolding, not a regulatory rating. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/ai_incident_retrospective_template
+
+AI Incident Retrospective Template
+
+A Google-SRE-style postmortem template adapted for AI-incident retrospectives in financial-services institutions. Aligned to NIST AI RMF GOVERN-6.2 (incident response practices), the FFIEC IT Examination Handbook, and the 23 NYCRR Part 500 § 500.16 incident- response expectations. Banks have no standard format for AI-internal incident retrospectives. The MRM second line uses SR 11-7 validation memoranda; the security team uses cybersecurity-event incident reports; the operati
+
+## https://linus10x.github.io/finserv-agent-audit/autonomy_ladder
+
+Autonomy Ladder — A0 through A4
+
+A proprietary governance framework for classifying autonomous AI agent behavior by the level of human oversight required at each decision point. Status: Proprietary framework — documented in this repository. This is not a published standard. It is a practitioner's classification system extracted from building and governing a production-bound multi-agent system in a regulated financial environment.
+
+## https://linus10x.github.io/finserv-agent-audit/big4_engagement_letter_exhibit
+
+Big-4 Engagement Letter Exhibit — AI / Agentic-AI Assurance
+
+Status: v1.2.0-draft · Last reviewed: 2026-05-28. Format: Drop-in exhibit for attachment to a Statement of Work between a Big-4 (or comparable assurance) firm and an audit client whose AI / agentic-AI surface uses finserv-agent-audit v1.x. Patterns are software, not legal advice. This exhibit is a starting-point template; firm counsel + engagement-team leadership must finalize the language for the specific audit, client, and jurisdiction. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/bsa_aml_mapping
+
+BSA / AML — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to the anti-money-laundering program requirements of the Bank Secrecy Act, codified at 31 U.S.C. § 5318(h), and to the FinCEN guidance that frames how AI and machine-learning techniques are treated inside that program. Autonomous agents working KYC adjudication, transaction monitoring, sanctions screening, or SAR-narrative drafting sit squarely inside the BSA/AML control perimeter and are subject to the same four p
+
+## https://linus10x.github.io/finserv-agent-audit/caio_first_90_days_playbook
+
+Chief AI Officer — First 90 Days Playbook
+
+Status: v1.2.0-draft · Last reviewed: 2026-05-28. Audience: Newly hired Chief AI Officer at a Tier-1 or large-regional US bank, wealth platform, insurance carrier, or FinTech with regulated-FSI surface. The framework's premise is that the CAIO is the buyer persona for v1.2 and v2.0. Patterns are software, not legal advice. Engage qualified counsel, your internal-audit function, and your primary federal regulator before any commitment. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/cfpb_ai_lending_supervisory_landscape
+
+CFPB AI-Lending Supervisory Landscape — Unified Mapping
+
+This document unifies the four federal supervisory pronouncements that now define the CFPB's posture on AI-driven credit decisioning, plus the May 2026 final rule that recalibrated the federal enforcement posture. It supersedes the single-circular framing in docs/cfpbcircular202203mapping.md for buyer-conversation purposes, while that earlier mapping continues to serve as the article-by-article reference for Circular 2022-03 itself. The narrative across the four years (2022 →
+
+## https://linus10x.github.io/finserv-agent-audit/cfpb_circular_2022_03_mapping
+
+CFPB Circular 2022-03 — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to CFPB Circular 2022-03, Adverse Action Notification Requirements in Connection with Credit Decisions Based on Complex Algorithms (May 26, 2022). Any AI agent that produces or materially influences an adverse credit decision falls inside the scope of this Circular and the underlying Equal Credit Opportunity Act ("ECOA") and Regulation B regime. Disclaimer: This mapping is provided for reference only and does not c
+
+## https://linus10x.github.io/finserv-agent-audit/cfpb_circular_2023_09_mapping
+
+CFPB Circular 2023-03 — Standalone Control Mapping
+
+This document maps the governance patterns in this repository to CFPB Circular 2023-03, Adverse Action Notification Requirements and the Proper Use of the CFPB's Sample Forms Provided in Regulation B (September 19, 2023). It is a companion to the earlier mapping for Circular 2022-03 (docs/cfpbcircular202203mapping.md) and rolls up into the unified supervisory landscape document (docs/cfpbailendingsupervisorylandscape.md). Filename note. Some compliance literature references t
+
+## https://linus10x.github.io/finserv-agent-audit/coso_icair_mapping
+
+COSO Internal Control over AI — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to the Committee of Sponsoring Organizations of the Treadway Commission's ("COSO") guidance on internal control over artificial intelligence. The relevant primary text is Realize the Full Potential of Artificial Intelligence (Deloitte for COSO, 2021), which applies the five components of the COSO Internal Control — Integrated Framework (2013) to AI systems, and the November 2024 thought paper Realize the Full Promi
+
+## https://linus10x.github.io/finserv-agent-audit/disclosure_artifact_templates
+
+Disclosure Artifact Templates — AI Governance
+
+Three reusable text-block templates that disclosure counsel can defend because each clause is anchored to a deployed v1.1-v1.3 module in this repository. The templates cover the three filings where AI-governance disclosure has become standard practice: 1. 10-K Item 1A AI risk factor — annual report risk-factor language. 2. Proxy statement AI-governance disclosure — Audit or Risk Committee section of the annual proxy. 3. Earnings-release management-commentary AI paragraph — qu
+
+## https://linus10x.github.io/finserv-agent-audit/dora_mapping
+
+EU Digital Operational Resilience Act (DORA) — Control Mapping
+
+Status: v2.0.0-draft · Last reviewed: 2026-05-28. Audience: Chief AI Officer, Chief Risk Officer, or Chief Operational Resilience Officer at a US-headquartered financial entity with EU subsidiaries or EU customers; LLM-provider counsel preparing for ICT third-party-service-provider (ICT TPSP) designation; Big-4 advisory partner supporting DORA examination readiness. This document maps the governance patterns in this repository to the Digital Operational Resilience Act (Regula
+
+## https://linus10x.github.io/finserv-agent-audit/ecoa_reg_b_mapping
+
+ECOA / Regulation B — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to fair-lending obligations under the Equal Credit Opportunity Act and Regulation B (12 C.F.R. Part 1002), with particular focus on the adverse-action notification arm at 12 C.F.R. § 1002.9 and the protected-class non-discrimination obligations at the heart of ECOA. The patterns that anchor this mapping are the EquityAudit (Tranche 2C) and the ProtectedClassProxyDetector (v1.2 MI arm per ADR-0019 § "v1.2 ship recon
+
+## https://linus10x.github.io/finserv-agent-audit/eu_ai_act_aug_2026_compliance_pack
+
+EU AI Act — August 2, 2026 High-Risk Compliance Pack for US FSI
+
+Status: v2.0.0-draft · Last reviewed: 2026-05-28. Audience: Chief AI Officer, Chief Compliance Officer, or General Counsel at a US-headquartered financial-services institution serving EU customers (including consumers, retail-banking customers, life or health policyholders, and asset-management clients with EU domicile); Big-4 advisory partner advising on EU AI Act readiness. This compliance pack is the operative companion to docs/euaiactmapping.md. The mapping document cover
+
+## https://linus10x.github.io/finserv-agent-audit/eu_ai_act_mapping
+
+EU AI Act — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to specific EU AI Act requirements for high-risk AI systems. Autonomous agents operating in financial services with access to execution or credit decisions are generally classified as high-risk under Annex III. Disclaimer: This mapping is provided for reference only and does not constitute legal advice. Engage qualified legal counsel for your specific compliance determination.
+
+## https://linus10x.github.io/finserv-agent-audit/fcra_reg_v_mapping
+
+FCRA § 615 / Regulation V — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to the adverse-action notification obligations under the Fair Credit Reporting Act § 615 (15 U.S.C. § 1681m), Regulation V (12 C.F.R. § 1022.74 for risk-based pricing), and CFPB Circular 2022-03 on algorithmic adverse-action notices. The pattern that anchors this mapping is the AdverseActionGate (ADR-0009, reference module landing in Tranche 2C). Disclaimer: Reference pattern, not legal advice. Regulatory character
+
+## https://linus10x.github.io/finserv-agent-audit/fsi_settled_matters
+
+FSI Settled Matters — Anchor Cases for the Autonomy Ladder Framework
+
+Status: Reference doc · FSI parallel to the three-case anchor in cre-agent-audit/docs/regulatorymatters.md Date: 2026-05-28 Repo: finserv-agent-audit Reference document, not legal advice. The matter summaries below are paraphrases of the public record at the retrieval date noted in the References section. No attorney-client relationship is formed by reading this document, and adopters must engage qualified counsel for any compliance determination. See repo-root DISCLAIMER.md.
+
+## https://linus10x.github.io/finserv-agent-audit/glba_safeguards_mapping
+
+GLBA Safeguards Rule — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to specific obligations under the Gramm-Leach-Bliley Act Safeguards Rule (16 C.F.R. Part 314), as revised by the Federal Trade Commission effective June 9, 2023. Autonomous agents in financial services routinely read, compose, summarize, or act on customer non-public personal information (NPI); the Safeguards Rule applies to that activity whether the actor is a human session or an LLM-backed agent. Disclaimer: Refe
+
+## https://linus10x.github.io/finserv-agent-audit/interagency_mrm_2026_overlay
+
+Interagency Model Risk Management — 2026 Overlay
+
+OCC Bulletin 2026-13 · Model Risk Management: Revised Guidance · April 17, 2026 Joint issuance: OCC, Federal Reserve Board, FDIC Status: primary-source verified (OCC site, fetched 2026-05-28) Disclaimer. This document interprets a supervisory issuance for engineering and second-line model-risk-management audiences. It is not legal advice. Every institution must reconcile this overlay with its own General Counsel, second-line model-validation function, and prudential examiner.
+
+## https://linus10x.github.io/finserv-agent-audit/iso_42001_mapping
+
+ISO/IEC 42001:2023 — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to ISO/IEC 42001:2023, the international management-system standard for artificial intelligence ("AI Management System" or AIMS). Any organization pursuing a third-party-certifiable AI governance program in financial services will benchmark against this standard. Disclaimer: This mapping is provided for reference only and does not constitute legal advice. Engage a qualified accredited certification body for a forma
+
+## https://linus10x.github.io/finserv-agent-audit/naic_model_bulletin_insurance_mapping
+
+NAIC Model Bulletin on Use of AI Systems by Insurers — Control Mapping
+
+Status: v2.0.0-draft · Last reviewed: 2026-05-28. Audience: Chief AI Officer or Chief Risk Officer at a US insurance carrier (life, health, P&C, supplemental); Big-4 advisory partner supporting an insurance client through NAIC Model Bulletin examination readiness. This document maps the governance patterns in this repository to the NAIC Model Bulletin on the Use of Artificial Intelligence Systems by Insurers adopted by the NAIC membership on December 4, 2023, and to the AI Sy
+
+## https://linus10x.github.io/finserv-agent-audit/nist_ai_600_1_genai_profile_mapping
+
+NIST AI 600-1 Generative AI Profile — Module Cross-Walk
+
+Source: NIST AI 600-1, Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile, published July 26, 2024 (finalized; draft released April 29, 2024). Companion to NIST AI 100-1 (the AI RMF 1.0) and structured around the AI RMF's four core functions: Govern, Map, Measure, Manage. Status: Primary-source verified via the NIST AI RMF resource landing page (fetched 2026-05-28). The full 12-category risk taxonomy is summarized below from the publ
+
+## https://linus10x.github.io/finserv-agent-audit/nist_ai_rmf_mapping
+
+NIST AI RMF 1.0 — Control Mapping for Autonomous AI Agents
+
+The NIST AI Risk Management Framework 1.0 (NIST AI 100-1, published January 26, 2023) is a voluntary, sector-agnostic framework organized around four functions — GOVERN, MAP, MEASURE, MANAGE — each broken into categories and subcategories. The companion AI RMF Playbook provides suggested actions per subcategory. For US financial services, the AI RMF is not itself a binding rule, but federal banking agencies, the SEC, and the CFPB have all referenced it as an expected referenc
+
+## https://linus10x.github.io/finserv-agent-audit/nydfs_part500_ai_mapping
+
+NYDFS 23 NYCRR Part 500 — AI Control Mapping for Autonomous Agents
+
+This document maps the governance patterns in this repository to the New York State Department of Financial Services (NYDFS) cybersecurity regulation, 23 NYCRR Part 500, as amplified by two AI-specific industry letters: the October 16, 2024 letter on cybersecurity risks arising from artificial intelligence, and the May 21, 2026 letter on heightened cybersecurity risks associated with frontier AI models. NYDFS is the most aggressive US state financial-services regulator on AI 
+
+## https://linus10x.github.io/finserv-agent-audit/occ_2011_12_mapping
+
+OCC Bulletin 2011-12 — Control Mapping for Autonomous AI Agents
+
+STATUS — RESCINDED. OCC Bulletin 2011-12 was rescinded on April 17, 2026 by OCC Bulletin 2026-13, Model Risk Management: Revised Guidance (joint OCC / Federal Reserve Board / FDIC issuance). The new bulletin explicitly excludes generative and agentic AI from scope, deferring those workloads to a forthcoming joint RFI. For the framework's positioning during the pre-RFI interval, see docs/interagencymrm2026overlay.md and the forkable internal-whitepaper template in docs/MRMBRID
+
+## https://linus10x.github.io/finserv-agent-audit/pcaob_as_2201_amendments_2026_appendix
+
+PCAOB AS 2201 + AS 2101 Amendments (FY 2026+) — ASSURANCE-GUIDE Appendix
+
+Status: v2.0.0-draft · Last reviewed: 2026-05-28. Audience: Big-4 audit partner planning the FY-2026 financial-statement audit at a US-listed financial-services issuer with AI-mediated processes affecting internal control over financial reporting (ICFR); the issuer's Chief Internal Auditor; the SOX 404 compliance leader supporting the external auditor's walkthrough; the Chief AI Officer producing the audit-evidence pack. This appendix is the companion to ASSURANCE-GUIDE.md. T
+
+## https://linus10x.github.io/finserv-agent-audit/pe_portfolio_governance_playbook
+
+Private-Equity Portfolio AI-Governance Playbook
+
+Status: v2.0.0-draft · Last reviewed: 2026-05-28. Audience: AI Operating Partner at a mid-market to upper-mid-market PE fund with a 10-30 portco book; fractional Chief AI Officer engaged across multiple portcos under a single AI Operating Partner; Big-4 advisory partner supporting a PE fund's portfolio AI-governance build. Disclaimer: This playbook is provided for reference only and does not constitute legal advice. Engage qualified counsel for your specific compliance determ
+
+## https://linus10x.github.io/finserv-agent-audit/pre_examination_ai_self_assessment
+
+Pre-Examination AI Self-Assessment
+
+Status: v1.2.0-draft · Last reviewed: 2026-05-28. Audience: Bank CTO / CISO / Chief Risk Officer / Chief AI Officer preparing for an OCC, FDIC, FRB, NYDFS, or state-banking-department examination that will touch the institution's AI / agentic-AI surface. Patterns are software, not legal advice. Use this self-assessment as a worksheet, not as a regulatory submission. Engage qualified counsel + your model-risk + compliance functions before any examination response. See repo-roo
+
+## https://linus10x.github.io/finserv-agent-audit/sec_17a_4_mapping
+
+SEC Rule 17a-4 — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to the broker-dealer record-retention requirements of SEC Rule 17a-4 (17 C.F.R. § 240.17a-4), as amended in 2022 to restate the electronic- storage-media requirements at paragraph (f). Autonomous agents working inside a broker-dealer — trade surveillance, KYC adjudication, order- ticket annotation, SAR-narrative drafting, customer-correspondence composition — produce records that fall within the 17a-4 retention per
+
+## https://linus10x.github.io/finserv-agent-audit/sec_reg_bi_mapping
+
+SEC Regulation Best Interest — Control Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to specific obligations under SEC Regulation Best Interest, 17 C.F.R. § 240.15l-1 ("Reg BI"). Any broker-dealer that uses an AI agent to generate, surface, or systematically influence a securities recommendation to a retail customer is squarely inside Reg BI's recommendation perimeter. Disclaimer: This mapping is provided for reference only and does not constitute legal advice. Engage qualified legal counsel for yo
+
+## https://linus10x.github.io/finserv-agent-audit/sox_404_itgc_mapping
+
+SOX 404 IT General Controls — Mapping for Autonomous AI Agents
+
+This document maps the governance patterns in this repository to the four IT General Controls (ITGC) categories that PCAOB-registered auditors apply when evaluating Section 404 of the Sarbanes-Oxley Act (15 U.S.C. § 7262). Any SEC-registrant adopter of this repository is operating under SOX 404; any AI-mediated workflow that touches a financial-reporting flow — revenue recognition, fair-value mark, customer-credit reserve, trading P&L, AML transaction record — is in the ICFR 
+
+## https://linus10x.github.io/finserv-agent-audit/sr11_7_mapping
+
+SR 11-7 — Control Mapping for Autonomous AI Agents
+
+STATUS — SUPERSEDED FOR NEW EXAMINATIONS. Federal Reserve SR 11-7 was superseded for new examination cycles by the joint OCC / Federal Reserve Board / FDIC issuance of April 17, 2026 (OCC counterpart: OCC Bulletin 2026-13, Model Risk Management: Revised Guidance), which explicitly excludes generative and agentic AI from scope and defers those workloads to a forthcoming joint RFI. For the framework's positioning during the pre-RFI interval, see docs/interagencymrm2026overlay.m
+
+## https://linus10x.github.io/finserv-agent-audit/state_ag_ai_fair_lending_matrix
+
+State AG AI Fair-Lending Enforcement Matrix
+
+This document is a 50-state matrix cataloguing state-attorney-general-led AI fair-lending enforcement and AI-targeted state laws applicable to financial-services institutions. It exists because, under the federal recalibration documented in docs/cfpbailendingsupervisorylandscape.md, state AGs are now the primary forward enforcement path for AI-driven fair-lending exposure — and banks operating multi-state need a single reference for the state-by-state posture. Disclaimer: Ref
+
+## https://linus10x.github.io/finserv-agent-audit/treasury_fs_ai_rmf_mapping
+
+Treasury Financial Services Sector AI Risk Management Framework — Module Cross-Walk
+
+Source: Cyber Risk Institute (CRI) — Financial Services AI Risk Management Framework (FS AI RMF), published February 12, 2026, in coordination with the Financial Services Sector Coordinating Council (FSSCC). 230 control objectives. 100+ contributing financial institutions globally. Status: Primary-source verified via the CRI press release ("Financial Services Industry Unites to Launch Comprehensive AI Risk Management Framework," fetched 2026-05-28). The full framework text (2
+
+## https://linus10x.github.io/finserv-agent-audit/workbook_v0_outline
+
+Autonomy Ladder™ Workbook v0 — Outline
+
+Status: v0 outline (preview · subject to revision before v1 ships Week 7) Repo: github.com/linus10x/finserv-agent-audit Companion: Autonomy Ladder™ Pitch Deck v1 (also in /docs/) License: MIT (same as parent repo) Date: 2026-05-24
