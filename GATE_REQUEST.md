@@ -10,7 +10,7 @@ Relay for Grok Bot, then Chief of Staff, then Plato. Public metadata. Do not lan
 
 - docs/robots.txt, docs/sitemap.xml (77 URLs, one per markdown page already published, no trailing slash), docs/llms.txt.
 - docs/_includes/head-custom.html adds SoftwareSourceCode JSON-LD. The live theme already includes that file (the comment is in the current head).
-- No markdown page was edited. The description matches the repo description already in the Jekyll SEO tag. The author name is the one in CITATION.cff.
+- docs/index.md adds a Questions section and ends the stub sentence with a period. The two answers repeat the blockquote and that stub sentence. The author name is Kunjar Bhaduri, matching CITATION.cff.
 
 ## Stops
 
