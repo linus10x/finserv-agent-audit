@@ -263,7 +263,7 @@ pydantic==2.12.5
 pydantic-core==2.41.5
 pydantic-monty==0.0.23
 pydantic-monty-client==0.0.23
-pydantic-monty-runtime==0.0.23
+pydantic-monty-runtime==1.1.0
 pydantic-settings==2.15.0
 pygments==2.21.0
 pyjwt==2.15.1
