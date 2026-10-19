@@ -46,7 +46,7 @@ agent-framework-hyperlight==1.0.0b261002
 agent-framework-mem0==1.0.0b261002
 agent-framework-mistral==1.0.0b260918
 agent-framework-monty==1.0.0b261008
-agent-framework-ollama==1.0.0b261002
+agent-framework-ollama==1.0.0b261015
 agent-framework-openai==1.16.0
 agent-framework-orchestrations==1.3.1
 agent-framework-purview==1.0.0b261002
