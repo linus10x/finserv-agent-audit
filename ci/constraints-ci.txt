@@ -42,7 +42,7 @@ agent-framework-foundry-hosting==1.0.0b261008
 agent-framework-foundry-local==1.0.0b260730
 agent-framework-gemini==1.0.0b261002
 agent-framework-github-copilot==2.0.1
-agent-framework-hyperlight==1.0.0b261002
+agent-framework-hyperlight==1.0.0b261022
 agent-framework-mem0==1.0.0b261002
 agent-framework-mistral==1.0.0b260918
 agent-framework-monty==1.0.0b261008
