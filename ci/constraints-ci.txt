@@ -32,7 +32,7 @@ agent-framework-azurefunctions==1.0.0b260922
 agent-framework-bedrock==1.0.0b261002
 agent-framework-chatkit==1.0.0b261002
 agent-framework-claude==1.0.0b261002
-agent-framework-copilotstudio==1.0.0b261002
+agent-framework-copilotstudio==1.0.0b261015
 agent-framework-core==1.20.0
 agent-framework-declarative==1.2.1
 agent-framework-devui==1.0.0b261002
