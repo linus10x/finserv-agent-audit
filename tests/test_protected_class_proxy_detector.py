@@ -61,11 +61,9 @@ class TestNoProxy:
         # Features whose distribution is independent of the protected class
         # should not be flagged. Construct an explicit uniform case.
         protected = ["A", "B"] * 50  # alternating A / B
-        # ``feature_x`` is alternating but offset by one — uncorrelated
-        # with the alternation in protected. ``feature_y`` is constant —
-        # zero MI by definition.
-        feature_x = ["P", "Q"] * 50
-        # Shift feature_x so it does not correlate with protected.
+        # ``feature_x`` runs on a period-4 cycle so it does not correlate
+        # with the period-2 alternation in ``protected``. ``feature_y`` is
+        # constant — zero MI by definition.
         feature_x = ["P", "P", "Q", "Q"] * 25
         feature_y = ["k"] * 100
         decisions = [1, 0] * 50

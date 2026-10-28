@@ -298,7 +298,11 @@ class TestConcurrentVerifyAndAppend:
                         agent_id=f"appender-{tid}",
                         payload={"tid": tid, "seq": i},
                     )
-            except BaseException as e:  # noqa: BLE001 - we re-raise via collected list
+            # Intentional catch-all: a worker thread must surface ANY failure
+            # (incl. non-Exception BaseExceptions) to the main thread via the
+            # collected list, which the assertion below then re-raises as a
+            # test failure. Swallowing nothing is the point.
+            except BaseException as e:  # noqa: BLE001 - re-raised via collected list
                 errors.append(e)
 
         def verifier() -> None:
@@ -307,7 +311,10 @@ class TestConcurrentVerifyAndAppend:
                     if stop_flag.is_set():
                         break
                     verify_results.append(chain.verify())
-            except BaseException as e:  # noqa: BLE001 - we re-raise via collected list
+            # Intentional catch-all: see the appender() rationale above —
+            # the verifier thread must surface every failure to the main
+            # thread via ``errors`` rather than dying silently.
+            except BaseException as e:  # noqa: BLE001 - re-raised via collected list
                 errors.append(e)
 
         appender_threads = [threading.Thread(target=appender, args=(tid,)) for tid in range(8)]

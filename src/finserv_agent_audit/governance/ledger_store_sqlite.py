@@ -14,6 +14,7 @@ the integration shape; the repo does not pull driver libraries.
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
@@ -26,8 +27,12 @@ class SqliteLedgerStore:
     """sqlite3-backed `LedgerStore`. One row per `AuditEvent`."""
 
     def __init__(self, db_path: Path | str, *, table: str = "audit_chain") -> None:
-        if not table.replace("_", "").isalnum():
-            raise ValueError(f"table name {table!r} must be alphanumeric+underscore")
+        # Table names cannot be passed as bound parameters, so the identifier
+        # is validated to a strict ASCII SQL-identifier shape before it is ever
+        # interpolated into a query string. This is the guard the `# nosec B608`
+        # annotations below rely on.
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table):
+            raise ValueError(f"invalid table name {table!r}")
         self._table = table
         self._conn = sqlite3.connect(str(db_path), isolation_level=None)
         self._conn.execute(
@@ -50,7 +55,7 @@ class SqliteLedgerStore:
 
     def append(self, event: AuditEvent) -> None:
         self._conn.execute(
-            f"INSERT INTO {self._table} "
+            f"INSERT INTO {self._table} "  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
             f"(event_id, event_type, autonomy_level, agent_id, timestamp, "
             f"payload_json, actor_id, prev_hash, event_hash, schema_version) "
             f"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -70,7 +75,7 @@ class SqliteLedgerStore:
 
     def __iter__(self) -> Iterator[AuditEvent]:
         rows = self._conn.execute(
-            f"SELECT event_id, event_type, autonomy_level, agent_id, timestamp, "
+            f"SELECT event_id, event_type, autonomy_level, agent_id, timestamp, "  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
             f"payload_json, actor_id, prev_hash, event_hash, schema_version "
             f"FROM {self._table} ORDER BY sequence ASC"
         )
@@ -78,14 +83,14 @@ class SqliteLedgerStore:
             yield self._row_to_event(row)
 
     def __len__(self) -> int:
-        cur = self._conn.execute(f"SELECT COUNT(*) FROM {self._table}")
+        cur = self._conn.execute(f"SELECT COUNT(*) FROM {self._table}")  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
         result: int = cur.fetchone()[0]
         return result
 
     def get(self, sequence: int) -> AuditEvent:
         # sequence is 0-indexed externally; sqlite AUTOINCREMENT is 1-indexed.
         cur = self._conn.execute(
-            f"SELECT event_id, event_type, autonomy_level, agent_id, timestamp, "
+            f"SELECT event_id, event_type, autonomy_level, agent_id, timestamp, "  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
             f"payload_json, actor_id, prev_hash, event_hash, schema_version "
             f"FROM {self._table} WHERE sequence = ?",
             (sequence + 1,),
@@ -96,13 +101,13 @@ class SqliteLedgerStore:
         return self._row_to_event(row)
 
     def head_sequence(self) -> int:
-        cur = self._conn.execute(f"SELECT COUNT(*) FROM {self._table}")
+        cur = self._conn.execute(f"SELECT COUNT(*) FROM {self._table}")  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
         result = cur.fetchone()[0]
         return int(result) - 1
 
     def head_event_hash(self) -> str:
         cur = self._conn.execute(
-            f"SELECT event_hash FROM {self._table} ORDER BY sequence DESC LIMIT 1"
+            f"SELECT event_hash FROM {self._table} ORDER BY sequence DESC LIMIT 1"  # nosec B608 — table name validated as a SQL identifier in __init__; values are parameterized
         )
         row = cur.fetchone()
         if row is None:

@@ -93,3 +93,19 @@ def test_custom_table_name(tmp_path: Path) -> None:
 def test_invalid_table_name_raises(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         SqliteLedgerStore(tmp_path / "ledger.db", table="bad; DROP TABLE")
+
+
+def test_sql_injection_table_name_raises(tmp_path: Path) -> None:
+    # A table name carrying a SQL-injection payload must be rejected at
+    # construction, before it can be interpolated into any query.
+    with pytest.raises(ValueError):
+        SqliteLedgerStore(tmp_path / "ledger.db", table="x; DROP TABLE y")
+
+
+def test_table_name_rejects_leading_digit_and_empty(tmp_path: Path) -> None:
+    # The strict identifier regex rejects shapes the old isalnum() check let
+    # through (leading digit) and the empty string.
+    with pytest.raises(ValueError):
+        SqliteLedgerStore(tmp_path / "ledger.db", table="1bad")
+    with pytest.raises(ValueError):
+        SqliteLedgerStore(tmp_path / "ledger.db", table="")

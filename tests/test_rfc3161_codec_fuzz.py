@@ -66,6 +66,8 @@ def test_decode_length_at_never_crashes(data: bytes, offset: int) -> None:
         assert length >= 0
         assert header_len > 0
     except ValueError:
+        # ValueError is the documented error path — expected; any OTHER
+        # exception type fails the property below.
         pass
     except Exception as e:
         pytest.fail(f"unexpected exception type {type(e).__name__}: {e}")

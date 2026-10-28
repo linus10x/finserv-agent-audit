@@ -34,6 +34,16 @@ from typing import Any, Protocol, runtime_checkable
 logger = logging.getLogger(__name__)
 
 
+def _scrub(v: object) -> str:
+    """Neutralize CR/LF in untrusted values before they enter a log message.
+
+    Agent-controlled fields (agent_id, operator_id, reasons, descriptions)
+    interpolated into a log line could otherwise inject forged log records
+    via embedded carriage-return / line-feed characters.
+    """
+    return str(v).replace("\n", " ").replace("\r", " ")
+
+
 @runtime_checkable
 class Authorizer(Protocol):
     """Protocol for authorizing privileged operations.
@@ -164,10 +174,10 @@ class SovereignVeto:
 
         logger.critical(
             "SOVEREIGN VETO triggered | agent: %s | reason: %s | by: %s | %s",
-            self.agent_id,
+            _scrub(self.agent_id),
             reason.value,
-            triggered_by,
-            description,
+            _scrub(triggered_by),
+            _scrub(description),
         )
 
         if self._on_veto:
@@ -209,8 +219,8 @@ class SovereignVeto:
         if operator_id == self.agent_id:
             logger.critical(
                 "REJECTED self-clearing attempt | agent: %s | operator: %s",
-                self.agent_id,
-                operator_id,
+                _scrub(self.agent_id),
+                _scrub(operator_id),
             )
             raise VetoBlockedError(
                 f"self-clearing forbidden: operator_id={operator_id!r} "
@@ -226,8 +236,8 @@ class SovereignVeto:
             if not self._authorizer.authorize(operator_id, "clear_veto", context):
                 logger.critical(
                     "REJECTED clear by Authorizer | agent: %s | operator: %s",
-                    self.agent_id,
-                    operator_id,
+                    _scrub(self.agent_id),
+                    _scrub(operator_id),
                 )
                 raise VetoBlockedError(
                     f"Authorizer rejected clear_veto by operator_id={operator_id!r}"
@@ -242,10 +252,10 @@ class SovereignVeto:
                 cleared.append(v)
                 logger.info(
                     "VETO CLEARED | agent: %s | veto_id: %s | by: %s | reason: %s",
-                    self.agent_id,
-                    v.veto_id,
-                    operator_id,
-                    reason,
+                    _scrub(self.agent_id),
+                    _scrub(v.veto_id),
+                    _scrub(operator_id),
+                    _scrub(reason),
                 )
                 if self._on_clear:
                     self._on_clear(v)

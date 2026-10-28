@@ -52,6 +52,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Protocol
+from urllib.parse import urlparse
 
 from finserv_agent_audit.governance.ledger_store import LedgerStore
 from finserv_agent_audit.schemas.audit_event import (
@@ -70,7 +71,11 @@ DEFAULT_ALERT_WINDOW_DAYS: int = 60
 
 def _default_http_get(url: str, *, timeout: float = DEFAULT_TIMEOUT_SECONDS) -> str:
     """Stdlib HTTP GET; returns the response body as a UTF-8 string."""
-    with urllib.request.urlopen(url, timeout=timeout) as response:  # noqa: S310
+    scheme = urlparse(url).scheme
+    if scheme not in ("http", "https"):
+        raise ValueError(f"unsupported URL scheme {scheme!r}; expected http/https")
+    # scheme validated to http/https above
+    with urllib.request.urlopen(url, timeout=timeout) as response:  # noqa: S310  # nosec B310 — scheme validated to http/https above
         data: bytes = response.read()
     return data.decode("utf-8", errors="replace")
 
