@@ -411,6 +411,8 @@ The framework is dual-licensed MIT OR Apache-2.0 — fork it, ship it, adopt it.
 
 Pricing, methodology pages, and intake form: **[autonomy-ladder.io/services](https://autonomy-ladder.io/services)** · or LinkedIn DM with subject `Diagnostic inquiry` to [Kunjar Bhaduri](https://linkedin.com/in/kunjarbhaduri).
 
+**Scored Diagnostic + Board Brief ($49).** The diagnostic scores your tier against the peer band for your firm type and delivers the result as a one-page board brief. The $49 is a one-time payment, and the full amount is credited toward a Step 1 Diagnostic engagement: https://buy.stripe.com/4gM00iaxjfWTcNj7RQ9fW0n
+
 ---
 
 ## Community
