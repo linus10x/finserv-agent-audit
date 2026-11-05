@@ -222,7 +222,7 @@ opentelemetry-instrumentation-httpx==0.66b1
 opentelemetry-instrumentation-logging==0.66b1
 opentelemetry-instrumentation-openai-agents-v2==0.1.0
 opentelemetry-instrumentation-openai-v2==2.3b0
-opentelemetry-instrumentation-psycopg2==0.66b1
+opentelemetry-instrumentation-psycopg2==0.66b2
 opentelemetry-instrumentation-requests==0.66b1
 opentelemetry-instrumentation-urllib==0.66b1
 opentelemetry-instrumentation-urllib3==0.66b1
